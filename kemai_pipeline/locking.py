@@ -4,6 +4,7 @@ import fcntl
 import os
 from pathlib import Path
 import threading
+from .project_paths import RUNTIME_LOCKS
 
 ROOT=Path(__file__).resolve().parents[1]
 _guard=threading.RLock()
@@ -14,7 +15,8 @@ class WriterBusy(RuntimeError): pass
 
 
 def acquire_writer(path=None):
-    path=Path(path or ROOT/'.kemai-writer.lock').resolve()
+    path=Path(path or RUNTIME_LOCKS/'.kemai-writer.lock').resolve()
+    path.parent.mkdir(parents=True,exist_ok=True)
     identity=(os.getpid(),threading.get_ident(),str(path))
     with _guard:
         if identity in _owned:

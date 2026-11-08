@@ -4,8 +4,8 @@ import subprocess
 import time
 from pathlib import Path
 from .capabilities import CAPABILITIES
-from kemai_rate_limit import is_rate_limited, rate_limit_signal, record_limit
-from kemai_source_gate import cooldown_until, gate_dir
+from .rate_limit import is_rate_limited, rate_limit_signal, record_limit
+from .source_gate import cooldown_until, gate_dir
 
 
 class SourceError(RuntimeError): pass
@@ -31,7 +31,11 @@ def validate_purchase_scope(stream,scope,day):
     for key in profile['must_be_empty']:
         if scope.get(key) not in (None,'',[],{}):
             raise SourceError(f'Unexpected active purchase filter {key}; inspect query-scope before collecting')
-    allowed={profile['time_field'],*profile['window_fields'],*profile['must_be_empty']}
+    fixed=profile['stream_fixed_filters'][stream]
+    for key,value in fixed.items():
+        if str(scope.get(key))!=value:
+            raise SourceError(f'Purchase fixed filter {key} changed; inspect query-scope before collecting')
+    allowed={profile['time_field'],*profile['window_fields'],*profile['must_be_empty'],*fixed}
     if any(value not in (None,'',[],{}) for key,value in scope.items() if key not in allowed):
         raise SourceError('Unexpected active purchase filter; inspect query-scope before collecting')
 

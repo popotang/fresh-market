@@ -12,6 +12,7 @@ import time
 from zoneinfo import ZoneInfo
 from kemai_pipeline.artifacts import atomic_json
 from kemai_pipeline.locking import writer_lock
+from kemai_pipeline.project_paths import RUNTIME_LOCKS
 
 ROOT=Path(__file__).resolve().parent
 
@@ -34,7 +35,7 @@ def main(argv=None):
     signal.signal(signal.SIGTERM,stop);signal.signal(signal.SIGINT,stop)
     target=ROOT/'.kemai-artifacts/service-status.json'
     # Same file as legacy live supervisor: cannot run old/new services simultaneously.
-    with writer_lock(ROOT/'.kemai-live.service.lock'):
+    with writer_lock(RUNTIME_LOCKS/'.kemai-live.service.lock'):
         while not stopping:
             started=datetime.now(ZoneInfo('Asia/Shanghai')).isoformat()
             argv=[sys.executable,str(ROOT/'kemai_syncctl.py'),'incremental','run',

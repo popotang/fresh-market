@@ -113,8 +113,8 @@ DeepSeek 每批在运行记录中填写：`执行人｜源流｜源日期/范围
 ## 相关资产
 
 - [原阶段计划及评论共识](kemai-next-sync-plan-and-runbook.md)
-- [采购零售与增量命令](../README-commerce.md)
-- [同步状态字段口径](../README-sync-status.md)
-- [商品页签批量导出评估](../kemai_product_tabs_strategy.md)
+- [采购零售与增量命令](legacy/README-commerce.md)
+- [同步状态字段口径](legacy/README-sync-status.md)
+- [商品页签批量导出评估](legacy/kemai_product_tabs_strategy.md)
 - [源请求协调与限流](kemai-source-gate.md)
 - `~/.codex/skills/kemai-sync/SKILL.md` 与 `~/.codex/skills/kemai-opencli/SKILL.md`：DeepSeek 接手前先读，再执行其引用的 runbook。

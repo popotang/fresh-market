@@ -1,9 +1,0 @@
-commerce schema ready: 13 tables
-purchase-receive-history 2026-11-07 saved=100/519
-purchase-receive-history 2026-11-07 saved=200/519
-purchase-receive-history 2026-11-07 saved=300/519
-purchase-receive-history 2026-11-07 saved=400/519
-purchase-receive-history 2026-11-07 saved=500/519
-purchase-receive-history 2026-11-07 verified db_total=519
-purchase-receive-history 2026-11-07 pages=1 saved=519
-{"counts":{"purchase-receive-history":519},"run_id":53}

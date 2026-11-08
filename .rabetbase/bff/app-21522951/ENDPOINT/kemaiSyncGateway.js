@@ -32,7 +32,7 @@ function sha256(text) {
   return h.map(v=>(v>>>0).toString(16).padStart(8,'0')).join('');
 }
 
-const MODEL_FIELDS={"retail_sale_flows": ["id", "tenant_id", "source_flow_id", "source_order_id", "receipt_no", "source_branch_id", "source_item_id", "source_supplier_id", "quantity", "sale_amount", "coupon_share_amount", "sold_at", "source_created_at", "payload_hash", "payload", "captured_at"], "retail_orders": ["id", "tenant_id", "source_order_id", "receipt_no", "source_receipt_no", "source_branch_id", "source_member_id", "source_type", "channel_code", "sale_flag", "sale_amount", "order_amount", "sold_at", "source_created_at", "payload_hash", "payload", "captured_at"], "purchase_documents": ["id", "tenant_id", "document_kind", "source_document_id", "sheet_no", "sheet_type", "source_document_ref_id", "source_document_ref_no", "source_supplier_id", "source_branch_id", "source_receive_branch_id", "status_code", "source_version", "amount", "source_created_at", "source_modified_at", "source_approved_at", "payload_hash", "payload", "captured_at"], "purchase_receipt_history_lines": ["id", "tenant_id", "sheet_no", "sheet_type", "source_supplier_id", "source_branch_id", "source_item_id", "quantity", "amount", "approved_at", "business_date", "payload_hash", "payload", "captured_at", "source_document_id", "source_line_key"], "source_capture": ["id", "tenant_id", "stream", "source_key", "source_version", "source_modified_at", "payload_hash", "payload", "captured_at"], "sync_stream_events": ["id", "tenant_id", "stream", "mode", "source_from", "source_to", "run_id", "status", "source_rows", "saved_rows", "verification_method", "coverage_level", "coverage_note", "started_at", "finished_at", "error_message", "details"], "sync_stream_status": ["id", "tenant_id", "stream", "stream_name", "last_attempt_status", "last_attempt_at", "last_success_at", "covered_through", "last_source_rows", "last_saved_rows", "verification_method", "coverage_level", "coverage_note", "last_error", "last_event_id", "updated_at"], "purchase_document_detail_state": ["document_id", "status", "attempts", "line_count", "branch_count", "approval_count", "source_version", "attempted_source_version", "payload_hash", "last_error", "attempted_at", "completed_at"], "purchase_document_lines": ["id", "document_id", "source_line_id", "source_item_id", "source_line_ref_id", "quantity", "unit_price", "amount", "tax_amount", "payload"], "purchase_document_branches": ["id", "document_id", "source_key", "source_branch_id", "payload"], "purchase_document_approvals": ["id", "document_id", "source_key", "source_approver_id", "status_code", "approved_at", "payload"], "products": ["id", "tenant_id", "source_item_id", "item_code", "barcode", "item_name", "sub_name", "item_size", "source_category_id", "source_brand_id", "source_department_id", "source_supplier_id", "source_unit_id", "status_code", "lifetime_code", "retail_price", "purchase_price", "source_version", "source_created_at", "source_modified_at", "source_approved_at", "list_hash", "detail_hash", "first_seen_at", "last_seen_at", "deleted_at"], "product_profile": ["product_id", "payload", "payload_hash", "updated_at"], "product_child_records": ["id", "product_id", "section", "source_key", "payload", "payload_hash", "captured_at"], "retail_order_lines": ["id", "order_id", "source_line_id", "source_item_id", "source_line_ref_id", "quantity", "sale_price", "sale_amount", "tax_amount", "payload", "source_kind"]};
+const MODEL_FIELDS={"retail_sale_flows": ["id", "tenant_id", "source_flow_id", "source_order_id", "receipt_no", "source_branch_id", "source_item_id", "source_supplier_id", "quantity", "sale_amount", "coupon_share_amount", "sold_at", "source_created_at", "payload_hash", "payload", "captured_at"], "retail_orders": ["id", "tenant_id", "source_order_id", "receipt_no", "source_receipt_no", "source_branch_id", "source_member_id", "source_type", "channel_code", "sale_flag", "sale_amount", "order_amount", "sold_at", "source_created_at", "payload_hash", "payload", "captured_at"], "purchase_documents": ["id", "tenant_id", "document_kind", "source_document_id", "sheet_no", "sheet_type", "source_document_ref_id", "source_document_ref_no", "source_supplier_id", "source_branch_id", "source_receive_branch_id", "status_code", "source_version", "amount", "source_created_at", "source_modified_at", "source_approved_at", "payload_hash", "payload", "source_list_hash", "captured_at"], "purchase_receipt_history_lines": ["id", "tenant_id", "sheet_no", "sheet_type", "source_supplier_id", "source_branch_id", "source_item_id", "quantity", "amount", "approved_at", "business_date", "payload_hash", "payload", "captured_at", "source_document_id", "source_line_key"], "source_capture": ["id", "tenant_id", "stream", "source_key", "source_version", "source_modified_at", "payload_hash", "payload", "captured_at"], "sync_stream_events": ["id", "tenant_id", "stream", "mode", "source_from", "source_to", "run_id", "status", "source_rows", "saved_rows", "verification_method", "coverage_level", "coverage_note", "started_at", "finished_at", "error_message", "details"], "sync_stream_status": ["id", "tenant_id", "stream", "stream_name", "last_attempt_status", "last_attempt_at", "last_success_at", "covered_through", "last_source_rows", "last_saved_rows", "verification_method", "coverage_level", "coverage_note", "last_error", "last_event_id", "updated_at"], "purchase_document_detail_state": ["document_id", "status", "attempts", "line_count", "branch_count", "approval_count", "source_version", "attempted_source_version", "payload_hash", "last_error", "attempted_at", "completed_at"], "purchase_document_lines": ["id", "document_id", "source_line_id", "source_item_id", "source_line_ref_id", "quantity", "unit_price", "amount", "tax_amount", "payload"], "purchase_document_branches": ["id", "document_id", "source_key", "source_branch_id", "payload"], "purchase_document_approvals": ["id", "document_id", "source_key", "source_approver_id", "status_code", "approved_at", "payload"], "products": ["id", "tenant_id", "source_item_id", "item_code", "barcode", "item_name", "sub_name", "item_size", "source_category_id", "source_brand_id", "source_department_id", "source_supplier_id", "source_unit_id", "status_code", "lifetime_code", "retail_price", "purchase_price", "source_version", "source_created_at", "source_modified_at", "source_approved_at", "list_hash", "detail_hash", "first_seen_at", "last_seen_at", "deleted_at"], "product_profile": ["product_id", "payload", "payload_hash", "updated_at"], "product_child_records": ["id", "product_id", "section", "source_key", "payload", "payload_hash", "captured_at"], "retail_order_lines": ["id", "order_id", "source_line_id", "source_item_id", "source_line_ref_id", "quantity", "sale_price", "sale_amount", "tax_amount", "payload", "source_kind"]};
 const __KEMAI_ACCEPTED_STREAMS__=["retail-orders", "retail-sales"];
 /** Standard APIs only. Generated with portable SHA-256 and verified field allowlists. */
 // Injected by scripts/build_kemai_gateway.py from kemai_pipeline/acceptance.json.
@@ -162,7 +162,8 @@ export default async function kemaiSyncGateway(p, context) {
   const writeRows=async(tx,rows)=>{
     const keys=rows.map(r=>r.source_key),where={tenant_id:{$eq:TENANT},[key]:{$in:keys}};
     if(kind)where.document_kind={$eq:kind};
-    const current=await read(tx,table,where,200,['id',key,'payload_hash',dayField,...(p.stream==='retail-orders'?['payload']:[])]);
+    const purchase=!!kind;
+    const current=await read(tx,table,where,200,['id',key,'payload_hash',dayField,...(purchase?['source_list_hash']:[]),...(p.stream==='retail-orders'?['payload']:[])]);
     const rawCurrent=await read(tx,'source_capture',{...scope,source_key:{$in:keys}},200,['id','source_key','payload_hash']);
     const byKey=new Map(current.map(r=>[String(r[key]),r]));
     const rawByKey=new Map(rawCurrent.map(r=>[String(r.source_key),r]));
@@ -171,7 +172,7 @@ export default async function kemaiSyncGateway(p, context) {
     for(const row of rows){
       const old=byKey.get(row.source_key),oldRaw=rawByKey.get(row.source_key);
       if(row.data==null){
-        if(!old||!oldRaw||old.payload_hash!==row.expected_hash||oldRaw.payload_hash!==row.expected_hash)throw new Error('OBSERVED_ROW_CHANGED');
+        if(!old||!oldRaw||(purchase?old.source_list_hash:old.payload_hash)!==row.expected_hash||oldRaw.payload_hash!==row.expected_hash)throw new Error('OBSERVED_ROW_CHANGED');
         const sourceDay=typeof old[dayField]==='number'?new Date(old[dayField]+8*3600000).toISOString().slice(0,10):String(old[dayField]||'').slice(0,10);
         if(sourceDay!==p.window_key)throw new Error('ROW_OUTSIDE_WINDOW');
         unchanged++;continue;
@@ -187,8 +188,14 @@ export default async function kemaiSyncGateway(p, context) {
       }
       const capture={tenant_id:TENANT,stream:p.stream,source_key:row.source_key,payload:data.payload,
         payload_hash:data.payload_hash,source_version:raw.version==null?null:String(raw.version),captured_at:Date.now()};
-      if(!old)adds.push(data);
-      else if(old.payload_hash!==data.payload_hash)updates.push({id:old.id,...data});
+      if(!old)adds.push(purchase?{...data,source_list_hash:data.payload_hash}:data);
+      else if(purchase&&old.source_list_hash!==data.payload_hash){
+        // Legacy parent payload may contain full detail. List refresh updates
+        // mapped header fields and its own hash without destroying that detail.
+        const {payload,payload_hash,...header}=data;
+        updates.push({id:old.id,...header,source_list_hash:data.payload_hash});
+      }
+      else if(!purchase&&old.payload_hash!==data.payload_hash)updates.push({id:old.id,...data});
       else unchanged++;
       if(!oldRaw)rawAdds.push(capture);
       else if(oldRaw.payload_hash!==capture.payload_hash)rawUpdates.push({id:oldRaw.id,...capture});
@@ -198,6 +205,17 @@ export default async function kemaiSyncGateway(p, context) {
     await bulk(table,adds);await bulk('source_capture',rawAdds);
     for(const row of updates)await m(tx,table).update(row);
     for(const row of rawUpdates)await m(tx,'source_capture').update(row);
+    if(purchase){
+      // The model API can acknowledge an update while silently dropping a newly
+      // added, not-yet-analyzed column. Confirm persistence before the receipt
+      // transaction commits; otherwise a false complete window would result.
+      const saved=await read(tx,table,where,200,[key,'source_list_hash']);
+      const hashes=new Map(saved.map(r=>[String(r[key]),r.source_list_hash]));
+      for(const row of rows){
+        const wanted=row.data==null?row.expected_hash:row.data.payload_hash;
+        if(hashes.get(row.source_key)!==wanted)throw new Error('PERSISTED_LIST_HASH_MISMATCH');
+      }
+    }
     return {inserted:adds.length,updated:updates.length,unchanged,metadata_only_unchanged:metadataOnly};
   };
   if(p.op==='validate'){

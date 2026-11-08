@@ -13,7 +13,13 @@ CACHE=ROOT/'.kemai-artifacts'/'legacy-coverage.json'
 
 
 def paths_for(stream):
-    return sorted(set(ROOT.glob(f'kemai*{stream}*.log'))|set((ROOT/'kemai_collection_logs').rglob(f'commerce:{stream}*.log')))
+    paths=set(ROOT.glob(f'kemai*{stream}*.log'))
+    for directory in (ROOT/'.runtime/logs',ROOT/'.local-audits/logs-run2-2026-11-08'):
+        if directory.exists():
+            paths.update(directory.rglob(f'kemai*{stream}*.log'))
+    for directory in (ROOT/'kemai_collection_logs',ROOT/'.runtime/logs/collection'):
+        if directory.exists():paths.update(directory.rglob(f'commerce:{stream}*.log'))
+    return sorted(paths)
 
 
 def extract(stream,paths):

@@ -126,7 +126,8 @@ export default async function kemaiSyncGateway(p, context) {
   const writeRows=async(tx,rows)=>{
     const keys=rows.map(r=>r.source_key),where={tenant_id:{$eq:TENANT},[key]:{$in:keys}};
     if(kind)where.document_kind={$eq:kind};
-    const current=await read(tx,table,where,200,['id',key,'payload_hash',dayField,...(p.stream==='retail-orders'?['payload']:[])]);
+    const purchase=!!kind;
+    const current=await read(tx,table,where,200,['id',key,'payload_hash',dayField,...(purchase?['source_list_hash']:[]),...(p.stream==='retail-orders'?['payload']:[])]);
     const rawCurrent=await read(tx,'source_capture',{...scope,source_key:{$in:keys}},200,['id','source_key','payload_hash']);
     const byKey=new Map(current.map(r=>[String(r[key]),r]));
     const rawByKey=new Map(rawCurrent.map(r=>[String(r.source_key),r]));
@@ -135,7 +136,7 @@ export default async function kemaiSyncGateway(p, context) {
     for(const row of rows){
       const old=byKey.get(row.source_key),oldRaw=rawByKey.get(row.source_key);
       if(row.data==null){
-        if(!old||!oldRaw||old.payload_hash!==row.expected_hash||oldRaw.payload_hash!==row.expected_hash)throw new Error('OBSERVED_ROW_CHANGED');
+        if(!old||!oldRaw||(purchase?old.source_list_hash:old.payload_hash)!==row.expected_hash||oldRaw.payload_hash!==row.expected_hash)throw new Error('OBSERVED_ROW_CHANGED');
         const sourceDay=typeof old[dayField]==='number'?new Date(old[dayField]+8*3600000).toISOString().slice(0,10):String(old[dayField]||'').slice(0,10);
         if(sourceDay!==p.window_key)throw new Error('ROW_OUTSIDE_WINDOW');
         unchanged++;continue;
@@ -151,8 +152,14 @@ export default async function kemaiSyncGateway(p, context) {
       }
       const capture={tenant_id:TENANT,stream:p.stream,source_key:row.source_key,payload:data.payload,
         payload_hash:data.payload_hash,source_version:raw.version==null?null:String(raw.version),captured_at:Date.now()};
-      if(!old)adds.push(data);
-      else if(old.payload_hash!==data.payload_hash)updates.push({id:old.id,...data});
+      if(!old)adds.push(purchase?{...data,source_list_hash:data.payload_hash}:data);
+      else if(purchase&&old.source_list_hash!==data.payload_hash){
+        // Legacy parent payload may contain full detail. List refresh updates
+        // mapped header fields and its own hash without destroying that detail.
+        const {payload,payload_hash,...header}=data;
+        updates.push({id:old.id,...header,source_list_hash:data.payload_hash});
+      }
+      else if(!purchase&&old.payload_hash!==data.payload_hash)updates.push({id:old.id,...data});
       else unchanged++;
       if(!oldRaw)rawAdds.push(capture);
       else if(oldRaw.payload_hash!==capture.payload_hash)rawUpdates.push({id:oldRaw.id,...capture});
@@ -162,6 +169,17 @@ export default async function kemaiSyncGateway(p, context) {
     await bulk(table,adds);await bulk('source_capture',rawAdds);
     for(const row of updates)await m(tx,table).update(row);
     for(const row of rawUpdates)await m(tx,'source_capture').update(row);
+    if(purchase){
+      // The model API can acknowledge an update while silently dropping a newly
+      // added, not-yet-analyzed column. Confirm persistence before the receipt
+      // transaction commits; otherwise a false complete window would result.
+      const saved=await read(tx,table,where,200,[key,'source_list_hash']);
+      const hashes=new Map(saved.map(r=>[String(r[key]),r.source_list_hash]));
+      for(const row of rows){
+        const wanted=row.data==null?row.expected_hash:row.data.payload_hash;
+        if(hashes.get(row.source_key)!==wanted)throw new Error('PERSISTED_LIST_HASH_MISMATCH');
+      }
+    }
     return {inserted:adds.length,updated:updates.length,unchanged,metadata_only_unchanged:metadataOnly};
   };
   if(p.op==='validate'){

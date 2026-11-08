@@ -12,7 +12,7 @@
 
 ## 先读与当前边界
 
-- 项目根目录：`/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market`。资产、历史数字和数据口径见 [项目简报](../PROJECT-BRIEF.md)、[结论报告](kemai-sync-conclusion-2026-11-07.md)、[采购零售实现说明](../README-commerce.md) 与 [同步状态说明](../README-sync-status.md)。这些是历史证据，不能代替新的数据库审计。
+- 项目根目录：`/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market`。资产、历史数字和数据口径见 [项目简报](../PROJECT-BRIEF.md)、[结论报告](kemai-sync-conclusion-2026-11-07.md)、[采购零售实现说明](legacy/README-commerce.md) 与 [同步状态说明](legacy/README-sync-status.md)。这些是历史证据，不能代替新的数据库审计。
 - 17:10 本地状态：日常 supervisor PID `40069`、`watching`、`last_complete_day=2026-11-06`；限流状态 `ready`；零售详情/支付 worker 为 `paused_by_user`。PID 是快照值，每次以状态文件加 `ps` 为准。下一完整源日为 2026-11-07，日常进程预计从 11 月 8 日凌晨 2 点后的轮询开始处理。
 - 本机 13 条 `opencli kemai` 命令与项目 Python 源入口共用[源请求协调器](kemai-source-gate.md)：一次只跑一个参与协调的逻辑源操作，前次结束后至少 2 秒，限流后静默 30 分钟。直接手工 `opencli browser` 不自动受控，须通过 `python3 kemai_source_gate.py run -- opencli browser ...`。页面导航的静态资源和自动请求不按单条 HTTP 计数。
 - 日常任务已运行。接手 Agent **不要再起第二个 supervisor，也不要在未检查进程、检查点和限流状态时手工并发采集**。零售详情及支付补采仍按此前用户指令暂停；本交接不授权启动该 worker。
@@ -28,7 +28,7 @@
 | 零售订单/销售流水 | 单头与逐商品流水分页一次；分别用导出任务 `totalRows` 核对；流水经 `kemai_retail_lines_from_flows.py` 在本库映射为订单商品行 | 原订单详情独有字段与支付流水未全量采集。2 条支付只是初始采样；详情 worker 保持暂停 |
 | 已完成旧日期的变更 | 商品清单每天比对，变化商品会刷新 | **交易日常 supervisor 只从下一未完成日向前推进**。脚本独立调用且不传 `--from` 才默认回看 30 天；旧日期单据变更需要新建独立对账模式和检查点 |
 
-表中约数来自 2026-11-07 04:11 的[完整性快照](../kemai_integrity_final_2026-11-07.json)。该快照的零售商品行仍为映射前 4 条；先前只读核验输出为 453,971 条匹配，但尚无落盘核验文件。缺口 686 条也是该时点快照，不作为实时待办数。
+表中约数来自 2026-11-07 04:11 的[完整性快照](../.local-audits/archive/2026-11-08/kemai_integrity_final_2026-11-07.json)。该快照的零售商品行仍为映射前 4 条；先前只读核验输出为 453,971 条匹配，但尚无落盘核验文件。缺口 686 条也是该时点快照，不作为实时待办数。
 
 ## 执行计划
 

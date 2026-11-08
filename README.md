@@ -8,23 +8,27 @@
 - 公共内核与零售两条流的列表链路已通过真实闭环验证；采购、商品、Excel 首录仍在迁移。
 - 可写流以 `kemai_pipeline/acceptance.json` 为唯一白名单（当前 `retail-sales`、`retail-orders`）。
 - 常驻采集未启用；零售原详情/支付按用户要求暂停。
-- 根目录旧脚本是迁移期保留的 legacy 入口，不是当前推荐路径。
+- 旧 MySQL 脚本集中在 `legacy/`，默认禁用，仅用于迁移核对与受控维护。
 
 ## 目录地图
 
 | 路径 | 用途 |
 |---|---|
-| `kemai_pipeline/` | 能力表、planner/runner、源与数据中心端口、标准 API 网关（`js/`）|
+| `kemai_pipeline/` | 能力表、planner/runner、源与数据中心端口、限流与项目路径、标准 API 网关（`js/`）|
 | `kemai_syncctl.py` | 操作入口：`capabilities/status/gaps/history/incremental/resume/abandon` |
 | `kemai_pipeline_service.py` | 前台服务包装（当前仅零售，未启用）|
+| `kemai_source_gate.py` | 共享源协调器兼容入口；实现在 `kemai_pipeline/source_gate.py` |
 | `kemai_opencli/` | 科迈源适配器（需同步到 `~/.opencli/clis/kemai/`）|
+| `legacy/` | 旧 MySQL 写入器、supervisor、补采与审计脚本；不要启动旧采集 |
 | `scripts/` | 网关构建与受控验证脚本 |
-| `tests/pipeline/` | Node 测试；根目录 `test_kemai*.py` 为 Python 测试 |
-| `db/migrations/` | 未被代码引用的 DDL（`schema.sql`、`schema_pipeline*.sql` 等）|
-| `.runtime/` | 历史日志、PID、一次性运行标记（私有，已忽略）|
+| `tests/python/` | Python 离线测试；`tests/pipeline/` 为 Node 测试 |
+| `db/` | 代码仍引用的 DDL；`db/migrations/` 保存一次性迁移与隔离验收 DDL |
+| `.runtime/` | 状态、日志、锁、PID 与一次性运行标记（私有，已忽略）|
 | `.local-audits/` | 审计与归档证据（私有，已忽略）|
+| `.kemai-artifacts/` | 私有不可变源捕获与恢复工件，不是临时缓存 |
 | `.samples/` | 私有 CSV/XLSX 样本（已忽略）|
 | `docs/` | 方案、运行报告与交接记录；`PROJECT-BRIEF.md` 为历史快照导航 |
+| `docs/legacy/` | 旧版 README、早期设计和运行说明，仅作历史证据 |
 
 ## 常用命令
 
@@ -49,7 +53,7 @@ python3 scripts/build_kemai_gateway.py
 2. `docs/kemai-data-sync-target-architecture-2026-11-08.md`：目标分层与数据契约。
 3. `docs/kemai-standard-api-delivery-2026-11-08.md`：已落地范围与真实验证证据。
 4. `docs/kemai-pipeline-operations-2026-11-08.md`：操作与回退。
-5. `docs/kemai-repository-cleanup-plan-2026-11-08.md` + 本目录整理报告：目录治理。
+5. `docs/kemai-repository-cleanup-plan-2026-11-08.md` + `docs/kemai-repository-cleanup-result-2026-11-08.md`：目录治理与本次整理结果。
 
 ## 硬约束
 

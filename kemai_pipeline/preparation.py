@@ -26,9 +26,10 @@ def prepare_ingestion(store,state,center):
         chunk=source[offset:offset+500];keys=[r['source_key'] for r in chunk]
         condition={key:{'$in':keys}}
         if state['stream'] in KINDS:condition['document_kind']={'$eq':KINDS[state['stream']]}
-        business,_=center.page(table,where=condition,select=[key,'payload_hash'],size=500)
+        business_hash_field='source_list_hash' if state['stream'] in KINDS else 'payload_hash'
+        business,_=center.page(table,where=condition,select=[key,business_hash_field],size=500)
         raw,_=center.page('source_capture',where={'stream':{'$eq':state['stream']},'source_key':{'$in':keys}},select=['source_key','payload_hash'],size=500)
-        business_hash={r[key]:r['payload_hash'] for r in business};raw_hash={r['source_key']:r['payload_hash'] for r in raw}
+        business_hash={r[key]:r.get(business_hash_field) for r in business};raw_hash={r['source_key']:r['payload_hash'] for r in raw}
         for row in chunk:
             expected=row['data']['payload_hash'];source_key=row['source_key']
             if business_hash.get(source_key)==raw_hash.get(source_key)==expected:

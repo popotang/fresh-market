@@ -1,8 +1,0 @@
-commerce schema ready: 13 tables
-purchase-receipts 2026-11-07 single_scan_total=34
-purchase-receipts 2026-11-07 saved=10/34
-purchase-receipts 2026-11-07 saved=20/34
-purchase-receipts 2026-11-07 saved=30/34
-purchase-receipts 2026-11-07 verified captured_total=34
-purchase-receipts 2026-11-07 pages=1 saved=34
-{"counts":{"purchase-receipts":34},"run_id":55}

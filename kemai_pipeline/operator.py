@@ -9,7 +9,7 @@ from .locking import writer_lock
 from .source import OpenCLISource, SourceCooling, SourceError
 from .state import stream_state
 from .workflow import WindowWorkflow
-from kemai_source_gate import cooldown_until, gate_dir
+from .source_gate import cooldown_until, gate_dir
 
 ROOT=Path(__file__).resolve().parents[1]
 

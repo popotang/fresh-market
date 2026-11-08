@@ -35,7 +35,8 @@ class LovrabetAdapter:
                      "DATABASE_WINDOW_COUNT_MISMATCH", "WRITE_ACCEPTANCE_REQUIRED", "STREAM_ACCEPTANCE_REQUIRED",
                      "BATCH_BYTE_LIMIT", "BATCH_ROW_LIMIT", "ROW_OUTSIDE_WINDOW", "INCOMPLETE_MODEL_READ",
                      "OBSERVED_ROW_CHANGED", "WINDOW_MANIFEST_CONFLICT", "INCOMPLETE_BATCH_MANIFEST_READ",
-                     "BUSINESS_ROWS_MISSING", "WINDOW_ROW_BUDGET", "INVALID_OBSERVATION_HASH")
+                     "BUSINESS_ROWS_MISSING", "WINDOW_ROW_BUDGET", "INVALID_OBSERVATION_HASH",
+                     "PERSISTED_LIST_HASH_MISMATCH")
             signal = result.stderr or ""
             code = next((code for code in known if code in signal), "INVALID_CLI_ENVELOPE")
             if "Statement count limit" in signal: code = "SERVER_STATEMENT_LIMIT"

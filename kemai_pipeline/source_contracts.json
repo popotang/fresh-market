@@ -17,6 +17,11 @@
     "total_record_evidence": "2026-11-08 sample: reported_total_rows=0 while 20 rows returned",
     "late_modification_observed": "orders created 2026-11-07 carried gmtModified/approveTime on 2026-11-08",
     "must_be_empty": ["keyword", "itemPackId", "status"],
+    "stream_fixed_filters": {
+      "purchase-orders": {},
+      "purchase-receipts": {"queryType": "0"},
+      "purchase-returns": {}
+    },
     "window_fields": ["operDateFrom", "operDateTo"],
     "verified_at": "2026-11-08",
     "feedback": {
