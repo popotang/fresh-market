@@ -1,0 +1,44 @@
+{
+  "supervisor_pid": null,
+  "status": "paused_by_user",
+  "target_complete_day": "2026-11-06",
+  "days": {
+    "2026-11-06": {
+      "purchase-orders": {
+        "status": "success",
+        "from": "2026-11-07",
+        "rows": 0
+      },
+      "purchase-receipts": {
+        "status": "success",
+        "from": "2026-11-07",
+        "rows": 0
+      },
+      "purchase-returns": {
+        "status": "success",
+        "from": "2026-11-07",
+        "rows": 0
+      },
+      "retail-orders": {
+        "status": "success",
+        "from": "2026-11-07",
+        "rows": 0
+      },
+      "retail-sales": {
+        "status": "success",
+        "from": "2026-11-07",
+        "rows": 0
+      },
+      "purchase-receive-history": {
+        "status": "success",
+        "from": "2026-11-07",
+        "rows": 0
+      }
+    }
+  },
+  "last_complete_day": "2026-11-06",
+  "stopped_pid": 40069,
+  "paused_at": "2026-11-08T01:10:18+08:00",
+  "pause_reason": "User requested daily incremental pause before DeepSeek-led full and two-day catch-up",
+  "source_worker_running": false
+}

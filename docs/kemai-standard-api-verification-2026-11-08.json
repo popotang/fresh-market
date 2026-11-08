@@ -1,0 +1,342 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-11-08T20:53:40.147313+08:00",
+  "scope": "Core standard-API pipeline and retail acceptance; not completion of all domain migrations",
+  "data_write_backend": "Lovrabet standard model APIs with transaction; no Custom SQL",
+  "source_scope": {
+    "branch_code": "1001",
+    "all_merchant_branches_proven": false
+  },
+  "isolated_integration": {
+    "complete": true,
+    "cases": [
+      {
+        "name": "first_and_retry",
+        "passed": true,
+        "elapsed_seconds": [
+          1.046,
+          0.823
+        ]
+      },
+      {
+        "name": "same_id_changed_payload",
+        "passed": true,
+        "elapsed_seconds": [
+          0.692
+        ]
+      },
+      {
+        "name": "invalid_digest",
+        "passed": true,
+        "elapsed_seconds": [
+          0.647
+        ]
+      },
+      {
+        "name": "concurrent_same_batch",
+        "passed": true,
+        "elapsed_seconds": [
+          0.975,
+          0.917,
+          0.673
+        ]
+      },
+      {
+        "name": "concurrent_conflicting_payload",
+        "passed": true,
+        "elapsed_seconds": [
+          0.909,
+          0.95,
+          0.683
+        ]
+      },
+      {
+        "name": "write_rollback",
+        "passed": true,
+        "elapsed_seconds": [
+          0.847,
+          0.671,
+          0.688
+        ]
+      },
+      {
+        "name": "update_existing",
+        "passed": true,
+        "elapsed_seconds": [
+          0.885
+        ]
+      },
+      {
+        "name": "incomplete_manifest",
+        "passed": true,
+        "elapsed_seconds": [
+          0.759
+        ]
+      },
+      {
+        "name": "window_rollback",
+        "passed": true,
+        "elapsed_seconds": [
+          0.81,
+          0.693
+        ]
+      },
+      {
+        "name": "window_commit_retry",
+        "passed": true,
+        "elapsed_seconds": [
+          0.816,
+          0.717
+        ]
+      },
+      {
+        "name": "capacity_10",
+        "passed": true,
+        "elapsed_seconds": [
+          0.895,
+          0.714
+        ]
+      },
+      {
+        "name": "capacity_50",
+        "passed": true,
+        "elapsed_seconds": [
+          0.947,
+          0.696
+        ]
+      },
+      {
+        "name": "capacity_100",
+        "passed": true,
+        "elapsed_seconds": [
+          1.083,
+          0.688
+        ]
+      },
+      {
+        "name": "capacity_200",
+        "passed": true,
+        "elapsed_seconds": [
+          1.123,
+          0.694
+        ]
+      },
+      {
+        "name": "update_capacity_50",
+        "passed": true,
+        "elapsed_seconds": [
+          2.725,
+          0.712
+        ]
+      },
+      {
+        "name": "update_capacity_200",
+        "passed": true,
+        "elapsed_seconds": [
+          8.27,
+          0.671
+        ]
+      },
+      {
+        "name": "reject_201",
+        "passed": true,
+        "elapsed_seconds": [
+          0.673
+        ]
+      },
+      {
+        "name": "reject_64000_bytes",
+        "passed": true,
+        "elapsed_seconds": [
+          0.664
+        ]
+      }
+    ]
+  },
+  "local_tests": {
+    "python_tests": 142,
+    "python_passed": true,
+    "node_tests": 21,
+    "node_failed": 0
+  },
+  "business_rollback": [
+    {
+      "stream": "retail-sales",
+      "result": {
+        "source_requests": 0,
+        "inserted": 0,
+        "validated": true,
+        "unchanged": 0,
+        "rolled_back": true,
+        "updated": 1
+      },
+      "business_row_unchanged": true
+    },
+    {
+      "stream": "retail-orders",
+      "result": {
+        "source_requests": 0,
+        "inserted": 0,
+        "validated": true,
+        "unchanged": 0,
+        "rolled_back": true,
+        "updated": 1
+      },
+      "business_row_unchanged": true
+    }
+  ],
+  "observation_capacity": {
+    "case": "200_hash_observations",
+    "elapsed_seconds": 1.324,
+    "records_bytes": 24001,
+    "result": {
+      "inserted": 0,
+      "rolled_back": true,
+      "source_requests": 0,
+      "unchanged": 200,
+      "updated": 0,
+      "validated": true
+    },
+    "scope": "existing_business_rows_forced_rollback",
+    "source_requests": 0
+  },
+  "production_stream_exclusion": {
+    "competing_capture_created": false,
+    "passed": true,
+    "rejected": "STREAM_BUSY_RESUME_ACTIVE_CAPTURE",
+    "source_requests": 0
+  },
+  "real_captures": [
+    {
+      "capture_id": "bbee5c3932a944faa0b99e23d6b5cb91",
+      "stream": "retail-sales",
+      "window_key": "2026-11-06",
+      "state": "committed",
+      "source_pages": 14,
+      "source_rows": 13047,
+      "committed_batches": 690,
+      "verification_method": "export_total_and_capture",
+      "export_total": 13047,
+      "source_observed_at": "2026-11-08T11:36:21.373Z",
+      "source_operations_during_resume": 0,
+      "counts": {
+        "inserted": 0,
+        "updated": 0,
+        "unchanged": 13047,
+        "metadata_only_unchanged": 0
+      },
+      "database_audit": {
+        "business_differences": 0,
+        "business_writes": 0,
+        "capture_id": "bbee5c3932a944faa0b99e23d6b5cb91",
+        "changed_hashes": 0,
+        "comparison_policy": "exact_payload_hash",
+        "data_center_requests": 28,
+        "day": "2026-11-06",
+        "db_keyset_digest": "bc3d0acfe3531971ff4e91bd98b051daa66df183357457eca43a7046faac490e",
+        "db_rows": 13047,
+        "extra": 0,
+        "metadata_only_differences": 0,
+        "missing": 0,
+        "passed": true,
+        "schema_version": 1,
+        "source_keyset_digest": "bc3d0acfe3531971ff4e91bd98b051daa66df183357457eca43a7046faac490e",
+        "source_requests": 0,
+        "source_rows": 13047,
+        "stream": "retail-sales"
+      }
+    },
+    {
+      "capture_id": "e635123f8a3845268d80a9f15f2e2c7d",
+      "stream": "retail-orders",
+      "window_key": "2026-11-07",
+      "state": "committed",
+      "source_pages": 6,
+      "source_rows": 5228,
+      "committed_batches": 228,
+      "verification_method": "reused_export_total_and_capture",
+      "export_total": 5228,
+      "source_observed_at": "2026-11-08T12:23:57.401Z",
+      "source_operations_during_resume": 1,
+      "counts": {
+        "inserted": 0,
+        "updated": 2642,
+        "unchanged": 2586,
+        "metadata_only_unchanged": 2586
+      },
+      "database_audit": {
+        "business_differences": 0,
+        "business_writes": 0,
+        "capture_id": "e635123f8a3845268d80a9f15f2e2c7d",
+        "changed_hashes": 2586,
+        "comparison_policy": "retail-order-query-metadata-v1",
+        "data_center_requests": 18,
+        "day": "2026-11-07",
+        "db_keyset_digest": "5faeea26f368fa5c119ff9f638f34497038ac2ba079e160792d2054c33ea476f",
+        "db_rows": 5228,
+        "extra": 0,
+        "metadata_only_differences": 2586,
+        "missing": 0,
+        "passed": true,
+        "schema_version": 1,
+        "source_keyset_digest": "5faeea26f368fa5c119ff9f638f34497038ac2ba079e160792d2054c33ea476f",
+        "source_requests": 0,
+        "source_rows": 5228,
+        "stream": "retail-orders"
+      }
+    }
+  ],
+  "product_source_smoke": [
+    {
+      "command": "product-list",
+      "passed": true,
+      "rows": 1
+    },
+    {
+      "command": "product-detail",
+      "envelopes": 1,
+      "passed": true
+    },
+    {
+      "command": "product-section",
+      "envelopes": 1,
+      "passed": true
+    },
+    {
+      "command": "master-list",
+      "envelopes": 1,
+      "passed": true
+    }
+  ],
+  "legacy_upload_day_verification": {
+    "stream": "retail-sales",
+    "verified_days": 99,
+    "issues": [],
+    "source_requests": 0,
+    "db_writes": 0
+  },
+  "indexes": {
+    "retail_sale_flows": [
+      "tenant_id",
+      "source_created_at"
+    ],
+    "retail_orders": [
+      "tenant_id",
+      "source_created_at"
+    ]
+  },
+  "db_analysis_plan": "c518c100-e963-4074-bf6a-c3fa5a6edaa4",
+  "db_analysis_status": "SUCCESS",
+  "scheduler_started": false,
+  "retail_detail_payment_pause_preserved": true,
+  "remaining": [
+    "procurement/receipt-history standard writer acceptance",
+    "product catalog/object/typed-child queue migration",
+    "retail lines derived from flows via standard APIs",
+    "Excel data-import mappings",
+    "source-only comparison command",
+    "service deployment and customer UI integration",
+    "multi-host lease/fencing",
+    "exact HTTP request accounting"
+  ]
+}

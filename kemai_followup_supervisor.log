@@ -1,0 +1,52 @@
+started purchase-receipts pid=89886 attempt=1
+started retail-sales pid=89887 attempt=1
+finished purchase-receipts exit=-15
+started purchase-receive-history pid=91570 attempt=1
+finished item_incremental exit=0
+finished retail-sales exit=-15
+started purchase-orders pid=5587 attempt=1
+finished purchase-receive-history exit=-15
+started purchase-returns pid=11166 attempt=1
+finished purchase-orders exit=-15
+finished purchase-returns exit=-15
+started retail-orders pid=13411 attempt=1
+started purchase-receipts pid=13412 attempt=2
+finished retail-orders exit=-15
+started retail-sales pid=14663 attempt=2
+finished retail-sales exit=1
+started purchase-receive-history pid=17640 attempt=2
+finished purchase-receipts exit=-15
+started purchase-orders pid=17882 attempt=2
+waiting for active baseline worker pid=35453
+waiting for active baseline worker pid=36424
+baseline worker pid=36424 exited; continuing serially
+started item_incremental pid=36529 attempt=1
+finished item_incremental exit=1
+started item_incremental pid=36724 attempt=2
+finished item_incremental exit=1
+started item_incremental pid=36914 attempt=3
+finished item_incremental exit=1
+started purchase-receive-history pid=36916 attempt=1
+finished purchase-receive-history exit=1
+started purchase-receive-history pid=37789 attempt=2
+finished purchase-receive-history exit=0
+started purchase-receipts pid=38154 attempt=1
+finished purchase-receipts exit=0
+started retail-sales pid=39249 attempt=1
+started item_incremental pid=48751 attempt=1
+finished item_incremental exit=0
+started item_detail_refresh pid=50080 attempt=1
+finished item_detail_refresh exit=0
+started item_tabs_refresh pid=50264 attempt=1
+finished item_tabs_refresh exit=0
+skipped completed purchase-receive-history
+skipped completed purchase-receipts
+started retail-sales pid=51243 attempt=1
+finished retail-sales exit=0
+started purchase-orders pid=56962 attempt=1
+finished purchase-orders exit=0
+started purchase-returns pid=63099 attempt=1
+finished purchase-returns exit=0
+started retail-orders pid=68861 attempt=1
+finished retail-orders exit=0
+followup complete status=success failed=[]

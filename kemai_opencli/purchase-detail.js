@@ -1,0 +1,3 @@
+import { cli, Strategy } from '@jackwener/opencli/registry';
+import { detail } from './utils.js';
+cli({site:'kemai',name:'purchase-detail',access:'read',description:'采购订单/收货/退货单头与明细',domain:'yunfan.kemai.com.cn',strategy:Strategy.COOKIE,browser:true,navigateBefore:false,args:[{name:'kind',type:'string',required:true,help:'order|receipt|return'},{name:'id',type:'string',required:true,help:'源单据 ID'}],columns:['id','sheetNo','supplierId','branchId','status'],func:(page,args)=>{const kinds={order:'purchase-orders',receipt:'purchase-receipts',return:'purchase-returns'};return detail(page,args,kinds[args.kind]||'invalid')}});

@@ -1,0 +1,81 @@
+changed items to refresh=142
+refreshed details 2/142
+refreshed details 4/142
+refreshed details 6/142
+refreshed details 8/142
+refreshed details 10/142
+refreshed details 12/142
+refreshed details 14/142
+refreshed details 16/142
+refreshed details 18/142
+refreshed details 20/142
+refreshed details 22/142
+refreshed details 24/142
+refreshed details 26/142
+refreshed details 28/142
+refreshed details 30/142
+refreshed details 32/142
+refreshed details 34/142
+refreshed details 36/142
+refreshed details 38/142
+refreshed details 40/142
+refreshed details 42/142
+refreshed details 44/142
+refreshed details 46/142
+refreshed details 48/142
+refreshed details 50/142
+refreshed details 52/142
+refreshed details 54/142
+refreshed details 56/142
+refreshed details 58/142
+refreshed details 60/142
+refreshed details 62/142
+refreshed details 64/142
+refreshed details 66/142
+refreshed details 68/142
+refreshed details 70/142
+refreshed details 72/142
+refreshed details 74/142
+refreshed details 76/142
+refreshed details 78/142
+refreshed details 80/142
+refreshed details 82/142
+Traceback (most recent call last):
+  File "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/kemai_changed_refresh.py", line 58, in main
+    raise RuntimeError(f'bad detail response for {item_id}')
+RuntimeError: bad detail response for 2108439324719423614
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/kemai_changed_refresh.py", line 82, in main
+    conn.rollback()
+    ~~~~~~~~~~~~~^^
+  File "/opt/homebrew/lib/python3.14/site-packages/pymysql/connections.py", line 512, in rollback
+    self._read_ok_packet()
+    ~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/lib/python3.14/site-packages/pymysql/connections.py", line 472, in _read_ok_packet
+    pkt = self._read_packet()
+  File "/opt/homebrew/lib/python3.14/site-packages/pymysql/connections.py", line 772, in _read_packet
+    packet_header = self._read_bytes(4)
+  File "/opt/homebrew/lib/python3.14/site-packages/pymysql/connections.py", line 826, in _read_bytes
+    raise err.OperationalError(
+        CR.CR_SERVER_LOST, "Lost connection to MySQL server during query"
+    )
+pymysql.err.OperationalError: (2013, 'Lost connection to MySQL server during query')
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/kemai_changed_refresh.py", line 110, in <module>
+    main()
+    ~~~~^^
+  File "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/kemai_changed_refresh.py", line 101, in main
+    conn.rollback()
+    ~~~~~~~~~~~~~^^
+  File "/opt/homebrew/lib/python3.14/site-packages/pymysql/connections.py", line 511, in rollback
+    self._execute_command(COMMAND.COM_QUERY, "ROLLBACK")
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.14/site-packages/pymysql/connections.py", line 865, in _execute_command
+    raise err.InterfaceError(0, "")
+pymysql.err.InterfaceError: (0, '')

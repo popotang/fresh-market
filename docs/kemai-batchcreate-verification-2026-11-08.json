@@ -1,0 +1,19 @@
+{
+  "appcode": "app-21522951",
+  "dblink_id": 10510,
+  "function": "kemaiSyncRollbackProbe",
+  "remote_id": 3855,
+  "command": "lovrabet bff exec --name kemaiSyncRollbackProbe --params '{\"action\":\"rollback_probe\"}' --appcode app-21522951 --format json",
+  "observed_result": {
+    "schema_version": 1,
+    "source_requests": 0,
+    "cleaned_rows": 0,
+    "residual_after_rollback": 0,
+    "inserted": 2,
+    "rollback_verified": true,
+    "marker": "probe_1794134944268_bdcuos58",
+    "scope": "same-dblink batchCreate rollback; does not prove batch idempotency or window commit",
+    "write_api": "tx.models.batchCreate"
+  },
+  "unverified": ["large_batch_capacity", "batch_receipt_idempotency", "concurrent_writers", "window_commit"]
+}

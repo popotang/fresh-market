@@ -1,0 +1,1968 @@
+{
+  "version": "1.0.0",
+  "componentsMap": [
+    {
+      "package": "@yuntoo/antd-meta",
+      "version": "1.0.0",
+      "main": "",
+      "destructuring": true,
+      "exportName": "YtPage",
+      "componentName": "YtPage"
+    },
+    {
+      "devMode": "lowCode",
+      "componentName": "Page"
+    },
+    {
+      "package": "@yuntoo/antd-smart",
+      "version": "1.0.0",
+      "main": "",
+      "destructuring": true,
+      "exportName": "LrSmartFilter",
+      "componentName": "LrSmartFilter"
+    },
+    {
+      "package": "@yuntoo/antd-smart",
+      "version": "1.0.0",
+      "main": "",
+      "destructuring": true,
+      "exportName": "LrSmartTable",
+      "componentName": "LrSmartTable"
+    },
+    {
+      "package": "@yuntoo/antd-meta",
+      "version": "1.0.0",
+      "main": "",
+      "destructuring": true,
+      "exportName": "YtRglContainer",
+      "componentName": "YtRglContainer"
+    }
+  ],
+  "componentsTree": [
+    {
+      "componentName": "Page",
+      "id": "node_rba1d6ge",
+      "props": {
+        "ref": "outerView",
+        "style": {
+          "height": "100%"
+        }
+      },
+      "dataSource": {
+        "list": [
+          {
+            "type": "urlParams",
+            "id": "urlParams",
+            "isInit": true,
+            "source": "system",
+            "options": {}
+          },
+          {
+            "type": "fetch",
+            "id": "1022458_filter",
+            "isInit": true,
+            "source": "dataset",
+            "options": {
+              "method": "POST",
+              "uri": "/api/app-21522951/9f2033555f88447082c5f66bb73a0c24/filter",
+              "isCors": true,
+              "timeout": 5000,
+              "paramsArr": [
+                {
+                  "name": "pageSize",
+                  "value": "this.state.yttable_weu8upte_pageSize",
+                  "type": "expression",
+                  "required": true
+                },
+                {
+                  "name": "currentPage",
+                  "value": "this.state.yttable_weu8upte_currentPage",
+                  "type": "expression",
+                  "required": true
+                },
+                {
+                  "name": "filter",
+                  "value": "this.state.ytfilter_rw8nogz9_filter",
+                  "type": "expression",
+                  "required": true
+                },
+                {
+                  "name": "sort",
+                  "value": "this.state.yttable_weu8upte_sort",
+                  "type": "expression",
+                  "required": true
+                },
+                {
+                  "name": "select",
+                  "value": [
+                    "id",
+                    "tenant_id",
+                    "source_item_id",
+                    "item_code",
+                    "barcode",
+                    "item_name",
+                    "sub_name",
+                    "item_size",
+                    "status_code",
+                    "lifetime_code",
+                    "retail_price",
+                    "purchase_price",
+                    "source_version",
+                    "source_created_at",
+                    "source_modified_at",
+                    "source_approved_at",
+                    "list_hash",
+                    "detail_hash",
+                    "first_seen_at",
+                    "last_seen_at",
+                    "deleted_at",
+                    "categories.category_name",
+                    "brands.brand_name",
+                    "departments.department_name",
+                    "suppliers.supplier_name",
+                    "units.unit_name"
+                  ],
+                  "type": "array",
+                  "required": true
+                }
+              ],
+              "headersArr": [],
+              "params": {
+                "pageSize": {
+                  "type": "JSExpression",
+                  "value": "this.state.yttable_weu8upte_pageSize"
+                },
+                "currentPage": {
+                  "type": "JSExpression",
+                  "value": "this.state.yttable_weu8upte_currentPage"
+                },
+                "filter": {
+                  "type": "JSExpression",
+                  "value": "this.state.ytfilter_rw8nogz9_filter"
+                },
+                "sort": {
+                  "type": "JSExpression",
+                  "value": "this.state.yttable_weu8upte_sort"
+                },
+                "select": [
+                  "id",
+                  "tenant_id",
+                  "source_item_id",
+                  "item_code",
+                  "barcode",
+                  "item_name",
+                  "sub_name",
+                  "item_size",
+                  "status_code",
+                  "lifetime_code",
+                  "retail_price",
+                  "purchase_price",
+                  "source_version",
+                  "source_created_at",
+                  "source_modified_at",
+                  "source_approved_at",
+                  "list_hash",
+                  "detail_hash",
+                  "first_seen_at",
+                  "last_seen_at",
+                  "deleted_at",
+                  "categories.category_name",
+                  "brands.brand_name",
+                  "departments.department_name",
+                  "suppliers.supplier_name",
+                  "units.unit_name"
+                ]
+              },
+              "requiredParams": [
+                "pageSize",
+                "currentPage"
+              ],
+              "headers": {},
+              "willFetch": {
+                "type": "JSFunction",
+                "value": "({ filter, sort, ...rest }) => ({ ...rest, ...filter, ...sort })"
+              }
+            }
+          },
+          {
+            "type": "fetch",
+            "id": "1022458_delete",
+            "isInit": false,
+            "source": "dataset",
+            "options": {
+              "method": "POST",
+              "uri": "/api/app-21522951/9f2033555f88447082c5f66bb73a0c24/delete",
+              "isCors": true,
+              "timeout": 5000,
+              "requiredParams": [
+                "id"
+              ]
+            }
+          },
+          {
+            "type": "fetch",
+            "id": "1022458_excelExport",
+            "isInit": false,
+            "source": "dataset",
+            "options": {
+              "method": "POST",
+              "uri": "/api/app-21522951/9f2033555f88447082c5f66bb73a0c24/excelExport",
+              "isCors": true,
+              "timeout": 5000,
+              "paramsArr": [
+                {
+                  "name": "filter",
+                  "value": "this.state.ytfilter_rw8nogz9_filter",
+                  "type": "expression",
+                  "required": true
+                },
+                {
+                  "name": "selectKeys",
+                  "value": "this.state.yttable_weu8upte_selectKeys",
+                  "type": "expression",
+                  "required": true
+                },
+                {
+                  "name": "select",
+                  "value": [
+                    "id",
+                    "tenant_id",
+                    "source_item_id",
+                    "item_code",
+                    "barcode",
+                    "item_name",
+                    "sub_name",
+                    "item_size",
+                    "status_code",
+                    "lifetime_code",
+                    "retail_price",
+                    "purchase_price",
+                    "source_version",
+                    "source_created_at",
+                    "source_modified_at",
+                    "source_approved_at",
+                    "list_hash",
+                    "detail_hash",
+                    "first_seen_at",
+                    "last_seen_at",
+                    "deleted_at",
+                    "categories.category_name",
+                    "brands.brand_name",
+                    "departments.department_name",
+                    "suppliers.supplier_name",
+                    "units.unit_name"
+                  ],
+                  "type": "array",
+                  "required": false
+                }
+              ],
+              "headersArr": [],
+              "params": {
+                "filter": {
+                  "type": "JSExpression",
+                  "value": "this.state.ytfilter_rw8nogz9_filter"
+                },
+                "selectKeys": {
+                  "type": "JSExpression",
+                  "value": "this.state.yttable_weu8upte_selectKeys"
+                },
+                "select": [
+                  "id",
+                  "tenant_id",
+                  "source_item_id",
+                  "item_code",
+                  "barcode",
+                  "item_name",
+                  "sub_name",
+                  "item_size",
+                  "status_code",
+                  "lifetime_code",
+                  "retail_price",
+                  "purchase_price",
+                  "source_version",
+                  "source_created_at",
+                  "source_modified_at",
+                  "source_approved_at",
+                  "list_hash",
+                  "detail_hash",
+                  "first_seen_at",
+                  "last_seen_at",
+                  "deleted_at",
+                  "categories.category_name",
+                  "brands.brand_name",
+                  "departments.department_name",
+                  "suppliers.supplier_name",
+                  "units.unit_name"
+                ]
+              },
+              "requiredParams": [],
+              "headers": {},
+              "willFetch": {
+                "type": "JSFunction",
+                "value": "({ filter, selectKeys, select, ...rest }) => ({ ...rest, ...filter, select, ...selectKeys })"
+              }
+            }
+          },
+          {
+            "type": "fetch",
+            "id": "dataset_ad80552eaf1247609459b9b0fd126e1a_source_category_id_options",
+            "isInit": true,
+            "source": "dataset",
+            "options": {
+              "method": "POST",
+              "uri": "/api/app-21522951/ad80552eaf1247609459b9b0fd126e1a/getSelectOptions",
+              "isCors": true,
+              "timeout": 5000,
+              "paramsArr": [
+                {
+                  "name": "code",
+                  "value": "source_category_id",
+                  "type": "string",
+                  "required": true
+                },
+                {
+                  "name": "label",
+                  "value": "category_name",
+                  "type": "string",
+                  "required": true
+                }
+              ],
+              "params": {
+                "code": "source_category_id",
+                "label": "category_name"
+              },
+              "requiredParams": [
+                "code",
+                "label"
+              ],
+              "headersArr": [],
+              "headers": {}
+            }
+          },
+          {
+            "type": "fetch",
+            "id": "dataset_fc8652ff141a4ed5a2b436113c934669_source_brand_id_options",
+            "isInit": true,
+            "source": "dataset",
+            "options": {
+              "method": "POST",
+              "uri": "/api/app-21522951/fc8652ff141a4ed5a2b436113c934669/getSelectOptions",
+              "isCors": true,
+              "timeout": 5000,
+              "paramsArr": [
+                {
+                  "name": "code",
+                  "value": "source_brand_id",
+                  "type": "string",
+                  "required": true
+                },
+                {
+                  "name": "label",
+                  "value": "brand_name",
+                  "type": "string",
+                  "required": true
+                }
+              ],
+              "params": {
+                "code": "source_brand_id",
+                "label": "brand_name"
+              },
+              "requiredParams": [
+                "code",
+                "label"
+              ],
+              "headersArr": [],
+              "headers": {}
+            }
+          },
+          {
+            "type": "fetch",
+            "id": "dataset_70865ec5f3204ba98c1910d94377ac3b_source_department_id_options",
+            "isInit": true,
+            "source": "dataset",
+            "options": {
+              "method": "POST",
+              "uri": "/api/app-21522951/70865ec5f3204ba98c1910d94377ac3b/getSelectOptions",
+              "isCors": true,
+              "timeout": 5000,
+              "paramsArr": [
+                {
+                  "name": "code",
+                  "value": "source_department_id",
+                  "type": "string",
+                  "required": true
+                },
+                {
+                  "name": "label",
+                  "value": "department_name",
+                  "type": "string",
+                  "required": true
+                }
+              ],
+              "params": {
+                "code": "source_department_id",
+                "label": "department_name"
+              },
+              "requiredParams": [
+                "code",
+                "label"
+              ],
+              "headersArr": [],
+              "headers": {}
+            }
+          },
+          {
+            "type": "fetch",
+            "id": "dataset_f3800676875849a3a24b3a9f2a975925_source_supplier_id_options",
+            "isInit": true,
+            "source": "dataset",
+            "options": {
+              "method": "POST",
+              "uri": "/api/app-21522951/f3800676875849a3a24b3a9f2a975925/getSelectOptions",
+              "isCors": true,
+              "timeout": 5000,
+              "paramsArr": [
+                {
+                  "name": "code",
+                  "value": "source_supplier_id",
+                  "type": "string",
+                  "required": true
+                },
+                {
+                  "name": "label",
+                  "value": "supplier_name",
+                  "type": "string",
+                  "required": true
+                }
+              ],
+              "params": {
+                "code": "source_supplier_id",
+                "label": "supplier_name"
+              },
+              "requiredParams": [
+                "code",
+                "label"
+              ],
+              "headersArr": [],
+              "headers": {}
+            }
+          },
+          {
+            "type": "fetch",
+            "id": "dataset_380f3dd29d1b46bdb015f22188369a7a_source_unit_id_options",
+            "isInit": true,
+            "source": "dataset",
+            "options": {
+              "method": "POST",
+              "uri": "/api/app-21522951/380f3dd29d1b46bdb015f22188369a7a/getSelectOptions",
+              "isCors": true,
+              "timeout": 5000,
+              "paramsArr": [
+                {
+                  "name": "code",
+                  "value": "source_unit_id",
+                  "type": "string",
+                  "required": true
+                },
+                {
+                  "name": "label",
+                  "value": "unit_name",
+                  "type": "string",
+                  "required": true
+                }
+              ],
+              "params": {
+                "code": "source_unit_id",
+                "label": "unit_name"
+              },
+              "requiredParams": [
+                "code",
+                "label"
+              ],
+              "headersArr": [],
+              "headers": {}
+            }
+          }
+        ]
+      },
+      "hidden": false,
+      "title": "",
+      "isLocked": false,
+      "condition": true,
+      "conditionGroup": "",
+      "children": [
+        {
+          "componentName": "YtPage",
+          "id": "node_pb2u0d0g",
+          "props": {
+            "ref": "ytpage_pb2u0d0g",
+            "_context": {
+              "type": "JSExpression",
+              "value": "this"
+            },
+            "_uniqueId": "ytpage_pb2u0d0g",
+            "useRGL": true
+          },
+          "hidden": false,
+          "title": "",
+          "isLocked": false,
+          "condition": true,
+          "conditionGroup": "",
+          "children": [
+            {
+              "componentName": "YtRglContainer",
+              "id": "node_lrivgq9z",
+              "props": {
+                "RGLlayout": [
+                  {
+                    "i": "node_c9xyor9y",
+                    "w": 12,
+                    "h": 3,
+                    "x": 0,
+                    "y": 0,
+                    "autoHeight": true
+                  },
+                  {
+                    "i": "node_2t30uhss",
+                    "w": 12,
+                    "h": 27,
+                    "x": 0,
+                    "y": 3,
+                    "autoHeight": true
+                  }
+                ]
+              },
+              "hidden": false,
+              "title": "",
+              "isLocked": false,
+              "condition": true,
+              "conditionGroup": "",
+              "children": [
+                {
+                  "componentName": "LrSmartFilter",
+                  "id": "node_c9xyor9y",
+                  "props": {
+                    "_doVersion": "V2",
+                    "_context": {
+                      "type": "JSExpression",
+                      "value": "this"
+                    },
+                    "ref": "ytfilter_rw8nogz9",
+                    "_uniqueId": "ytfilter_rw8nogz9",
+                    "datasetId": 1022458,
+                    "oneSearchFilterKey": "ytfilter_rw8nogz9_filter",
+                    "items": [],
+                    "events": [
+                      {
+                        "optType": "flowAction",
+                        "name": "onSearch",
+                        "flowList": [
+                          {
+                            "active": true,
+                            "optType": "request",
+                            "options": {
+                              "_bindDataSource": "1022458_filter",
+                              "_autoBindDataSourceParams": false,
+                              "_bindDataSourceParams": {
+                                "type": "JSFunction",
+                                "value": "(extraParams) => ({ ...extraParams, currentPage: 1 })"
+                              },
+                              "confirmConfig": {
+                                "enable": false
+                              },
+                              "responseConfig": {
+                                "successToastMsg": {
+                                  "type": "i18n",
+                                  "key": "i18n-lr-smart-filter-success-toast-msg-text-e02ee9d265f54b7bb44735598109c13b",
+                                  "zh-CN": "查询成功！",
+                                  "en-US": "Query successful!",
+                                  "ja-JP": "検索に成功しました！",
+                                  "tr-TR": "Sorgu başarılı!",
+                                  "id-ID": "Kueri berhasil!"
+                                },
+                                "errorToastMsg": {
+                                  "type": "i18n",
+                                  "key": "i18n-lr-smart-filter-error-toast-msg-text-2c9152af36764c41a4cbaa6af82ff01f",
+                                  "zh-CN": "查询失败",
+                                  "en-US": "Query failed",
+                                  "ja-JP": "検索に失敗しました",
+                                  "tr-TR": "Sorgu başarısız",
+                                  "id-ID": "Kueri gagal"
+                                }
+                              },
+                              "redirectType": "current"
+                            }
+                          }
+                        ]
+                      }
+                    ],
+                    "showSearch": true
+                  },
+                  "meta": {
+                    "datasetId": 1022458,
+                    "datasetCode": "9f2033555f88447082c5f66bb73a0c24"
+                  },
+                  "hidden": false,
+                  "title": "",
+                  "isLocked": false,
+                  "condition": true,
+                  "conditionGroup": ""
+                },
+                {
+                  "componentName": "LrSmartTable",
+                  "id": "node_2t30uhss",
+                  "props": {
+                    "_doVersion": "V2",
+                    "_context": {
+                      "type": "JSExpression",
+                      "value": "this"
+                    },
+                    "ref": "yttable_weu8upte",
+                    "_uniqueId": "yttable_weu8upte",
+                    "dataSource": {
+                      "type": "JSExpression",
+                      "value": "this.state['1022458_filter']"
+                    },
+                    "loading": {
+                      "type": "JSExpression",
+                      "value": "this.state['1022458_filter_loading']"
+                    },
+                    "columns": [
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "id",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-id-c4938d749a6c4072ab15006b46670c4c",
+                          "zh-CN": "主键",
+                          "en-US": "Primary Key",
+                          "ja-JP": "主キー",
+                          "tr-TR": "Birincil Anahtar",
+                          "id-ID": "Kunci Utama"
+                        },
+                        "pkField": true,
+                        "doType": "NUMBER",
+                        "format": "text",
+                        "isShown": true,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "indexType": "primary",
+                        "__lc_as_item_id__": "kf1s0l2557"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "tenant_id",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-tenant-id-b4aa7696eda14eb3ac60015af54c62ed",
+                          "zh-CN": "租户编号",
+                          "en-US": "Tenant ID",
+                          "ja-JP": "テナント番号",
+                          "tr-TR": "Kiracı Numarası",
+                          "id-ID": "Nomor Tenant"
+                        },
+                        "pkField": false,
+                        "doType": "TEXT",
+                        "format": "text",
+                        "isShown": true,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "indexType": "unique",
+                        "__lc_as_item_id__": "wgl7tqvetl"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "source_item_id",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-source-item-id-c60367fb161a410f829b71614a07a8e5",
+                          "zh-CN": "来源商品编号",
+                          "en-US": "Source Product ID",
+                          "ja-JP": "ソース商品番号",
+                          "tr-TR": "Kaynak Ürün Numarası",
+                          "id-ID": "Nomor Produk Sumber"
+                        },
+                        "pkField": false,
+                        "doType": "TEXT",
+                        "format": "text",
+                        "isShown": true,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "indexType": "unique",
+                        "__lc_as_item_id__": "evfjurip9i"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "item_code",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-item-code-c8daa24de66b4bb393553bdfa5ea5268",
+                          "zh-CN": "商品编码",
+                          "en-US": "Product Code",
+                          "ja-JP": "商品コード",
+                          "tr-TR": "Ürün Kodu",
+                          "id-ID": "Kode Produk"
+                        },
+                        "pkField": false,
+                        "doType": "TEXT",
+                        "format": "text",
+                        "isShown": true,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "indexType": "index",
+                        "__lc_as_item_id__": "3emv9jrwnl"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "barcode",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-barcode-be9a992143ec4e93af5f8316ba766326",
+                          "zh-CN": "条形码",
+                          "en-US": "Barcode",
+                          "ja-JP": "バーコード",
+                          "tr-TR": "Barkod",
+                          "id-ID": "Barcode"
+                        },
+                        "pkField": false,
+                        "doType": "TEXT",
+                        "format": "text",
+                        "isShown": true,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "indexType": "index",
+                        "__lc_as_item_id__": "onkio3vo5h"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "item_name",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-item-name-a83b3a770601403386a1a05cf4bc5afb",
+                          "zh-CN": "商品名称",
+                          "en-US": "Product Name",
+                          "ja-JP": "商品名",
+                          "tr-TR": "Ürün Adı",
+                          "id-ID": "Nama Produk"
+                        },
+                        "pkField": false,
+                        "doType": "TEXT",
+                        "format": "text",
+                        "isShown": true,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "formatOptions": {
+                          "ellipsis": true
+                        },
+                        "indexType": null,
+                        "__lc_as_item_id__": "mbp17qv5sp"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "sub_name",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-sub-name-12884b753da94601bb884b89b9aa3104",
+                          "zh-CN": "副标题",
+                          "en-US": "Subtitle",
+                          "ja-JP": "サブタイトル",
+                          "tr-TR": "Alt Başlık",
+                          "id-ID": "Subjudul"
+                        },
+                        "pkField": false,
+                        "doType": "TEXT",
+                        "format": "text",
+                        "isShown": true,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "formatOptions": {
+                          "ellipsis": true
+                        },
+                        "indexType": null,
+                        "__lc_as_item_id__": "lu5ci0jlrw"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "item_size",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-item-size-260bd36a735c4c1bb156ecbf46388c95",
+                          "zh-CN": "商品规格",
+                          "en-US": "Product Specification",
+                          "ja-JP": "商品規格",
+                          "tr-TR": "Ürün Spesifikasyonu",
+                          "id-ID": "Spesifikasi Produk"
+                        },
+                        "pkField": false,
+                        "doType": "TEXT",
+                        "format": "text",
+                        "isShown": true,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "formatOptions": {
+                          "ellipsis": true
+                        },
+                        "indexType": null,
+                        "__lc_as_item_id__": "wddwuo8807"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "source_category_id",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-source-category-id-192f0d401fe943fb80f2b874b439e864",
+                          "zh-CN": "来源分类编号",
+                          "en-US": "Source Category ID",
+                          "ja-JP": "ソース分類番号",
+                          "tr-TR": "Kaynak Kategori Numarası",
+                          "id-ID": "Nomor Kategori Sumber"
+                        },
+                        "pkField": false,
+                        "doType": "TEXT",
+                        "format": "enum",
+                        "isShown": false,
+                        "isFetched": false,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "indexType": "index",
+                        "__lc_as_item_id__": "8jk8wgenp0"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "source_brand_id",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-source-brand-id-bcea66be59e549d8ae1bbb84683926e5",
+                          "zh-CN": "来源品牌编号",
+                          "en-US": "Source Brand ID",
+                          "ja-JP": "ソースブランド番号",
+                          "tr-TR": "Kaynak Marka Numarası",
+                          "id-ID": "Nomor Merek Sumber"
+                        },
+                        "pkField": false,
+                        "doType": "TEXT",
+                        "format": "enum",
+                        "isShown": false,
+                        "isFetched": false,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "indexType": null,
+                        "__lc_as_item_id__": "ib7fzmmfma"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "source_department_id",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-source-department-id-557626eff47a402e8ce950cf1de478a9",
+                          "zh-CN": "来源部门编号",
+                          "en-US": "Source Department ID",
+                          "ja-JP": "ソース部門番号",
+                          "tr-TR": "Kaynak Departman Numarası",
+                          "id-ID": "Nomor Departemen Sumber"
+                        },
+                        "pkField": false,
+                        "doType": "TEXT",
+                        "format": "enum",
+                        "isShown": false,
+                        "isFetched": false,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "indexType": null,
+                        "__lc_as_item_id__": "mqmdf4gu5l"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "source_supplier_id",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-source-supplier-id-cca6ad6a72ae4e92b14b43e7298d43a9",
+                          "zh-CN": "来源供应商编号",
+                          "en-US": "Source Supplier ID",
+                          "ja-JP": "ソースサプライヤー番号",
+                          "tr-TR": "Kaynak Tedarikçi Numarası",
+                          "id-ID": "Nomor Pemasok Sumber"
+                        },
+                        "pkField": false,
+                        "doType": "TEXT",
+                        "format": "enum",
+                        "isShown": false,
+                        "isFetched": false,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "indexType": null,
+                        "__lc_as_item_id__": "30io3pjcv1"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "source_unit_id",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-source-unit-id-decbc97c81364bc6a4ec2a33ce3d9094",
+                          "zh-CN": "来源单位编号",
+                          "en-US": "Source Unit ID",
+                          "ja-JP": "ソース単位番号",
+                          "tr-TR": "Kaynak Birim Numarası",
+                          "id-ID": "Nomor Satuan Sumber"
+                        },
+                        "pkField": false,
+                        "doType": "TEXT",
+                        "format": "enum",
+                        "isShown": false,
+                        "isFetched": false,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "indexType": null,
+                        "__lc_as_item_id__": "ffja1f45rj"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "status_code",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-status-code-2097735491924134982d19f70224cc14",
+                          "zh-CN": "状态编码",
+                          "en-US": "Status Code",
+                          "ja-JP": "ステータスコード",
+                          "tr-TR": "Durum Kodu",
+                          "id-ID": "Kode Status"
+                        },
+                        "pkField": false,
+                        "doType": "TEXT",
+                        "format": "text",
+                        "isShown": true,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "indexType": null,
+                        "__lc_as_item_id__": "x0h2kfz6ih"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "lifetime_code",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-lifetime-code-95c9c32d8fae4b3289f3d65080553932",
+                          "zh-CN": "生命周期编码",
+                          "en-US": "Lifecycle Code",
+                          "ja-JP": "ライフサイクルコード",
+                          "tr-TR": "Yaşam Döngüsü Kodu",
+                          "id-ID": "Kode Siklus Hidup"
+                        },
+                        "pkField": false,
+                        "doType": "TEXT",
+                        "format": "text",
+                        "isShown": true,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "indexType": null,
+                        "__lc_as_item_id__": "harntro71y"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "retail_price",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-retail-price-b1b92b31346044f08a5e590da4bff737",
+                          "zh-CN": "零售价",
+                          "en-US": "Retail Price",
+                          "ja-JP": "小売価格",
+                          "tr-TR": "Perakende Fiyatı",
+                          "id-ID": "Harga Ritel"
+                        },
+                        "pkField": false,
+                        "doType": "NUMBER",
+                        "format": "number",
+                        "isShown": true,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "formatOptions": {
+                          "precision": 2,
+                          "separator": true
+                        },
+                        "indexType": null,
+                        "__lc_as_item_id__": "tou98ngtgr"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "purchase_price",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-purchase-price-84e249f4d29749bdb329b0cb00cc534b",
+                          "zh-CN": "采购价",
+                          "en-US": "Purchase Price",
+                          "ja-JP": "仕入価格",
+                          "tr-TR": "Satın Alma Fiyatı",
+                          "id-ID": "Harga Pembelian"
+                        },
+                        "pkField": false,
+                        "doType": "NUMBER",
+                        "format": "number",
+                        "isShown": true,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "formatOptions": {
+                          "precision": 2,
+                          "separator": true
+                        },
+                        "indexType": null,
+                        "__lc_as_item_id__": "5342tefbie"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "source_version",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-source-version-c45ea962deab4ed588634c4ead36e8f5",
+                          "zh-CN": "来源版本",
+                          "en-US": "Source Version",
+                          "ja-JP": "ソースバージョン",
+                          "tr-TR": "Kaynak Sürüm",
+                          "id-ID": "Versi Sumber"
+                        },
+                        "pkField": false,
+                        "doType": "TEXT",
+                        "format": "text",
+                        "isShown": true,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "indexType": null,
+                        "__lc_as_item_id__": "vxwazq5tuk"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "source_created_at",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-source-created-at-345c5801b50b41b4852c4f5ebcb61882",
+                          "zh-CN": "来源创建时间",
+                          "en-US": "Source Creation Time",
+                          "ja-JP": "ソース作成時間",
+                          "tr-TR": "Kaynak Oluşturma Zamanı",
+                          "id-ID": "Waktu Pembuatan Sumber"
+                        },
+                        "pkField": false,
+                        "doType": "DATETIME",
+                        "format": "datetime",
+                        "isShown": true,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "formatOptions": {
+                          "format": "YYYY-MM-DD HH:mm"
+                        },
+                        "indexType": null,
+                        "__lc_as_item_id__": "pfebrfiq5u"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "source_modified_at",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-source-modified-at-4dc48d2419034bc0b5218e145366af4c",
+                          "zh-CN": "来源修改时间",
+                          "en-US": "Source Modification Time",
+                          "ja-JP": "ソース更新時間",
+                          "tr-TR": "Kaynak Değiştirme Zamanı",
+                          "id-ID": "Waktu Modifikasi Sumber"
+                        },
+                        "pkField": false,
+                        "doType": "DATETIME",
+                        "format": "datetime",
+                        "isShown": true,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "formatOptions": {
+                          "format": "YYYY-MM-DD HH:mm"
+                        },
+                        "indexType": "index",
+                        "__lc_as_item_id__": "5xl2tynkff"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "source_approved_at",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-source-approved-at-4121fc8422424ffaa9fed044211829b2",
+                          "zh-CN": "来源审核时间",
+                          "en-US": "Source Review Time",
+                          "ja-JP": "ソース審査時間",
+                          "tr-TR": "Kaynak İnceleme Zamanı",
+                          "id-ID": "Waktu Tinjauan Sumber"
+                        },
+                        "pkField": false,
+                        "doType": "DATETIME",
+                        "format": "datetime",
+                        "isShown": true,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "formatOptions": {
+                          "format": "YYYY-MM-DD HH:mm"
+                        },
+                        "indexType": null,
+                        "__lc_as_item_id__": "yoi578c1a0"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "list_hash",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-list-hash-70085af871494e1eb30c63e37ea540e1",
+                          "zh-CN": "列表哈希",
+                          "en-US": "List Hash",
+                          "ja-JP": "リストハッシュ",
+                          "tr-TR": "Liste Hash",
+                          "id-ID": "Hash Daftar"
+                        },
+                        "pkField": false,
+                        "doType": "TEXT",
+                        "format": "text",
+                        "isShown": true,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "indexType": null,
+                        "__lc_as_item_id__": "q267g556rk"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "detail_hash",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-detail-hash-61a7a7cdf6d64044baddab932582ac14",
+                          "zh-CN": "详情哈希",
+                          "en-US": "Detail Hash",
+                          "ja-JP": "詳細ハッシュ",
+                          "tr-TR": "Detay Hash",
+                          "id-ID": "Hash Detail"
+                        },
+                        "pkField": false,
+                        "doType": "TEXT",
+                        "format": "text",
+                        "isShown": true,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "indexType": null,
+                        "__lc_as_item_id__": "66axh2kvvc"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "first_seen_at",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-first-seen-at-4d6a136f471c40ada5dc1150f4521ff3",
+                          "zh-CN": "首次发现时间",
+                          "en-US": "First Discovery Time",
+                          "ja-JP": "初回発見時間",
+                          "tr-TR": "İlk Keşif Zamanı",
+                          "id-ID": "Waktu Penemuan Pertama"
+                        },
+                        "pkField": false,
+                        "doType": "DATETIME",
+                        "format": "datetime",
+                        "isShown": true,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "formatOptions": {
+                          "format": "YYYY-MM-DD HH:mm"
+                        },
+                        "indexType": null,
+                        "__lc_as_item_id__": "xa9r283cvg"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "last_seen_at",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-last-seen-at-48500259604c48c185d61aeb38ee9ca1",
+                          "zh-CN": "最后发现时间",
+                          "en-US": "Last Discovery Time",
+                          "ja-JP": "最終発見時間",
+                          "tr-TR": "Son Keşif Zamanı",
+                          "id-ID": "Waktu Penemuan Terakhir"
+                        },
+                        "pkField": false,
+                        "doType": "DATETIME",
+                        "format": "datetime",
+                        "isShown": true,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "formatOptions": {
+                          "format": "YYYY-MM-DD HH:mm"
+                        },
+                        "indexType": null,
+                        "__lc_as_item_id__": "hun2bevivh"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "deleted_at",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-deleted-at-ca93b8d31dc6459f8bceb4dcb52d93fd",
+                          "zh-CN": "删除时间",
+                          "en-US": "Deletion Time",
+                          "ja-JP": "削除時間",
+                          "tr-TR": "Silme Zamanı",
+                          "id-ID": "Waktu Penghapusan"
+                        },
+                        "pkField": false,
+                        "doType": "DATETIME",
+                        "format": "datetime",
+                        "isShown": true,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "formatOptions": {
+                          "format": "YYYY-MM-DD HH:mm"
+                        },
+                        "indexType": null,
+                        "__lc_as_item_id__": "zd7avz7y3s"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "categories.category_name",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-categories-category-name-86db61837aef4fe08fa6c7ca2924d201",
+                          "zh-CN": "类别名称",
+                          "en-US": "Category Name",
+                          "ja-JP": "カテゴリ名",
+                          "tr-TR": "Kategori Adı",
+                          "id-ID": "Nama Kategori"
+                        },
+                        "pkField": false,
+                        "doType": "TEXT",
+                        "format": "text",
+                        "isShown": true,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "formatOptions": {
+                          "ellipsis": true
+                        },
+                        "indexType": null,
+                        "__lc_as_item_id__": "qdytt76ri3"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "brands.brand_name",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-brands-brand-name-912ed249518f46f886b0645eec8d9064",
+                          "zh-CN": "品牌名称",
+                          "en-US": "Brand Name",
+                          "ja-JP": "ブランド名",
+                          "tr-TR": "Marka Adı",
+                          "id-ID": "Nama Merek"
+                        },
+                        "pkField": false,
+                        "doType": "TEXT",
+                        "format": "text",
+                        "isShown": true,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "formatOptions": {
+                          "ellipsis": true
+                        },
+                        "indexType": null,
+                        "__lc_as_item_id__": "kmha4pi05q"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "departments.department_name",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-departments-department-name-738a812c25794860802f0a8e5d03d837",
+                          "zh-CN": "部门名称",
+                          "en-US": "Department Name",
+                          "ja-JP": "部門名",
+                          "tr-TR": "Departman Adı",
+                          "id-ID": "Nama Departemen"
+                        },
+                        "pkField": false,
+                        "doType": "TEXT",
+                        "format": "text",
+                        "isShown": true,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "formatOptions": {
+                          "ellipsis": true
+                        },
+                        "indexType": null,
+                        "__lc_as_item_id__": "ziwsmenn5v"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "suppliers.supplier_name",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-suppliers-supplier-name-d26ff6c4b3b646f1aba528bf38ec5373",
+                          "zh-CN": "供应商名称",
+                          "en-US": "Supplier Name",
+                          "ja-JP": "サプライヤー名",
+                          "tr-TR": "Tedarikçi Adı",
+                          "id-ID": "Nama Pemasok"
+                        },
+                        "pkField": false,
+                        "doType": "TEXT",
+                        "format": "text",
+                        "isShown": true,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "formatOptions": {
+                          "ellipsis": true
+                        },
+                        "indexType": null,
+                        "__lc_as_item_id__": "bau0ec1x3z"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "units.unit_name",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-units-unit-name-15869d93301d4edd84d2755763a9e3fe",
+                          "zh-CN": "单位名称",
+                          "en-US": "Unit Name",
+                          "ja-JP": "単位名",
+                          "tr-TR": "Birim Adı",
+                          "id-ID": "Nama Unit"
+                        },
+                        "pkField": false,
+                        "doType": "TEXT",
+                        "format": "text",
+                        "isShown": true,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "formatOptions": {
+                          "ellipsis": true
+                        },
+                        "indexType": null,
+                        "__lc_as_item_id__": "bbvzvvqb6z"
+                      }
+                    ],
+                    "pagination": {
+                      "enable": true,
+                      "showQuickJumper": true,
+                      "showSizeChanger": true,
+                      "pageSizeOptions": [
+                        "10",
+                        "20",
+                        "50",
+                        "100"
+                      ],
+                      "currentPage": {
+                        "type": "JSExpression",
+                        "value": "this.state['yttable_weu8upte_currentPage']"
+                      },
+                      "currentPageKey": "yttable_weu8upte_currentPage",
+                      "total": {
+                        "type": "JSExpression",
+                        "value": "this.state['yttable_weu8upte_total']"
+                      },
+                      "totalKey": "yttable_weu8upte_total",
+                      "pageSize": {
+                        "type": "JSExpression",
+                        "value": "this.state['yttable_weu8upte_pageSize']"
+                      },
+                      "pageSizeKey": "yttable_weu8upte_pageSize"
+                    },
+                    "toolbar": {
+                      "enable": true,
+                      "globalButtons": [
+                        {
+                          "title": {
+                            "type": "i18n",
+                            "key": "i18n-lr-smart-table-title-text-67535caf0a8e4498991e83f72346f162",
+                            "zh-CN": "新增",
+                            "en-US": "Add",
+                            "ja-JP": "新規追加",
+                            "tr-TR": "Ekle",
+                            "id-ID": "Tambah"
+                          },
+                          "type": "primary",
+                          "size": "medium",
+                          "optType": "jsAction",
+                          "options": {
+                            "jsFunction": {
+                              "type": "JSFunction",
+                              "value": "(config) => config._context?.appHelper?.yt?.smartPageHistory?.push({ pageTagName: 'CREATE', datasetId: '1022458' })"
+                            }
+                          }
+                        }
+                      ],
+                      "exportButtons": {
+                        "loading": {
+                          "type": "JSExpression",
+                          "value": "this.state['1022458_excelExport_loading']"
+                        },
+                        "mainButton": {
+                          "title": {
+                            "type": "i18n",
+                            "key": "i18n-lr-smart-table-title-text-e3785041514a4598a7062477f14af21d",
+                            "zh-CN": "批量操作",
+                            "en-US": "Batch actions",
+                            "ja-JP": "一括操作",
+                            "tr-TR": "Toplu işlemler",
+                            "id-ID": "Tindakan massal"
+                          },
+                          "optType": "jsAction",
+                          "disabled": {
+                            "type": "JSExpression",
+                            "value": "!this.state['yttable_weu8upte_selectedRowKeys']?.length"
+                          },
+                          "options": {
+                            "jsFunction": {
+                              "type": "JSFunction",
+                              "value": "(config) => config._context?.appHelper?.yt?.smartPageHistory?.push({ pageTagName: 'UPDATE', datasetId: '1022458', dataid: config._context?.state['yttable_weu8upte_selectedRowKeys'], type: 'batch' })"
+                            }
+                          }
+                        },
+                        "buttons": [
+                          {
+                            "title": {
+                              "type": "i18n",
+                              "key": "i18n-lr-smart-table-title-text-200167e6e44b4f5a861c7e8763f27f42",
+                              "zh-CN": "导出选中项",
+                              "en-US": "Export selected",
+                              "ja-JP": "選択項目をエクスポート",
+                              "tr-TR": "Seçilenleri dışa aktar",
+                              "id-ID": "Ekspor item terpilih"
+                            },
+                            "optType": "flowAction",
+                            "actionType": "export",
+                            "disabled": {
+                              "type": "JSExpression",
+                              "value": "!this.state['yttable_weu8upte_selectedRowKeys']?.length"
+                            },
+                            "options": {
+                              "flowList": [
+                                {
+                                  "active": true,
+                                  "optType": "request",
+                                  "options": {
+                                    "_bindDataSource": "1022458_excelExport",
+                                    "_autoBindDataSourceParams": true
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "title": {
+                              "type": "i18n",
+                              "key": "i18n-lr-smart-table-title-text-ba25b6128c3b4b58a3f43b2afcf2b389",
+                              "zh-CN": "导出全部",
+                              "en-US": "Export all",
+                              "ja-JP": "すべてエクスポート",
+                              "tr-TR": "Tümünü dışa aktar",
+                              "id-ID": "Ekspor semua"
+                            },
+                            "optType": "flowAction",
+                            "actionType": "export",
+                            "options": {
+                              "flowList": [
+                                {
+                                  "active": true,
+                                  "optType": "request",
+                                  "options": {
+                                    "_bindDataSource": "1022458_excelExport"
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "title": {
+                              "type": "i18n",
+                              "key": "i18n-lr-smart-table-title-text-c77896b53a384ae6a707397e8d468bda",
+                              "zh-CN": "删除选中项",
+                              "en-US": "Delete selected",
+                              "ja-JP": "選択項目を削除",
+                              "tr-TR": "Seçilenleri sil",
+                              "id-ID": "Hapus item terpilih"
+                            },
+                            "optType": "flowAction",
+                            "actionType": "delete",
+                            "danger": true,
+                            "disabled": {
+                              "type": "JSExpression",
+                              "value": "!this.state['yttable_weu8upte_selectedRowKeys']?.length"
+                            },
+                            "options": {
+                              "flowList": [
+                                {
+                                  "active": true,
+                                  "optType": "request",
+                                  "options": {
+                                    "_bindDataSource": "1022458_delete",
+                                    "_autoBindDataSourceParams": false,
+                                    "_bindDataSourceParams": {
+                                      "type": "JSFunction",
+                                      "value": "(extraParams) => { return { id: extraParams.selectId }; }"
+                                    },
+                                    "confirmConfig": {
+                                      "enable": true,
+                                      "type": "confirm",
+                                      "title": {
+                                        "type": "i18n",
+                                        "key": "i18n-lr-smart-table-title-text-f685787c56b14cc685e062e1d747f1dd",
+                                        "zh-CN": "确认批量删除",
+                                        "en-US": "Confirm batch deletion",
+                                        "ja-JP": "一括削除の確認",
+                                        "tr-TR": "Toplu silmeyi onayla",
+                                        "id-ID": "Konfirmasi penghapusan massal"
+                                      },
+                                      "content": {
+                                        "type": "i18n",
+                                        "key": "i18n-lr-smart-table-content-text-24f706d5119e48d8b9e4e0f88c114933",
+                                        "zh-CN": "确认批量删除选中数据吗？",
+                                        "en-US": "Are you sure you want to delete the selected data?",
+                                        "ja-JP": "選択したデータを一括削除しますか？",
+                                        "tr-TR": "Seçili verileri toplu olarak silmek istediğinizden emin misiniz?",
+                                        "id-ID": "Yakin ingin menghapus data terpilih secara massal?"
+                                      }
+                                    },
+                                    "responseConfig": {
+                                      "enableSuccessToast": true,
+                                      "enableErrorToast": true,
+                                      "successToastMsg": {
+                                        "type": "i18n",
+                                        "key": "i18n-lr-smart-table-success-toast-msg-text-f531277e33fc4d06ab525abfd454633d",
+                                        "zh-CN": "删除成功",
+                                        "en-US": "Deleted successfully",
+                                        "ja-JP": "削除しました",
+                                        "tr-TR": "Silme başarılı",
+                                        "id-ID": "Berhasil dihapus"
+                                      },
+                                      "errorToastMsg": {
+                                        "type": "i18n",
+                                        "key": "i18n-lr-smart-table-error-toast-msg-text-8996bc40c47349718b1ac15a8b9070c2",
+                                        "zh-CN": "删除失败",
+                                        "en-US": "Deletion failed",
+                                        "ja-JP": "削除に失敗しました",
+                                        "tr-TR": "Silme başarısız",
+                                        "id-ID": "Penghapusan gagal"
+                                      }
+                                    }
+                                  }
+                                },
+                                {
+                                  "active": true,
+                                  "optType": "request",
+                                  "options": {
+                                    "_bindDataSource": "1022458_filter",
+                                    "_autoBindDataSourceParams": false,
+                                    "confirmConfig": {
+                                      "enable": false
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "title": {
+                              "type": "i18n",
+                              "key": "i18n-lr-smart-table-title-text-0153785289e942a582ec8d657815b0c1",
+                              "zh-CN": "删除全部",
+                              "en-US": "Delete all",
+                              "ja-JP": "すべて削除",
+                              "tr-TR": "Tümünü sil",
+                              "id-ID": "Hapus semua"
+                            },
+                            "optType": "flowAction",
+                            "actionType": "delete",
+                            "danger": true,
+                            "disabled": {
+                              "type": "JSExpression",
+                              "value": "!(this.state['yttable_weu8upte_total'] > 0)"
+                            },
+                            "options": {
+                              "flowList": [
+                                {
+                                  "active": true,
+                                  "optType": "request",
+                                  "options": {
+                                    "_bindDataSource": "1022458_delete",
+                                    "_autoBindDataSourceParams": false,
+                                    "_bindDataSourceParams": {
+                                      "type": "JSFunction",
+                                      "value": "(extraParams) => { return { id: extraParams.allIds }; }"
+                                    },
+                                    "confirmConfig": {
+                                      "enable": true,
+                                      "type": "confirm",
+                                      "title": {
+                                        "type": "i18n",
+                                        "key": "i18n-lr-smart-table-title-text-51d207d1eb9248eda98ca268ae72fe92",
+                                        "zh-CN": "确认批量删除",
+                                        "en-US": "Confirm batch deletion",
+                                        "ja-JP": "一括削除の確認",
+                                        "tr-TR": "Toplu silmeyi onayla",
+                                        "id-ID": "Konfirmasi penghapusan massal"
+                                      },
+                                      "content": {
+                                        "type": "i18n",
+                                        "key": "i18n-lr-smart-table-content-text-27a2ca0987e842daa0d28dbba58b71bf",
+                                        "zh-CN": "确认批量删除当前页全部数据吗？",
+                                        "en-US": "Are you sure you want to delete all data on this page?",
+                                        "ja-JP": "現在のページのすべてのデータを一括削除しますか？",
+                                        "tr-TR": "Bu sayfadaki tüm verileri toplu olarak silmek istediğinizden emin misiniz?",
+                                        "id-ID": "Yakin ingin menghapus semua data di halaman ini secara massal?"
+                                      }
+                                    },
+                                    "responseConfig": {
+                                      "enableSuccessToast": true,
+                                      "enableErrorToast": true,
+                                      "successToastMsg": {
+                                        "type": "i18n",
+                                        "key": "i18n-lr-smart-table-success-toast-msg-text-e38d0fa956e444a9860a2aa5d0114117",
+                                        "zh-CN": "删除成功",
+                                        "en-US": "Deleted successfully",
+                                        "ja-JP": "削除しました",
+                                        "tr-TR": "Silme başarılı",
+                                        "id-ID": "Berhasil dihapus"
+                                      },
+                                      "errorToastMsg": {
+                                        "type": "i18n",
+                                        "key": "i18n-lr-smart-table-error-toast-msg-text-3dd337e6da3c4db890d85e9c2dcdd5d8",
+                                        "zh-CN": "删除失败",
+                                        "en-US": "Deletion failed",
+                                        "ja-JP": "削除に失敗しました",
+                                        "tr-TR": "Silme başarısız",
+                                        "id-ID": "Penghapusan gagal"
+                                      }
+                                    }
+                                  }
+                                },
+                                {
+                                  "active": true,
+                                  "optType": "request",
+                                  "options": {
+                                    "_bindDataSource": "1022458_filter",
+                                    "_autoBindDataSourceParams": false,
+                                    "confirmConfig": {
+                                      "enable": false
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ],
+                        "buttonsDisabled": {
+                          "type": "JSExpression",
+                          "value": "this.state['yttable_weu8upte_onePage'] || false"
+                        }
+                      }
+                    },
+                    "rowSelection": {
+                      "enable": true,
+                      "isDisabled": {
+                        "type": "JSExpression",
+                        "value": "this.state['yttable_weu8upte_onePage'] || false"
+                      }
+                    },
+                    "showSelectionTotal": true,
+                    "sortEnable": true,
+                    "operateButtonsEnable": true,
+                    "operateButtons": [
+                      {
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-text-178f7a06b9f54969b9d407628e143d8e",
+                          "zh-CN": "更新",
+                          "en-US": "Update",
+                          "ja-JP": "更新",
+                          "tr-TR": "Güncelle",
+                          "id-ID": "Perbarui"
+                        },
+                        "type": "default",
+                        "size": "medium",
+                        "optType": "jsAction",
+                        "__lc_as_item_id__": "0yg2q2pt75",
+                        "options": {
+                          "jsFunction": {
+                            "type": "JSFunction",
+                            "value": "(config) => config._context?.appHelper?.yt?.smartPageHistory?.push({ pageTagName: 'UPDATE', datasetId: '1022458', dataid: config.extraParams?.rowKey })"
+                          }
+                        }
+                      },
+                      {
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-text-ad9e68dc0bdb4ec2a00e77af1e40b26f",
+                          "zh-CN": "详情",
+                          "en-US": "Details",
+                          "ja-JP": "詳細",
+                          "tr-TR": "Ayrıntılar",
+                          "id-ID": "Detail"
+                        },
+                        "type": "default",
+                        "size": "medium",
+                        "optType": "jsAction",
+                        "__lc_as_item_id__": "vi8s1dq1rf",
+                        "options": {
+                          "jsFunction": {
+                            "type": "JSFunction",
+                            "value": "(config) => config._context?.appHelper?.yt?.smartPageHistory?.push({ pageTagName: 'DETAIL', datasetId: '1022458', dataid: config.extraParams?.rowKey })"
+                          }
+                        }
+                      },
+                      {
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-text-3e69a017f7674fc3818a76a71c93a072",
+                          "zh-CN": "删除",
+                          "en-US": "Delete",
+                          "ja-JP": "削除",
+                          "tr-TR": "Sil",
+                          "id-ID": "Hapus"
+                        },
+                        "type": "default",
+                        "size": "medium",
+                        "optType": "flowAction",
+                        "__lc_as_item_id__": "7wxz290i9a",
+                        "options": {
+                          "flowList": [
+                            {
+                              "active": true,
+                              "optType": "request",
+                              "__lc_as_item_id__": "hcqakq0ro3",
+                              "options": {
+                                "_bindDataSource": "1022458_delete",
+                                "_autoBindDataSourceParams": false,
+                                "_bindDataSourceParams": {
+                                  "type": "JSFunction",
+                                  "value": "(extraParams) => { return { id: extraParams.rowKey }; }"
+                                },
+                                "confirmConfig": {
+                                  "enable": true,
+                                  "type": "confirm",
+                                  "title": {
+                                    "type": "i18n",
+                                    "key": "i18n-lr-smart-table-title-text-5f5f31199f444a8eb8bf3ff1300109c7",
+                                    "zh-CN": "确认删除",
+                                    "en-US": "Confirm deletion",
+                                    "ja-JP": "削除の確認",
+                                    "tr-TR": "Silmeyi onayla",
+                                    "id-ID": "Konfirmasi penghapusan"
+                                  },
+                                  "content": {
+                                    "type": "i18n",
+                                    "key": "i18n-lr-smart-table-content-text-9e59bbe0dff249588e9e1655130ace21",
+                                    "zh-CN": "确认删除该条数据吗？",
+                                    "en-US": "Are you sure you want to delete this data?",
+                                    "ja-JP": "このデータを削除しますか？",
+                                    "tr-TR": "Bu veriyi silmek istediğinizden emin misiniz?",
+                                    "id-ID": "Yakin ingin menghapus data ini?"
+                                  }
+                                },
+                                "responseConfig": {
+                                  "enableSuccessToast": true,
+                                  "enableErrorToast": true,
+                                  "successToastMsg": {
+                                    "type": "i18n",
+                                    "key": "i18n-lr-smart-table-success-toast-msg-text-e65db8f863914d6483b177c56c4a7900",
+                                    "zh-CN": "删除成功",
+                                    "en-US": "Deleted successfully",
+                                    "ja-JP": "削除しました",
+                                    "tr-TR": "Silme başarılı",
+                                    "id-ID": "Berhasil dihapus"
+                                  },
+                                  "errorToastMsg": {
+                                    "type": "i18n",
+                                    "key": "i18n-lr-smart-table-error-toast-msg-text-fc346bf5271d408ea10c07568b077496",
+                                    "zh-CN": "删除失败",
+                                    "en-US": "Deletion failed",
+                                    "ja-JP": "削除に失敗しました",
+                                    "tr-TR": "Silme başarısız",
+                                    "id-ID": "Penghapusan gagal"
+                                  }
+                                }
+                              }
+                            },
+                            {
+                              "active": true,
+                              "optType": "request",
+                              "__lc_as_item_id__": "iw15p5rijz",
+                              "options": {
+                                "_bindDataSource": "1022458_filter",
+                                "_autoBindDataSourceParams": false,
+                                "confirmConfig": {
+                                  "enable": false
+                                }
+                              }
+                            }
+                          ],
+                          "_autoBindDataSourceParams": false,
+                          "redirectType": "current"
+                        }
+                      }
+                    ]
+                  },
+                  "meta": {
+                    "datasetId": 1022458,
+                    "datasetCode": "9f2033555f88447082c5f66bb73a0c24"
+                  },
+                  "hidden": false,
+                  "title": "",
+                  "isLocked": false,
+                  "condition": true,
+                  "conditionGroup": ""
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "fileName": "/"
+    }
+  ],
+  "i18n": {}
+}

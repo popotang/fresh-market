@@ -1,0 +1,11 @@
+commerce schema ready: 13 tables
+retail-orders 2026-11-07 verified export_total=5228
+retail-orders 2026-11-07 saved_headers=1000/5228
+retail-orders 2026-11-07 saved_headers=2000/5228
+retail-orders 2026-11-07 saved_headers=3000/5228
+retail-orders 2026-11-07 saved_headers=4000/5228
+retail-orders 2026-11-07 saved_headers=5000/5228
+retail-orders 2026-11-07 saved_headers=5228/5228
+retail-orders 2026-11-07 verified captured_total=5228; details deferred
+retail-orders 2026-11-07 pages=6 saved=5228
+{"counts":{"retail-orders":5228},"run_id":51}

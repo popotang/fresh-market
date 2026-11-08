@@ -1,0 +1,22 @@
+item incremental scan page=1 unique=100 source_total=18390
+item incremental scan page=20 unique=2000 source_total=18390
+item incremental scan page=40 unique=4000 source_total=18390
+item incremental scan page=60 unique=6000 source_total=18390
+item incremental scan page=80 unique=8000 source_total=18390
+item incremental scan page=100 unique=10000 source_total=18390
+item incremental scan page=120 unique=12000 source_total=18390
+item incremental scan page=140 unique=14000 source_total=18390
+item incremental scan page=160 unique=16000 source_total=18390
+item incremental scan page=180 unique=18000 source_total=18390
+item incremental scan page=184 unique=18390 source_total=18390
+item incremental compare 100/18390 new=4 changed=0
+item incremental compare 2100/18390 new=4 changed=137
+item incremental compare 4100/18390 new=4 changed=137
+item incremental compare 6100/18390 new=4 changed=137
+item incremental compare 8100/18390 new=4 changed=137
+item incremental compare 10100/18390 new=4 changed=137
+item incremental compare 12100/18390 new=4 changed=138
+item incremental compare 14100/18390 new=4 changed=138
+item incremental compare 16100/18390 new=4 changed=138
+item incremental compare 18100/18390 new=4 changed=138
+{"changed":138,"new":4,"run_id":57,"source_total":18390,"unchanged":18248}

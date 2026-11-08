@@ -1,0 +1,21 @@
+{
+  "protocol": "lovrabet-project-domain-routing/v1",
+  "mode": "official",
+  "region": "cn",
+  "domains": {
+    "api": "https://api.lovrabet.com",
+    "runtime": "https://runtime.lovrabet.com",
+    "user": "https://user.lovrabet.com",
+    "app": "https://app.lovrabet.com",
+    "skill": "https://skills.lovrabet.com",
+    "kb": "https://api.lovrabet.com"
+  },
+  "cdn": {
+    "libraries": "https://g.alicdn.com/code/lib",
+    "lovrabet": "https://g.lovrabet.com"
+  },
+  "local": {
+    "origin": "https://dev.lovrabet.com",
+    "certificateUrl": "https://g.lovrabet.com/cert/lovrabet-dev.json"
+  }
+}

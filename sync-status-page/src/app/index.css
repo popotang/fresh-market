@@ -1,0 +1,5 @@
+.sync-status-page { min-height: 100%; padding: 24px; background: var(--ant-color-bg-layout); color: var(--ant-color-text); }
+.sync-status-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 20px; }
+.sync-status-header .ant-typography { margin-top: 0; }
+.sync-status-notice { margin-bottom: 16px; }
+@media (max-width: 700px) { .sync-status-page { padding: 12px; } .sync-status-header { flex-direction: column; } }

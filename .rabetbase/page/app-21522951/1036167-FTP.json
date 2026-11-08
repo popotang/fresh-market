@@ -1,0 +1,1891 @@
+{
+  "version": "1.0.0",
+  "componentsMap": [
+    {
+      "package": "@yuntoo/antd-meta",
+      "version": "1.0.0",
+      "main": "",
+      "destructuring": true,
+      "exportName": "YtPage",
+      "componentName": "YtPage"
+    },
+    {
+      "devMode": "lowCode",
+      "componentName": "Page"
+    },
+    {
+      "package": "@yuntoo/antd-smart",
+      "version": "1.0.0",
+      "main": "",
+      "destructuring": true,
+      "exportName": "LrSmartFilter",
+      "componentName": "LrSmartFilter"
+    },
+    {
+      "package": "@yuntoo/antd-smart",
+      "version": "1.0.0",
+      "main": "",
+      "destructuring": true,
+      "exportName": "LrSmartTable",
+      "componentName": "LrSmartTable"
+    },
+    {
+      "package": "@yuntoo/antd-meta",
+      "version": "1.0.0",
+      "main": "",
+      "destructuring": true,
+      "exportName": "YtRglContainer",
+      "componentName": "YtRglContainer"
+    }
+  ],
+  "componentsTree": [
+    {
+      "componentName": "Page",
+      "id": "node_mtn62gue",
+      "props": {
+        "ref": "outerView",
+        "style": {
+          "height": "100%"
+        }
+      },
+      "dataSource": {
+        "list": [
+          {
+            "type": "urlParams",
+            "id": "urlParams",
+            "isInit": true,
+            "source": "system",
+            "options": {}
+          },
+          {
+            "type": "fetch",
+            "id": "1022501_filter",
+            "isInit": true,
+            "source": "dataset",
+            "options": {
+              "method": "POST",
+              "uri": "/api/app-21522951/eac713d6c72646c9b2b3a2ee0f8e31eb/filter",
+              "isCors": true,
+              "timeout": 5000,
+              "paramsArr": [
+                {
+                  "name": "pageSize",
+                  "value": "this.state.yttable_nn8aes0f_pageSize",
+                  "type": "expression",
+                  "required": true
+                },
+                {
+                  "name": "currentPage",
+                  "value": "this.state.yttable_nn8aes0f_currentPage",
+                  "type": "expression",
+                  "required": true
+                },
+                {
+                  "name": "filter",
+                  "value": "this.state.ytfilter_n8w8v302_filter",
+                  "type": "expression",
+                  "required": true
+                },
+                {
+                  "name": "sort",
+                  "value": "this.state.yttable_nn8aes0f_sort",
+                  "type": "expression",
+                  "required": true
+                },
+                {
+                  "name": "select",
+                  "value": [
+                    "stream_name",
+                    "last_attempt_status",
+                    "covered_through",
+                    "last_success_at",
+                    "last_source_rows",
+                    "last_saved_rows",
+                    "coverage_level",
+                    "coverage_note",
+                    "id",
+                    "tenant_id",
+                    "stream",
+                    "last_attempt_at",
+                    "verification_method",
+                    "last_event_id"
+                  ],
+                  "type": "array",
+                  "required": true
+                }
+              ],
+              "headersArr": [],
+              "params": {
+                "pageSize": {
+                  "type": "JSExpression",
+                  "value": "this.state.yttable_nn8aes0f_pageSize"
+                },
+                "currentPage": {
+                  "type": "JSExpression",
+                  "value": "this.state.yttable_nn8aes0f_currentPage"
+                },
+                "filter": {
+                  "type": "JSExpression",
+                  "value": "this.state.ytfilter_n8w8v302_filter"
+                },
+                "sort": {
+                  "type": "JSExpression",
+                  "value": "this.state.yttable_nn8aes0f_sort"
+                },
+                "select": [
+                  "stream_name",
+                  "last_attempt_status",
+                  "covered_through",
+                  "last_success_at",
+                  "last_source_rows",
+                  "last_saved_rows",
+                  "coverage_level",
+                  "coverage_note",
+                  "id",
+                  "tenant_id",
+                  "stream",
+                  "last_attempt_at",
+                  "verification_method",
+                  "last_event_id"
+                ]
+              },
+              "requiredParams": [
+                "pageSize",
+                "currentPage"
+              ],
+              "headers": {},
+              "willFetch": {
+                "type": "JSFunction",
+                "value": "({ filter, sort, ...rest }) => ({ ...rest, ...filter, ...sort })"
+              }
+            }
+          },
+          {
+            "type": "fetch",
+            "id": "1022501_delete",
+            "isInit": false,
+            "source": "dataset",
+            "options": {
+              "method": "POST",
+              "uri": "/api/app-21522951/eac713d6c72646c9b2b3a2ee0f8e31eb/delete",
+              "isCors": true,
+              "timeout": 5000,
+              "requiredParams": [
+                "id"
+              ],
+              "paramsArr": [],
+              "headersArr": [],
+              "params": {},
+              "headers": {}
+            }
+          },
+          {
+            "type": "fetch",
+            "id": "1022501_excelExport",
+            "isInit": false,
+            "source": "dataset",
+            "options": {
+              "method": "POST",
+              "uri": "/api/app-21522951/eac713d6c72646c9b2b3a2ee0f8e31eb/excelExport",
+              "isCors": true,
+              "timeout": 5000,
+              "paramsArr": [
+                {
+                  "name": "filter",
+                  "value": "this.state.ytfilter_n8w8v302_filter",
+                  "type": "expression",
+                  "required": true
+                },
+                {
+                  "name": "selectKeys",
+                  "value": "this.state.yttable_nn8aes0f_selectKeys",
+                  "type": "expression",
+                  "required": true
+                },
+                {
+                  "name": "select",
+                  "value": [
+                    "stream_name",
+                    "last_attempt_status",
+                    "covered_through",
+                    "last_success_at",
+                    "last_source_rows",
+                    "last_saved_rows",
+                    "coverage_level",
+                    "coverage_note",
+                    "id",
+                    "tenant_id",
+                    "stream",
+                    "last_attempt_at",
+                    "verification_method",
+                    "last_event_id"
+                  ],
+                  "type": "array",
+                  "required": false
+                }
+              ],
+              "headersArr": [],
+              "params": {
+                "filter": {
+                  "type": "JSExpression",
+                  "value": "this.state.ytfilter_n8w8v302_filter"
+                },
+                "selectKeys": {
+                  "type": "JSExpression",
+                  "value": "this.state.yttable_nn8aes0f_selectKeys"
+                },
+                "select": [
+                  "stream_name",
+                  "last_attempt_status",
+                  "covered_through",
+                  "last_success_at",
+                  "last_source_rows",
+                  "last_saved_rows",
+                  "coverage_level",
+                  "coverage_note",
+                  "id",
+                  "tenant_id",
+                  "stream",
+                  "last_attempt_at",
+                  "verification_method",
+                  "last_event_id"
+                ]
+              },
+              "requiredParams": [],
+              "headers": {},
+              "willFetch": {
+                "type": "JSFunction",
+                "value": "({ filter, selectKeys, select, ...rest }) => ({ ...rest, ...filter, select, ...selectKeys })"
+              }
+            }
+          }
+        ]
+      },
+      "hidden": false,
+      "title": "",
+      "isLocked": false,
+      "condition": true,
+      "conditionGroup": "",
+      "children": [
+        {
+          "componentName": "YtPage",
+          "id": "node_m5u7k1cy",
+          "props": {
+            "ref": "ytpage_m5u7k1cy",
+            "_context": {
+              "type": "JSExpression",
+              "value": "this"
+            },
+            "_uniqueId": "ytpage_m5u7k1cy",
+            "useRGL": true
+          },
+          "hidden": false,
+          "title": "",
+          "isLocked": false,
+          "condition": true,
+          "conditionGroup": "",
+          "children": [
+            {
+              "componentName": "YtRglContainer",
+              "id": "node_88sinrkv",
+              "props": {
+                "RGLlayout": [
+                  {
+                    "i": "node_y57gbxtf",
+                    "w": 12,
+                    "h": 3,
+                    "x": 0,
+                    "y": 0,
+                    "autoHeight": true
+                  },
+                  {
+                    "i": "node_kzusrgaj",
+                    "w": 12,
+                    "h": 27,
+                    "x": 0,
+                    "y": 3,
+                    "autoHeight": true
+                  }
+                ]
+              },
+              "hidden": false,
+              "title": "",
+              "isLocked": false,
+              "condition": true,
+              "conditionGroup": "",
+              "children": [
+                {
+                  "componentName": "LrSmartFilter",
+                  "id": "node_y57gbxtf",
+                  "props": {
+                    "_doVersion": "V2",
+                    "_context": {
+                      "type": "JSExpression",
+                      "value": "this"
+                    },
+                    "ref": "ytfilter_n8w8v302",
+                    "_uniqueId": "ytfilter_n8w8v302",
+                    "datasetId": 1022501,
+                    "oneSearchFilterKey": "ytfilter_n8w8v302_filter",
+                    "items": [
+                      {
+                        "lcAsItemId": null,
+                        "name": "stream_name",
+                        "label": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-filter-label-stream-name-4cdff87d0e494cfbbc0bb991db73403a",
+                          "zh-CN": "数据类别",
+                          "en-US": "Stream Name",
+                          "ja-JP": "ストリーム名",
+                          "tr-TR": "Akış Adı",
+                          "id-ID": "Nama Stream"
+                        },
+                        "componentName": "YtInput",
+                        "doType": "TEXT",
+                        "isShown": true,
+                        "placeholder": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-filter-placeholder-stream-name-327f74c10b824451bc32ecd281bc4d94",
+                          "zh-CN": "请输入流名称",
+                          "en-US": "Enter stream name",
+                          "ja-JP": "ストリーム名を入力してください",
+                          "tr-TR": "Akış adını girin",
+                          "id-ID": "Masukkan nama stream"
+                        },
+                        "options": null,
+                        "indexType": null,
+                        "__lc_as_item_id__": "lqsxe5gmjk"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "name": "id",
+                        "label": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-filter-label-id-c941224bb7a749d1a4c9f30bf09529b6",
+                          "zh-CN": "主键",
+                          "en-US": "Primary Key",
+                          "ja-JP": "主キー",
+                          "tr-TR": "Birincil Anahtar",
+                          "id-ID": "Kunci Utama"
+                        },
+                        "componentName": "YtInput",
+                        "doType": "NUMBER",
+                        "isShown": false,
+                        "placeholder": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-filter-placeholder-id-3c97629c80374b90a9a70ce3ff02e341",
+                          "zh-CN": "请输入主键",
+                          "en-US": "Enter primary key",
+                          "ja-JP": "主キーを入力してください",
+                          "tr-TR": "Birincil anahtarı girin",
+                          "id-ID": "Masukkan kunci utama"
+                        },
+                        "options": null,
+                        "indexType": "primary",
+                        "__lc_as_item_id__": "c7tax64gob"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "name": "tenant_id",
+                        "label": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-filter-label-tenant-id-08c0a3f484a94c0b8d6efeb91a3d8eb9",
+                          "zh-CN": "租户ID",
+                          "en-US": "Tenant ID",
+                          "ja-JP": "テナントID",
+                          "tr-TR": "Kiracı Kimliği",
+                          "id-ID": "ID Tenant"
+                        },
+                        "componentName": "YtInput",
+                        "doType": "TEXT",
+                        "isShown": false,
+                        "placeholder": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-filter-placeholder-tenant-id-77918a20eff54a9d9041684c40e8195a",
+                          "zh-CN": "请输入租户ID",
+                          "en-US": "Enter tenant ID",
+                          "ja-JP": "テナントIDを入力してください",
+                          "tr-TR": "Kiracı kimliğini girin",
+                          "id-ID": "Masukkan ID tenant"
+                        },
+                        "options": null,
+                        "indexType": "unique",
+                        "__lc_as_item_id__": "xsekwcud12"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "name": "stream",
+                        "label": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-filter-label-stream-4199ff1776db4cf6876e7fd9d47c49db",
+                          "zh-CN": "流标识",
+                          "en-US": "Stream Identifier",
+                          "ja-JP": "ストリーム識別子",
+                          "tr-TR": "Akış Tanımlayıcısı",
+                          "id-ID": "Pengenal Stream"
+                        },
+                        "componentName": "YtInput",
+                        "doType": "TEXT",
+                        "isShown": false,
+                        "placeholder": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-filter-placeholder-stream-209909435b5c4f72acda25f26fef3c08",
+                          "zh-CN": "请输入流标识",
+                          "en-US": "Enter stream identifier",
+                          "ja-JP": "ストリーム識別子を入力してください",
+                          "tr-TR": "Akış tanımlayıcısını girin",
+                          "id-ID": "Masukkan pengenal stream"
+                        },
+                        "options": null,
+                        "indexType": "unique",
+                        "__lc_as_item_id__": "av3k4t2c17"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "name": "last_attempt_status",
+                        "label": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-filter-label-last-attempt-status-14ed8094d4884f9faaf7331995931f9e",
+                          "zh-CN": "最近状态",
+                          "en-US": "Last Attempt Status",
+                          "ja-JP": "最終試行ステータス",
+                          "tr-TR": "Son Deneme Durumu",
+                          "id-ID": "Status Percobaan Terakhir"
+                        },
+                        "componentName": "YtSingleSelect",
+                        "doType": "SELECT",
+                        "isShown": true,
+                        "placeholder": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-filter-placeholder-last-attempt-status-92ba8361c81846f1975a7327c916ce62",
+                          "zh-CN": "请选择最近尝试状态",
+                          "en-US": "Select last attempt status",
+                          "ja-JP": "最終試行ステータスを選択してください",
+                          "tr-TR": "Son deneme durumunu seçin",
+                          "id-ID": "Pilih status percobaan terakhir"
+                        },
+                        "options": [
+                          {
+                            "label": {
+                              "type": "i18n",
+                              "key": "i18n-lr-smart-filter-label-text-7bb5054df9c64dee9d82c9f08dc7adc6",
+                              "zh-CN": "成功",
+                              "en-US": "Success",
+                              "ja-JP": "成功",
+                              "tr-TR": "Başarılı",
+                              "id-ID": "Berhasil"
+                            },
+                            "value": "success"
+                          },
+                          {
+                            "label": {
+                              "type": "i18n",
+                              "key": "i18n-lr-smart-filter-label-text-4fc545c535a9426a96c1710071a50111",
+                              "zh-CN": "未调度",
+                              "en-US": "Unscheduled",
+                              "ja-JP": "未スケジュール",
+                              "tr-TR": "Planlanmamış",
+                              "id-ID": "Tidak Terjadwal"
+                            },
+                            "value": "not_scheduled"
+                          }
+                        ],
+                        "indexType": null,
+                        "__lc_as_item_id__": "nii8r9orxm"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "name": "last_attempt_at",
+                        "label": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-filter-label-last-attempt-at-636d62a7f85c45548991d98c7c328289",
+                          "zh-CN": "最近尝试时间",
+                          "en-US": "Last Attempt Time",
+                          "ja-JP": "最終試行時刻",
+                          "tr-TR": "Son Deneme Zamanı",
+                          "id-ID": "Waktu Percobaan Terakhir"
+                        },
+                        "componentName": "YtRangeDatePicker",
+                        "doType": "DATETIME",
+                        "isShown": false,
+                        "placeholder": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-filter-placeholder-last-attempt-at-e075b2fc926d41e1b18efba96f3353b5",
+                          "zh-CN": "请选择最近尝试时间",
+                          "en-US": "Select last attempt time",
+                          "ja-JP": "最終試行時刻を選択してください",
+                          "tr-TR": "Son deneme zamanını seçin",
+                          "id-ID": "Pilih waktu percobaan terakhir"
+                        },
+                        "options": null,
+                        "indexType": null,
+                        "__lc_as_item_id__": "34x5vf7cec"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "name": "last_success_at",
+                        "label": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-filter-label-last-success-at-a25e3ddfd35a4fb1b8904495ca146a6b",
+                          "zh-CN": "最后成功同步",
+                          "en-US": "Last Success Time",
+                          "ja-JP": "最終成功時刻",
+                          "tr-TR": "Son Başarı Zamanı",
+                          "id-ID": "Waktu Berhasil Terakhir"
+                        },
+                        "componentName": "YtRangeDatePicker",
+                        "doType": "DATETIME",
+                        "isShown": false,
+                        "placeholder": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-filter-placeholder-last-success-at-1308c74b368a433bac24fb8dd6a06d2f",
+                          "zh-CN": "请选择最近成功时间",
+                          "en-US": "Select last success time",
+                          "ja-JP": "最終成功時刻を選択してください",
+                          "tr-TR": "Son başarı zamanını seçin",
+                          "id-ID": "Pilih waktu berhasil terakhir"
+                        },
+                        "options": null,
+                        "indexType": "index",
+                        "__lc_as_item_id__": "e626cn4d5b"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "name": "covered_through",
+                        "label": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-filter-label-covered-through-8a02b76daef74703a0264310ac32bf2b",
+                          "zh-CN": "数据覆盖至",
+                          "en-US": "Override Deadline",
+                          "ja-JP": "オーバーライド期限",
+                          "tr-TR": "Geçersiz Kılma Son Tarihi",
+                          "id-ID": "Batas Waktu Override"
+                        },
+                        "componentName": "YtRangeDatePicker",
+                        "doType": "DATETIME",
+                        "isShown": true,
+                        "placeholder": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-filter-placeholder-covered-through-accee9a2db6f42b196e3566d5ddffee8",
+                          "zh-CN": "请选择覆盖截止日期",
+                          "en-US": "Select override deadline",
+                          "ja-JP": "オーバーライド期限を選択してください",
+                          "tr-TR": "Geçersiz kılma son tarihini seçin",
+                          "id-ID": "Pilih batas waktu override"
+                        },
+                        "options": null,
+                        "indexType": "index",
+                        "__lc_as_item_id__": "hxwj450x75"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "name": "last_source_rows",
+                        "label": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-filter-label-last-source-rows-5827e32daa0745bbb6fd0b0b74a38bcc",
+                          "zh-CN": "本次源行数",
+                          "en-US": "Source Data Row Count",
+                          "ja-JP": "ソースデータ行数",
+                          "tr-TR": "Kaynak Veri Satır Sayısı",
+                          "id-ID": "Jumlah Baris Data Sumber"
+                        },
+                        "componentName": "YtInput",
+                        "doType": "NUMBER",
+                        "isShown": false,
+                        "placeholder": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-filter-placeholder-last-source-rows-37ae51f815eb49099469712c5531fd3a",
+                          "zh-CN": "请输入源数据行数",
+                          "en-US": "Enter source data row count",
+                          "ja-JP": "ソースデータ行数を入力してください",
+                          "tr-TR": "Kaynak veri satır sayısını girin",
+                          "id-ID": "Masukkan jumlah baris data sumber"
+                        },
+                        "options": null,
+                        "indexType": null,
+                        "__lc_as_item_id__": "6rtle9clqk"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "name": "last_saved_rows",
+                        "label": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-filter-label-last-saved-rows-439d661f984f4037a3d075d2f8a12ea8",
+                          "zh-CN": "本次写入数",
+                          "en-US": "Save Row Count",
+                          "ja-JP": "保存行数",
+                          "tr-TR": "Satır Sayısını Kaydet",
+                          "id-ID": "Simpan Jumlah Baris"
+                        },
+                        "componentName": "YtInput",
+                        "doType": "NUMBER",
+                        "isShown": false,
+                        "placeholder": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-filter-placeholder-last-saved-rows-b4a4a338a6944eca8640b24451a8ec80",
+                          "zh-CN": "请输入保存行数",
+                          "en-US": "Please enter the save row count",
+                          "ja-JP": "保存行数を入力してください",
+                          "tr-TR": "Lütfen kaydedilecek satır sayısını girin",
+                          "id-ID": "Silakan masukkan jumlah baris yang disimpan"
+                        },
+                        "options": null,
+                        "indexType": null,
+                        "__lc_as_item_id__": "natvzqge2s"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "name": "verification_method",
+                        "label": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-filter-label-verification-method-fc649e0830c64caa9a99c7edcc7ff014",
+                          "zh-CN": "验证方式",
+                          "en-US": "Verification Method",
+                          "ja-JP": "検証方法",
+                          "tr-TR": "Doğrulama Yöntemi",
+                          "id-ID": "Metode Verifikasi"
+                        },
+                        "componentName": "YtSingleSelect",
+                        "doType": "SELECT",
+                        "isShown": false,
+                        "placeholder": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-filter-placeholder-verification-method-ad9240d978f14de2b12b4897725e16c0",
+                          "zh-CN": "请选择验证方式",
+                          "en-US": "Please select a verification method",
+                          "ja-JP": "検証方法を選択してください",
+                          "tr-TR": "Lütfen bir doğrulama yöntemi seçin",
+                          "id-ID": "Silakan pilih metode verifikasi"
+                        },
+                        "options": [
+                          {
+                            "label": {
+                              "type": "i18n",
+                              "key": "i18n-lr-smart-filter-label-text-58b943f75e6c4d74b9d84090ec7e8a5b",
+                              "zh-CN": "单次扫描捕获",
+                              "en-US": "Single Scan Capture",
+                              "ja-JP": "単一スキャンキャプチャ",
+                              "tr-TR": "Tek Tarama Yakalama",
+                              "id-ID": "Penangkapan Pemindaian Tunggal"
+                            },
+                            "value": "single_scan_and_capture"
+                          },
+                          {
+                            "label": {
+                              "type": "i18n",
+                              "key": "i18n-lr-smart-filter-label-text-553e7e0ea5bc4b4e939c270ef6ded227",
+                              "zh-CN": "导出总量捕获",
+                              "en-US": "Export Total Capture",
+                              "ja-JP": "エクスポート総数キャプチャ",
+                              "tr-TR": "Dışa Aktarma Toplamı Yakalama",
+                              "id-ID": "Penangkapan Total Ekspor"
+                            },
+                            "value": "export_total_and_capture"
+                          },
+                          {
+                            "label": {
+                              "type": "i18n",
+                              "key": "i18n-lr-smart-filter-label-text-2afc62db34564f4ea177fad48f8251f9",
+                              "zh-CN": "源窗口捕获",
+                              "en-US": "Source Window Capture",
+                              "ja-JP": "ソースウィンドウキャプチャ",
+                              "tr-TR": "Kaynak Pencere Yakalama",
+                              "id-ID": "Penangkapan Jendela Sumber"
+                            },
+                            "value": "source_window_and_capture"
+                          },
+                          {
+                            "label": {
+                              "type": "i18n",
+                              "key": "i18n-lr-smart-filter-label-text-6234465bea2041a7bc21b1ae7f885b3f",
+                              "zh-CN": "源总量与唯一ID",
+                              "en-US": "Source Total and Unique ID",
+                              "ja-JP": "ソース総数と一意ID",
+                              "tr-TR": "Kaynak Toplamı ve Benzersiz Kimlik",
+                              "id-ID": "Total Sumber dan ID Unik"
+                            },
+                            "value": "source_total_and_unique_ids"
+                          },
+                          {
+                            "label": {
+                              "type": "i18n",
+                              "key": "i18n-lr-smart-filter-label-text-2d6bc9b0848944c599ddc3af278d4d0f",
+                              "zh-CN": "配置计数捕获",
+                              "en-US": "Configuration Count Capture",
+                              "ja-JP": "構成カウントキャプチャ",
+                              "tr-TR": "Yapılandırma Sayısı Yakalama",
+                              "id-ID": "Penangkapan Jumlah Konfigurasi"
+                            },
+                            "value": "profile_count_and_capture"
+                          },
+                          {
+                            "label": {
+                              "type": "i18n",
+                              "key": "i18n-lr-smart-filter-label-text-58fe5daa86dd4b898a17335afebd2508",
+                              "zh-CN": "变更状态审计",
+                              "en-US": "Change Status Audit",
+                              "ja-JP": "変更ステータス監査",
+                              "tr-TR": "Değişiklik Durumu Denetimi",
+                              "id-ID": "Audit Status Perubahan"
+                            },
+                            "value": "changed_tab_status_audit"
+                          }
+                        ],
+                        "indexType": null,
+                        "__lc_as_item_id__": "f8z0gasayu"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "name": "coverage_level",
+                        "label": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-filter-label-coverage-level-112d20e94c30497f874223c06c8bce5d",
+                          "zh-CN": "覆盖范围",
+                          "en-US": "Override Level",
+                          "ja-JP": "オーバーライドレベル",
+                          "tr-TR": "Geçersiz Kılma Seviyesi",
+                          "id-ID": "Tingkat Penimpaan"
+                        },
+                        "componentName": "YtSingleSelect",
+                        "doType": "SELECT",
+                        "isShown": true,
+                        "placeholder": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-filter-placeholder-coverage-level-483a4aa3a16c462ba52743ed874adedb",
+                          "zh-CN": "请选择覆盖级别",
+                          "en-US": "Please select an override level",
+                          "ja-JP": "オーバーライドレベルを選択してください",
+                          "tr-TR": "Lütfen bir geçersiz kılma seviyesi seçin",
+                          "id-ID": "Silakan pilih tingkat penimpaan"
+                        },
+                        "options": [
+                          {
+                            "label": {
+                              "type": "i18n",
+                              "key": "i18n-lr-smart-filter-label-text-839170c51da342dd8d939bf642d96cf7",
+                              "zh-CN": "完整详情",
+                              "en-US": "Full Details",
+                              "ja-JP": "完全な詳細",
+                              "tr-TR": "Tam Ayrıntılar",
+                              "id-ID": "Detail Lengkap"
+                            },
+                            "value": "full_detail"
+                          },
+                          {
+                            "label": {
+                              "type": "i18n",
+                              "key": "i18n-lr-smart-filter-label-text-edf568ba0ac347faabaaf043d1f20156",
+                              "zh-CN": "仅表头",
+                              "en-US": "Header Only",
+                              "ja-JP": "ヘッダーのみ",
+                              "tr-TR": "Yalnızca Başlık",
+                              "id-ID": "Hanya Header"
+                            },
+                            "value": "headers_only"
+                          },
+                          {
+                            "label": {
+                              "type": "i18n",
+                              "key": "i18n-lr-smart-filter-label-text-0f24243c7d0d4aa583b6c2436dbc3a2d",
+                              "zh-CN": "完整列表",
+                              "en-US": "Full List",
+                              "ja-JP": "完全なリスト",
+                              "tr-TR": "Tam Liste",
+                              "id-ID": "Daftar Lengkap"
+                            },
+                            "value": "full_list"
+                          },
+                          {
+                            "label": {
+                              "type": "i18n",
+                              "key": "i18n-lr-smart-filter-label-text-951a75eda1924d56b74b3e83c3d0338b",
+                              "zh-CN": "仅审批行",
+                              "en-US": "Approval Rows Only",
+                              "ja-JP": "承認行のみ",
+                              "tr-TR": "Yalnızca Onay Satırları",
+                              "id-ID": "Hanya Baris Persetujuan"
+                            },
+                            "value": "approved_rows_only"
+                          },
+                          {
+                            "label": {
+                              "type": "i18n",
+                              "key": "i18n-lr-smart-filter-label-text-4367a3bfcac140029152a129ac11a243",
+                              "zh-CN": "完整目录",
+                              "en-US": "Full Catalog",
+                              "ja-JP": "完全なカタログ",
+                              "tr-TR": "Tam Katalog",
+                              "id-ID": "Katalog Lengkap"
+                            },
+                            "value": "full_catalog"
+                          },
+                          {
+                            "label": {
+                              "type": "i18n",
+                              "key": "i18n-lr-smart-filter-label-text-b658f4cabb30491eb8756abdc1694af6",
+                              "zh-CN": "仅变更",
+                              "en-US": "Changes Only",
+                              "ja-JP": "変更のみ",
+                              "tr-TR": "Yalnızca Değişiklikler",
+                              "id-ID": "Hanya Perubahan"
+                            },
+                            "value": "changed_only"
+                          },
+                          {
+                            "label": {
+                              "type": "i18n",
+                              "key": "i18n-lr-smart-filter-label-text-2d18b07c7ffd4ffd9fa5e54dbd96c6a6",
+                              "zh-CN": "未知",
+                              "en-US": "Unknown",
+                              "ja-JP": "不明",
+                              "tr-TR": "Bilinmiyor",
+                              "id-ID": "Tidak Diketahui"
+                            },
+                            "value": "unknown"
+                          }
+                        ],
+                        "indexType": null,
+                        "__lc_as_item_id__": "jf634zokfm"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "name": "coverage_note",
+                        "label": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-filter-label-coverage-note-8b56213b88ba4180b3b98afe63f54b92",
+                          "zh-CN": "覆盖说明",
+                          "en-US": "Override Description",
+                          "ja-JP": "オーバーライドの説明",
+                          "tr-TR": "Geçersiz Kılma Açıklaması",
+                          "id-ID": "Deskripsi Penimpaan"
+                        },
+                        "componentName": "YtInput",
+                        "doType": "TEXT",
+                        "isShown": false,
+                        "placeholder": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-filter-placeholder-coverage-note-6863b2645f9c4cd6bad263c8e437dc9a",
+                          "zh-CN": "请输入覆盖说明",
+                          "en-US": "Enter override description",
+                          "ja-JP": "オーバーライドの説明を入力してください",
+                          "tr-TR": "Geçersiz kılma açıklamasını girin",
+                          "id-ID": "Masukkan deskripsi penggantian"
+                        },
+                        "options": null,
+                        "indexType": null,
+                        "__lc_as_item_id__": "4x0soyikss"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "name": "last_error",
+                        "label": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-filter-label-last-error-df8bf40eb2d2419a8a62ebde5276a4f2",
+                          "zh-CN": "最近失败原因",
+                          "en-US": "Recent Error",
+                          "ja-JP": "最近のエラー",
+                          "tr-TR": "Son Hata",
+                          "id-ID": "Kesalahan Terbaru"
+                        },
+                        "componentName": "YtInput",
+                        "doType": "TEXT",
+                        "isShown": false,
+                        "placeholder": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-filter-placeholder-last-error-64f4b520352b4b8a8dbb4a59eaf4803f",
+                          "zh-CN": "请输入最近错误",
+                          "en-US": "Enter recent error",
+                          "ja-JP": "最近のエラーを入力してください",
+                          "tr-TR": "Son hatayı girin",
+                          "id-ID": "Masukkan kesalahan terbaru"
+                        },
+                        "options": null,
+                        "indexType": null,
+                        "__lc_as_item_id__": "4pmjs6dz8n"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "name": "last_event_id",
+                        "label": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-filter-label-last-event-id-429a0f6c8af7424a956b702a6303efc8",
+                          "zh-CN": "最近事件ID",
+                          "en-US": "Recent Event ID",
+                          "ja-JP": "最近のイベントID",
+                          "tr-TR": "Son Olay Kimliği",
+                          "id-ID": "ID Peristiwa Terbaru"
+                        },
+                        "componentName": "YtInput",
+                        "doType": "NUMBER",
+                        "isShown": false,
+                        "placeholder": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-filter-placeholder-last-event-id-21bc02088ce84bd6aaf7906e128d351d",
+                          "zh-CN": "请输入最近事件ID",
+                          "en-US": "Enter recent event ID",
+                          "ja-JP": "最近のイベントIDを入力してください",
+                          "tr-TR": "Son olay kimliğini girin",
+                          "id-ID": "Masukkan ID peristiwa terbaru"
+                        },
+                        "options": null,
+                        "indexType": null,
+                        "__lc_as_item_id__": "lwikqt6qm7"
+                      }
+                    ],
+                    "events": [
+                      {
+                        "optType": "flowAction",
+                        "name": "onSearch",
+                        "flowList": [
+                          {
+                            "active": true,
+                            "optType": "request",
+                            "options": {
+                              "_bindDataSource": "1022501_filter",
+                              "_autoBindDataSourceParams": false,
+                              "_bindDataSourceParams": {
+                                "type": "JSFunction",
+                                "value": "(extraParams) => ({ ...extraParams, currentPage: 1 })"
+                              },
+                              "confirmConfig": {
+                                "enable": false
+                              },
+                              "responseConfig": {
+                                "successToastMsg": {
+                                  "type": "i18n",
+                                  "key": "i18n-lr-smart-filter-success-toast-msg-text-83e4f22ec59a4ef7b5f38976ac4945bd",
+                                  "zh-CN": "查询成功！",
+                                  "en-US": "Query successful!",
+                                  "ja-JP": "検索に成功しました！",
+                                  "tr-TR": "Sorgu başarılı!",
+                                  "id-ID": "Kueri berhasil!"
+                                },
+                                "errorToastMsg": {
+                                  "type": "i18n",
+                                  "key": "i18n-lr-smart-filter-error-toast-msg-text-2dfcc1a367b54bba9a7095b78ffbb19f",
+                                  "zh-CN": "查询失败",
+                                  "en-US": "Query failed",
+                                  "ja-JP": "検索に失敗しました",
+                                  "tr-TR": "Sorgu başarısız",
+                                  "id-ID": "Kueri gagal"
+                                }
+                              },
+                              "redirectType": "current"
+                            }
+                          }
+                        ]
+                      }
+                    ],
+                    "showSearch": true
+                  },
+                  "meta": {
+                    "datasetId": 1022501,
+                    "datasetCode": "eac713d6c72646c9b2b3a2ee0f8e31eb"
+                  },
+                  "hidden": false,
+                  "title": "",
+                  "isLocked": false,
+                  "condition": true,
+                  "conditionGroup": ""
+                },
+                {
+                  "componentName": "LrSmartTable",
+                  "id": "node_kzusrgaj",
+                  "props": {
+                    "_doVersion": "V2",
+                    "_context": {
+                      "type": "JSExpression",
+                      "value": "this"
+                    },
+                    "ref": "yttable_nn8aes0f",
+                    "_uniqueId": "yttable_nn8aes0f",
+                    "dataSource": {
+                      "type": "JSExpression",
+                      "value": "this.state['1022501_filter']"
+                    },
+                    "loading": {
+                      "type": "JSExpression",
+                      "value": "this.state['1022501_filter_loading']"
+                    },
+                    "columns": [
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "stream_name",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-stream-name-ccad5ec601de47578c845e073974ae2d",
+                          "zh-CN": "数据类别",
+                          "en-US": "Stream Name",
+                          "ja-JP": "ストリーム名",
+                          "tr-TR": "Akış Adı",
+                          "id-ID": "Nama Stream"
+                        },
+                        "pkField": false,
+                        "doType": "TEXT",
+                        "format": "text",
+                        "isShown": true,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "formatOptions": {
+                          "ellipsis": true
+                        },
+                        "indexType": null,
+                        "__lc_as_item_id__": "bu96ilidvr"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "last_attempt_status",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-last-attempt-status-e2a2580f397942a584fca9b3b350dbe5",
+                          "zh-CN": "最近状态",
+                          "en-US": "Last Attempt Status",
+                          "ja-JP": "最終試行ステータス",
+                          "tr-TR": "Son Deneme Durumu",
+                          "id-ID": "Status Percobaan Terakhir"
+                        },
+                        "pkField": false,
+                        "doType": "SELECT",
+                        "format": "enum",
+                        "isShown": true,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "formatOptions": {
+                          "options": [
+                            {
+                              "color": "success",
+                              "label": "成功",
+                              "value": "success"
+                            },
+                            {
+                              "color": "default",
+                              "label": "未调度",
+                              "value": "not_scheduled"
+                            }
+                          ],
+                          "type": "select"
+                        },
+                        "indexType": null,
+                        "__lc_as_item_id__": "50qjohuvd2"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "covered_through",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-covered-through-ce251acadf0d4e50835fc7456aa966e5",
+                          "zh-CN": "数据覆盖至",
+                          "en-US": "Override Deadline",
+                          "ja-JP": "オーバーライド期限",
+                          "tr-TR": "Geçersiz Kılma Son Tarihi",
+                          "id-ID": "Batas Waktu Override"
+                        },
+                        "pkField": false,
+                        "doType": "DATETIME",
+                        "format": "datetime",
+                        "isShown": true,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "formatOptions": {
+                          "format": "YYYY-MM-DD"
+                        },
+                        "indexType": "index",
+                        "__lc_as_item_id__": "3m1uow3871"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "last_success_at",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-last-success-at-2fdde7f4fe904bfe88da0f014d59c917",
+                          "zh-CN": "最后成功同步",
+                          "en-US": "Last Success Time",
+                          "ja-JP": "最終成功時刻",
+                          "tr-TR": "Son Başarı Zamanı",
+                          "id-ID": "Waktu Berhasil Terakhir"
+                        },
+                        "pkField": false,
+                        "doType": "DATETIME",
+                        "format": "datetime",
+                        "isShown": true,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": true,
+                        "defaultSortOrder": "descend",
+                        "formatOptions": {
+                          "format": "YYYY-MM-DD HH:mm"
+                        },
+                        "indexType": "index",
+                        "__lc_as_item_id__": "f4961ts24s"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "last_source_rows",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-last-source-rows-f8120bc0668b47129b89719be54d11cb",
+                          "zh-CN": "本次源行数",
+                          "en-US": "Source Data Row Count",
+                          "ja-JP": "ソースデータ行数",
+                          "tr-TR": "Kaynak Veri Satır Sayısı",
+                          "id-ID": "Jumlah Baris Data Sumber"
+                        },
+                        "pkField": false,
+                        "doType": "NUMBER",
+                        "format": "text",
+                        "isShown": true,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "indexType": null,
+                        "__lc_as_item_id__": "nq3h9nrhzv"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "last_saved_rows",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-last-saved-rows-fe233d44c1484e14a79522beee62599c",
+                          "zh-CN": "本次写入数",
+                          "en-US": "Save Row Count",
+                          "ja-JP": "保存行数",
+                          "tr-TR": "Satır Sayısını Kaydet",
+                          "id-ID": "Simpan Jumlah Baris"
+                        },
+                        "pkField": false,
+                        "doType": "NUMBER",
+                        "format": "text",
+                        "isShown": true,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "indexType": null,
+                        "__lc_as_item_id__": "vwuy85xob5"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "coverage_level",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-coverage-level-59e079e79ad9454dadcf7aaf868a5c97",
+                          "zh-CN": "覆盖范围",
+                          "en-US": "Override Level",
+                          "ja-JP": "オーバーライドレベル",
+                          "tr-TR": "Geçersiz Kılma Seviyesi",
+                          "id-ID": "Tingkat Penimpaan"
+                        },
+                        "pkField": false,
+                        "doType": "SELECT",
+                        "format": "enum",
+                        "isShown": true,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "formatOptions": {
+                          "options": [
+                            {
+                              "color": "default",
+                              "label": "完整详情",
+                              "value": "full_detail"
+                            },
+                            {
+                              "color": "default",
+                              "label": "仅表头",
+                              "value": "headers_only"
+                            },
+                            {
+                              "color": "default",
+                              "label": "完整列表",
+                              "value": "full_list"
+                            },
+                            {
+                              "color": "default",
+                              "label": "仅审批行",
+                              "value": "approved_rows_only"
+                            },
+                            {
+                              "color": "default",
+                              "label": "完整目录",
+                              "value": "full_catalog"
+                            },
+                            {
+                              "color": "default",
+                              "label": "仅变更",
+                              "value": "changed_only"
+                            },
+                            {
+                              "color": "default",
+                              "label": "未知",
+                              "value": "unknown"
+                            }
+                          ],
+                          "type": "select"
+                        },
+                        "indexType": null,
+                        "__lc_as_item_id__": "ss410nk7nn"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "coverage_note",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-coverage-note-babe3a575fdb45029111863b4edcebd6",
+                          "zh-CN": "覆盖说明",
+                          "en-US": "Override Description",
+                          "ja-JP": "オーバーライドの説明",
+                          "tr-TR": "Geçersiz Kılma Açıklaması",
+                          "id-ID": "Deskripsi Penimpaan"
+                        },
+                        "pkField": false,
+                        "doType": "TEXT",
+                        "format": "text",
+                        "isShown": true,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": 300,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "formatOptions": {
+                          "ellipsis": true
+                        },
+                        "indexType": null,
+                        "__lc_as_item_id__": "chkugme1ob",
+                        "ellipsis": true
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "last_error",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-last-error-6fbc444873b7495886e9d0e1b5935076",
+                          "zh-CN": "最近失败原因",
+                          "en-US": "Recent Error",
+                          "ja-JP": "最近のエラー",
+                          "tr-TR": "Son Hata",
+                          "id-ID": "Kesalahan Terbaru"
+                        },
+                        "pkField": false,
+                        "doType": "TEXT",
+                        "format": "text",
+                        "isShown": true,
+                        "isFetched": false,
+                        "fixed": null,
+                        "width": 300,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "formatOptions": {
+                          "ellipsis": true
+                        },
+                        "indexType": null,
+                        "__lc_as_item_id__": "1694oh9uuo",
+                        "ellipsis": true
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "id",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-id-89a64b072b464f1482f0acfe44ca8ce3",
+                          "zh-CN": "主键",
+                          "en-US": "Primary Key",
+                          "ja-JP": "主キー",
+                          "tr-TR": "Birincil Anahtar",
+                          "id-ID": "Kunci Utama"
+                        },
+                        "pkField": true,
+                        "doType": "NUMBER",
+                        "format": "text",
+                        "isShown": false,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "formatOptions": {
+                          "format": "YYYY-MM-DD HH:mm"
+                        },
+                        "indexType": "primary",
+                        "__lc_as_item_id__": "m25qgdw27r"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "tenant_id",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-tenant-id-72dfc4c33f224a7bb9fe7bafaefdc818",
+                          "zh-CN": "租户ID",
+                          "en-US": "Tenant ID",
+                          "ja-JP": "テナントID",
+                          "tr-TR": "Kiracı Kimliği",
+                          "id-ID": "ID Tenant"
+                        },
+                        "pkField": false,
+                        "doType": "TEXT",
+                        "format": "text",
+                        "isShown": false,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "indexType": "unique",
+                        "__lc_as_item_id__": "kb1r27aont"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "stream",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-stream-4475d95e47784fda96a597fe1a76eae1",
+                          "zh-CN": "流标识",
+                          "en-US": "Stream Identifier",
+                          "ja-JP": "ストリーム識別子",
+                          "tr-TR": "Akış Tanımlayıcısı",
+                          "id-ID": "Pengenal Stream"
+                        },
+                        "pkField": false,
+                        "doType": "TEXT",
+                        "format": "text",
+                        "isShown": false,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "indexType": "unique",
+                        "__lc_as_item_id__": "s6ssv8cfn1"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "last_attempt_at",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-last-attempt-at-08b691da38ae486e9a0804bd61132334",
+                          "zh-CN": "最近尝试时间",
+                          "en-US": "Last Attempt Time",
+                          "ja-JP": "最終試行時刻",
+                          "tr-TR": "Son Deneme Zamanı",
+                          "id-ID": "Waktu Percobaan Terakhir"
+                        },
+                        "pkField": false,
+                        "doType": "DATETIME",
+                        "format": "datetime",
+                        "isShown": false,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "formatOptions": {
+                          "format": "YYYY-MM-DD HH:mm"
+                        },
+                        "indexType": null,
+                        "__lc_as_item_id__": "3yh4tieqg4"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "verification_method",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-verification-method-65f8655806b54060b2d7da5689ec081e",
+                          "zh-CN": "验证方式",
+                          "en-US": "Verification Method",
+                          "ja-JP": "検証方法",
+                          "tr-TR": "Doğrulama Yöntemi",
+                          "id-ID": "Metode Verifikasi"
+                        },
+                        "pkField": false,
+                        "doType": "SELECT",
+                        "format": "enum",
+                        "isShown": false,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "formatOptions": {
+                          "options": [
+                            {
+                              "color": "default",
+                              "label": "单次扫描捕获",
+                              "value": "single_scan_and_capture"
+                            },
+                            {
+                              "color": "default",
+                              "label": "导出总量捕获",
+                              "value": "export_total_and_capture"
+                            },
+                            {
+                              "color": "default",
+                              "label": "源窗口捕获",
+                              "value": "source_window_and_capture"
+                            },
+                            {
+                              "color": "default",
+                              "label": "源总量与唯一ID",
+                              "value": "source_total_and_unique_ids"
+                            },
+                            {
+                              "color": "default",
+                              "label": "配置计数捕获",
+                              "value": "profile_count_and_capture"
+                            },
+                            {
+                              "color": "default",
+                              "label": "变更状态审计",
+                              "value": "changed_tab_status_audit"
+                            }
+                          ],
+                          "type": "select"
+                        },
+                        "indexType": null,
+                        "__lc_as_item_id__": "5rwrqz9i9d"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "last_event_id",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-last-event-id-8fdb7279c4714ca195f4222fb919992c",
+                          "zh-CN": "最近事件ID",
+                          "en-US": "Recent Event ID",
+                          "ja-JP": "最近のイベントID",
+                          "tr-TR": "Son Olay Kimliği",
+                          "id-ID": "ID Peristiwa Terbaru"
+                        },
+                        "pkField": false,
+                        "doType": "NUMBER",
+                        "format": "text",
+                        "isShown": false,
+                        "isFetched": true,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "indexType": null,
+                        "__lc_as_item_id__": "9rvde3wxma"
+                      },
+                      {
+                        "lcAsItemId": null,
+                        "dataIndex": "updated_at",
+                        "title": {
+                          "type": "i18n",
+                          "key": "i18n-lr-smart-table-title-updated-at-37170ca29ef84647999bd185ccab4062",
+                          "zh-CN": "更新时间",
+                          "en-US": "Update Time",
+                          "ja-JP": "更新時間",
+                          "tr-TR": "Güncelleme Zamanı",
+                          "id-ID": "Waktu Pembaruan"
+                        },
+                        "pkField": false,
+                        "doType": "DATETIME",
+                        "format": "datetime",
+                        "isShown": false,
+                        "isFetched": false,
+                        "fixed": null,
+                        "width": null,
+                        "align": null,
+                        "tooltip": null,
+                        "sortable": null,
+                        "defaultSortOrder": null,
+                        "formatOptions": {
+                          "format": "YYYY-MM-DD HH:mm"
+                        },
+                        "indexType": null,
+                        "__lc_as_item_id__": "p541g1pwvs"
+                      }
+                    ],
+                    "pagination": {
+                      "enable": true,
+                      "showQuickJumper": true,
+                      "showSizeChanger": true,
+                      "pageSizeOptions": [
+                        "10",
+                        "20",
+                        "50",
+                        "100"
+                      ],
+                      "currentPage": {
+                        "type": "JSExpression",
+                        "value": "this.state['yttable_nn8aes0f_currentPage']"
+                      },
+                      "currentPageKey": "yttable_nn8aes0f_currentPage",
+                      "total": {
+                        "type": "JSExpression",
+                        "value": "this.state['yttable_nn8aes0f_total']"
+                      },
+                      "totalKey": "yttable_nn8aes0f_total",
+                      "pageSize": {
+                        "type": "JSExpression",
+                        "value": "this.state['yttable_nn8aes0f_pageSize']"
+                      },
+                      "pageSizeKey": "yttable_nn8aes0f_pageSize"
+                    },
+                    "toolbar": {
+                      "enable": true,
+                      "globalButtons": [
+                        {
+                          "title": {
+                            "type": "i18n",
+                            "key": "i18n-lr-smart-table-title-text-ca6a1c1ad040432fba352999fcdd1dcf",
+                            "zh-CN": "新增",
+                            "en-US": "Add",
+                            "ja-JP": "新規追加",
+                            "tr-TR": "Ekle",
+                            "id-ID": "Tambah"
+                          },
+                          "type": "primary",
+                          "size": "medium",
+                          "optType": "jsAction",
+                          "options": {
+                            "jsFunction": {
+                              "type": "JSFunction",
+                              "value": "(config) => config._context?.appHelper?.yt?.smartPageHistory?.push({ pageTagName: 'CREATE', datasetId: '1022501' })"
+                            }
+                          }
+                        }
+                      ],
+                      "exportButtons": {
+                        "loading": {
+                          "type": "JSExpression",
+                          "value": "this.state['1022501_excelExport_loading']"
+                        },
+                        "mainButton": {
+                          "title": {
+                            "type": "i18n",
+                            "key": "i18n-lr-smart-table-title-text-6f63bcd467ed432d9b9cc745cb614dce",
+                            "zh-CN": "批量操作",
+                            "en-US": "Export all",
+                            "ja-JP": "すべてエクスポート",
+                            "tr-TR": "Tümünü dışa aktar",
+                            "id-ID": "Ekspor semua"
+                          },
+                          "optType": "jsAction",
+                          "disabled": {
+                            "type": "JSExpression",
+                            "value": "!this.state['yttable_nn8aes0f_selectedRowKeys']?.length"
+                          },
+                          "options": {
+                            "jsFunction": {
+                              "type": "JSFunction",
+                              "value": "(config) => config._context?.appHelper?.yt?.smartPageHistory?.push({ pageTagName: 'UPDATE', datasetId: '1022501', dataid: config._context?.state['yttable_nn8aes0f_selectedRowKeys'], type: 'batch' })"
+                            }
+                          }
+                        },
+                        "buttons": [
+                          {
+                            "title": {
+                              "type": "i18n",
+                              "key": "i18n-lr-smart-table-title-text-20c731603b5f4e6f82662247bfc57053",
+                              "zh-CN": "导出选中项",
+                              "en-US": "Export selected",
+                              "ja-JP": "選択項目をエクスポート",
+                              "tr-TR": "Seçilenleri dışa aktar",
+                              "id-ID": "Ekspor item terpilih"
+                            },
+                            "optType": "flowAction",
+                            "actionType": "export",
+                            "disabled": {
+                              "type": "JSExpression",
+                              "value": "!this.state['yttable_nn8aes0f_selectedRowKeys']?.length"
+                            },
+                            "options": {
+                              "flowList": [
+                                {
+                                  "active": true,
+                                  "optType": "request",
+                                  "options": {
+                                    "_bindDataSource": "1022501_excelExport",
+                                    "_autoBindDataSourceParams": true
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "title": {
+                              "type": "i18n",
+                              "key": "i18n-lr-smart-table-title-text-909dcdbcd27a4c169e91d7e1248fde47",
+                              "zh-CN": "导出全部",
+                              "en-US": "Export all",
+                              "ja-JP": "すべてエクスポート",
+                              "tr-TR": "Tümünü dışa aktar",
+                              "id-ID": "Ekspor semua"
+                            },
+                            "optType": "flowAction",
+                            "actionType": "export",
+                            "options": {
+                              "flowList": [
+                                {
+                                  "active": true,
+                                  "optType": "request",
+                                  "options": {
+                                    "_bindDataSource": "1022501_excelExport"
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "title": {
+                              "type": "i18n",
+                              "key": "i18n-lr-smart-table-title-text-9aad3663537a4b0db392f1940420e315",
+                              "zh-CN": "删除选中项",
+                              "en-US": "Delete selected",
+                              "ja-JP": "選択項目を削除",
+                              "tr-TR": "Seçilenleri sil",
+                              "id-ID": "Hapus item terpilih"
+                            },
+                            "optType": "flowAction",
+                            "actionType": "delete",
+                            "danger": true,
+                            "disabled": {
+                              "type": "JSExpression",
+                              "value": "!this.state['yttable_nn8aes0f_selectedRowKeys']?.length"
+                            },
+                            "options": {
+                              "flowList": [
+                                {
+                                  "active": true,
+                                  "optType": "request",
+                                  "options": {
+                                    "_bindDataSource": "1022501_delete",
+                                    "_autoBindDataSourceParams": false,
+                                    "_bindDataSourceParams": {
+                                      "type": "JSFunction",
+                                      "value": "(extraParams) => { return { id: extraParams.selectId }; }"
+                                    },
+                                    "confirmConfig": {
+                                      "enable": true,
+                                      "type": "confirm",
+                                      "title": {
+                                        "type": "i18n",
+                                        "key": "i18n-lr-smart-table-title-text-a0e3d479fde64f1b83d5a7d44a6272c1",
+                                        "zh-CN": "确认批量删除",
+                                        "en-US": "Confirm batch deletion",
+                                        "ja-JP": "一括削除の確認",
+                                        "tr-TR": "Toplu silmeyi onayla",
+                                        "id-ID": "Konfirmasi penghapusan massal"
+                                      },
+                                      "content": {
+                                        "type": "i18n",
+                                        "key": "i18n-lr-smart-table-content-text-a89c662a29584df8829904c0d69dcd05",
+                                        "zh-CN": "确认批量删除选中数据吗？",
+                                        "en-US": "Are you sure you want to delete the selected data?",
+                                        "ja-JP": "選択したデータを一括削除しますか？",
+                                        "tr-TR": "Seçili verileri toplu olarak silmek istediğinizden emin misiniz?",
+                                        "id-ID": "Yakin ingin menghapus data terpilih secara massal?"
+                                      }
+                                    },
+                                    "responseConfig": {
+                                      "enableSuccessToast": true,
+                                      "enableErrorToast": true,
+                                      "successToastMsg": {
+                                        "type": "i18n",
+                                        "key": "i18n-lr-smart-table-success-toast-msg-text-9a53fa04208f4c139c7101e45d528d49",
+                                        "zh-CN": "删除成功",
+                                        "en-US": "Deleted successfully",
+                                        "ja-JP": "削除しました",
+                                        "tr-TR": "Silme başarılı",
+                                        "id-ID": "Berhasil dihapus"
+                                      },
+                                      "errorToastMsg": {
+                                        "type": "i18n",
+                                        "key": "i18n-lr-smart-table-error-toast-msg-text-7843cd166c0a48ecb3cac54387ae25fa",
+                                        "zh-CN": "删除失败",
+                                        "en-US": "Deletion failed",
+                                        "ja-JP": "削除に失敗しました",
+                                        "tr-TR": "Silme başarısız",
+                                        "id-ID": "Penghapusan gagal"
+                                      }
+                                    }
+                                  }
+                                },
+                                {
+                                  "active": true,
+                                  "optType": "request",
+                                  "options": {
+                                    "_bindDataSource": "1022501_filter",
+                                    "_autoBindDataSourceParams": false,
+                                    "confirmConfig": {
+                                      "enable": false
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "title": {
+                              "type": "i18n",
+                              "key": "i18n-lr-smart-table-title-text-b33130e1e9fc45a7946e594799b899db",
+                              "zh-CN": "删除全部",
+                              "en-US": "Delete all",
+                              "ja-JP": "すべて削除",
+                              "tr-TR": "Tümünü sil",
+                              "id-ID": "Hapus semua"
+                            },
+                            "optType": "flowAction",
+                            "actionType": "delete",
+                            "danger": true,
+                            "disabled": {
+                              "type": "JSExpression",
+                              "value": "!(this.state['yttable_nn8aes0f_total'] > 0)"
+                            },
+                            "options": {
+                              "flowList": [
+                                {
+                                  "active": true,
+                                  "optType": "request",
+                                  "options": {
+                                    "_bindDataSource": "1022501_delete",
+                                    "_autoBindDataSourceParams": false,
+                                    "_bindDataSourceParams": {
+                                      "type": "JSFunction",
+                                      "value": "(extraParams) => { return { id: extraParams.allIds }; }"
+                                    },
+                                    "confirmConfig": {
+                                      "enable": true,
+                                      "type": "confirm",
+                                      "title": {
+                                        "type": "i18n",
+                                        "key": "i18n-lr-smart-table-title-text-e87e132fd94a4b4ca6a9bdf34fcfc8be",
+                                        "zh-CN": "确认批量删除",
+                                        "en-US": "Confirm batch deletion",
+                                        "ja-JP": "一括削除の確認",
+                                        "tr-TR": "Toplu silmeyi onayla",
+                                        "id-ID": "Konfirmasi penghapusan massal"
+                                      },
+                                      "content": {
+                                        "type": "i18n",
+                                        "key": "i18n-lr-smart-table-content-text-54679c0ff8d1442f82e11b40ea0ba9f2",
+                                        "zh-CN": "确认批量删除当前页全部数据吗？",
+                                        "en-US": "Are you sure you want to delete all data on this page?",
+                                        "ja-JP": "現在のページのすべてのデータを一括削除しますか？",
+                                        "tr-TR": "Bu sayfadaki tüm verileri toplu olarak silmek istediğinizden emin misiniz?",
+                                        "id-ID": "Yakin ingin menghapus semua data di halaman ini secara massal?"
+                                      }
+                                    },
+                                    "responseConfig": {
+                                      "enableSuccessToast": true,
+                                      "enableErrorToast": true,
+                                      "successToastMsg": {
+                                        "type": "i18n",
+                                        "key": "i18n-lr-smart-table-success-toast-msg-text-3572077ac8c64b6f9b383a1b32a37d37",
+                                        "zh-CN": "删除成功",
+                                        "en-US": "Deleted successfully",
+                                        "ja-JP": "削除しました",
+                                        "tr-TR": "Silme başarılı",
+                                        "id-ID": "Berhasil dihapus"
+                                      },
+                                      "errorToastMsg": {
+                                        "type": "i18n",
+                                        "key": "i18n-lr-smart-table-error-toast-msg-text-229271c8a4804a8dbbdcbe33220ba1c1",
+                                        "zh-CN": "删除失败",
+                                        "en-US": "Deletion failed",
+                                        "ja-JP": "削除に失敗しました",
+                                        "tr-TR": "Silme başarısız",
+                                        "id-ID": "Penghapusan gagal"
+                                      }
+                                    }
+                                  }
+                                },
+                                {
+                                  "active": true,
+                                  "optType": "request",
+                                  "options": {
+                                    "_bindDataSource": "1022501_filter",
+                                    "_autoBindDataSourceParams": false,
+                                    "confirmConfig": {
+                                      "enable": false
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ],
+                        "buttonsDisabled": {
+                          "type": "JSExpression",
+                          "value": "this.state['yttable_nn8aes0f_onePage'] || false"
+                        }
+                      }
+                    },
+                    "rowSelection": {
+                      "enable": true,
+                      "isDisabled": {
+                        "type": "JSExpression",
+                        "value": "this.state['yttable_nn8aes0f_onePage'] || false"
+                      }
+                    },
+                    "showSelectionTotal": true,
+                    "sortEnable": true,
+                    "operateButtonsEnable": false,
+                    "operateButtons": []
+                  },
+                  "meta": {
+                    "datasetId": 1022501,
+                    "datasetCode": "eac713d6c72646c9b2b3a2ee0f8e31eb"
+                  },
+                  "hidden": false,
+                  "title": "",
+                  "isLocked": false,
+                  "condition": true,
+                  "conditionGroup": ""
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "fileName": "/"
+    }
+  ],
+  "i18n": {}
+}

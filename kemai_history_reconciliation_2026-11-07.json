@@ -1,0 +1,27 @@
+{
+  "checked_at": "2026-11-07T04:02:11+08:00",
+  "scope": "approved_purchase_receipt_history_through_2026-11-06",
+  "empty_months_2025_jan_nov": 11,
+  "daily_windows": 56,
+  "daily_rows": 7933,
+  "excel_windows": 11,
+  "excel_rows": 117264,
+  "source_total": 125754,
+  "db_rows": 125754,
+  "raw_capture_rows": 125754,
+  "history_checkpoint": "2026-11-06",
+  "deduplicated_api_excel_overlap": 400,
+  "window_coverage_contiguous": true,
+  "duplicate_keys": 0,
+  "known_limitations": [
+    "Excel lacks complete receipt header/detail and source internal document ID",
+    "approved receipts only; older unapproved receipts not available through this source"
+  ],
+  "incremental_day": "2026-11-06",
+  "incremental_source_rows": 557,
+  "incremental_db_rows": "557",
+  "incremental_capture_linked_rows": 557,
+  "full_checkpoint": "2026-11-05",
+  "undated_rows": "0",
+  "issues": []
+}

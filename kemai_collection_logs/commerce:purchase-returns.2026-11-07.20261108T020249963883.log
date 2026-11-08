@@ -1,0 +1,6 @@
+commerce schema ready: 13 tables
+purchase-returns 2026-11-07 single_scan_total=15
+purchase-returns 2026-11-07 saved=10/15
+purchase-returns 2026-11-07 verified captured_total=15
+purchase-returns 2026-11-07 pages=1 saved=15
+{"counts":{"purchase-returns":15},"run_id":56}

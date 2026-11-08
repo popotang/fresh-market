@@ -1,0 +1,62 @@
+{
+  "tenant_id": "205149",
+  "table_counts": {
+    "products": 18390,
+    "product_profile": 18386,
+    "product_child_records": 14624,
+    "product_supply_qualifications": 14249,
+    "product_branch_scopes": 35,
+    "product_branch_prices": 70,
+    "product_branch_stocks": 35,
+    "purchase_documents": 17166,
+    "purchase_document_lines": 24814,
+    "purchase_document_branches": 126,
+    "purchase_document_approvals": 176,
+    "purchase_receipt_history_lines": 126273,
+    "retail_orders": 132401,
+    "retail_order_lines": 474193,
+    "retail_payments": 2,
+    "retail_sale_flows": 474193,
+    "source_capture": 801026
+  },
+  "duplicates": {
+    "products": 0,
+    "product_children": 0,
+    "source_capture": 0,
+    "purchase_documents": 0,
+    "purchase_lines": 0,
+    "history_lines": 0,
+    "retail_orders": 0,
+    "retail_order_lines": 0,
+    "retail_payments": 0,
+    "retail_flows": 0
+  },
+  "orphans": {
+    "product_profiles": 0,
+    "product_children": 0,
+    "product_supply": 0,
+    "product_scopes": 0,
+    "product_prices": 0,
+    "product_stocks": 0,
+    "purchase_lines": 0,
+    "purchase_branches": 0,
+    "purchase_approvals": 0,
+    "retail_lines": 0,
+    "retail_payments": 0
+  },
+  "source_streams": 22,
+  "object_status_groups": 31,
+  "checkpoints": 28,
+  "coverage_gaps": 690,
+  "latest_runs": {
+    "commerce_full": "success",
+    "commerce_incremental": "success",
+    "commerce_sample": "success",
+    "full": "failed",
+    "item_incremental": "success"
+  },
+  "strict_failures": {
+    "duplicates": {},
+    "orphans": {}
+  }
+}

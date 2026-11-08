@@ -1,0 +1,1 @@
+{"audience":"科迈云帆数据同步的开发与运维同事","reader_task":"查找当前已安装的 OpenCLI 命令，按正确参数采样、导出及调用同步脚本，并理解限流和断点边界","genre_contract":"workplace.technical_doc.api_reference","adapter":null,"presentation_mode":"normal","visual_plan":{"reason":"命令与参数适合表格，执行方式和输出适合代码块；无须图片或画板","blocks":[]}}

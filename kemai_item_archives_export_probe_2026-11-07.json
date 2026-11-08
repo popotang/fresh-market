@@ -1,0 +1,53 @@
+{
+  "checked_at": "2026-11-07T04:08:02+08:00",
+  "snapshot": "2026-11-07",
+  "task_id": "2118796203390853176",
+  "task_total_rows": 18386,
+  "expected_catalog_total": 18386,
+  "task_total_matches_catalog": true,
+  "downloaded_file": "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/kemai_item_archives_2026-11-07.xlsx",
+  "format": "xlsx",
+  "sheets": {
+    "商品档案": {
+      "nonempty_rows": 18389,
+      "header_row_number": 3,
+      "headers": [
+        "序号",
+        "审核状态",
+        "主供应商",
+        "商品品牌",
+        "商品编码",
+        "国际条码",
+        "商品类别",
+        "商品名称",
+        "零售价",
+        "进货价",
+        "定价毛利率",
+        "扣率",
+        "会员价",
+        "一级类别编码",
+        "二级类别编码",
+        "一级类别名称",
+        "二级类别名称",
+        "物流模式",
+        "计价方式",
+        "采购单位",
+        "进项税率",
+        "主供应商编码",
+        "零售价",
+        "销项税率",
+        "备注",
+        "进货价"
+      ],
+      "estimated_data_rows": 18386,
+      "first_six_row_widths": [
+        26,
+        26,
+        26,
+        26,
+        26,
+        26
+      ]
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "latest_successful_incremental_run": 40,
+  "latest_run_started_at": "2026-11-07 03:18:40",
+  "latest_run_finished_at": "2026-11-07 03:25:23",
+  "latest_run_stats": {
+    "new": 0,
+    "changed": 17,
+    "unchanged": 18369,
+    "source_total": 18386
+  },
+  "source_total": 18386,
+  "totals": {
+    "products": 18386,
+    "list_captures": 18386,
+    "profiles": 18386,
+    "detail_captures": 18386,
+    "detail_objects_done": 18386
+  },
+  "missing": {
+    "product_without_list_capture": 0,
+    "list_capture_without_product": 0,
+    "product_without_profile": 0,
+    "product_without_detail_capture": 0,
+    "product_without_done_detail_object": 0
+  },
+  "latest_changed_products": 17,
+  "initial_tab_pending_or_failed": 206491,
+  "initial_tab_gap_is_deferred": true,
+  "issues": []
+}

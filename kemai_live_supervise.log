@@ -1,0 +1,3 @@
+{"initial_wait_seconds":1099,"reason":"recent successful live snapshots"}
+/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/kemai_live_sync.py:557: DeprecationWarning: The 'reconnect' argument is deprecated. Create a new connection if you want to reconnect.
+  conn.ping(reconnect=True)

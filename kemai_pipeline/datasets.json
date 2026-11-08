@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "appcode": "app-21522951",
+  "tenant_id": "205149",
+  "dblink_id": 10510,
+  "datasets": {
+    "sync_objects": "edfb7b0eb0304e6ba1002a839e3e224a",
+    "sync_stream_events": "b864ca67ee41418c9a6c3a189b726be6",
+    "sync_checkpoints": "394f8d40627148beb718696d2e2463d0",
+    "sync_coverage_gaps": "594b7816ca994de1b65c815914dc1e88",
+    "sync_stream_status": "eac713d6c72646c9b2b3a2ee0f8e31eb",
+    "source_capture": "231da3fb7beb42aa9078e47ab44679d0",
+    "purchase_documents": "ba0c4a9eb90f452eb0b9dc74c5a05067",
+    "purchase_receipt_history_lines": "8ab713c7961f4b8fb061f264396e0559",
+    "retail_orders": "daf9828f96f742c8ad748dcc651b148d",
+    "retail_sale_flows": "c4f2f0041f9d4b01bb9bdd6f2de43891",
+    "sync_pipeline_batches": "677bfd62ca074e04ab6e9704b7b1f473",
+    "sync_pipeline_captures": "28da04cf072041b6813c755521258a1d",
+    "sync_pipeline_streams": "6bc0b3040a8c44e2ba98ac44a20bc779",
+    "sync_pipeline_windows": "a4c44ad02a4046fa9e304939310e9a20"
+  }
+}

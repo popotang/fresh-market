@@ -1,0 +1,284 @@
+{
+  "stage": "batch1",
+  "jobs": {
+    "migrate": {
+      "status": "success",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "kemai_commerce_sync.py",
+        "migrate"
+      ],
+      "log": "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/kemai_collection_logs/migrate.log",
+      "started_at": "2026-11-08T02:06:32",
+      "exit_code": 0,
+      "finished_at": "2026-11-08T02:06:33",
+      "seconds": 1
+    },
+    "retail_lines_verify": {
+      "status": "success",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "kemai_retail_lines_from_flows.py",
+        "--from",
+        "2026-08-01",
+        "--to",
+        "2026-11-06",
+        "--verify-only"
+      ],
+      "log": "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/kemai_collection_logs/retail_lines_verify.log",
+      "started_at": "2026-11-08T02:06:33",
+      "exit_code": 0,
+      "finished_at": "2026-11-08T02:08:01",
+      "seconds": 88
+    },
+    "integrity": {
+      "status": "success",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "kemai_integrity_report.py",
+        "--strict",
+        "--summary",
+        "--output",
+        "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/.local-audits/integrity.json"
+      ],
+      "log": "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/kemai_collection_logs/integrity.log",
+      "started_at": "2026-11-08T02:08:01",
+      "exit_code": 0,
+      "finished_at": "2026-11-08T02:08:14",
+      "seconds": 13
+    },
+    "product_coverage": {
+      "status": "success",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "kemai_product_coverage_audit.py",
+        "--strict",
+        "--summary",
+        "--output",
+        "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/.local-audits/product-coverage.json"
+      ],
+      "log": "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/kemai_collection_logs/product_coverage.log",
+      "started_at": "2026-11-08T02:08:14",
+      "exit_code": 0,
+      "finished_at": "2026-11-08T02:08:17",
+      "seconds": 3
+    },
+    "masters": {
+      "status": "success",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "kemai_masters.py",
+        "--rate",
+        "0.5"
+      ],
+      "log": "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/kemai_collection_logs/masters.2026-11-07.20261108T020817625619.log",
+      "started_at": "2026-11-08T02:08:17",
+      "exit_code": 0,
+      "finished_at": "2026-11-08T02:09:42",
+      "seconds": 85
+    },
+    "item_incremental": {
+      "status": "success",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "kemai_product_incremental.py"
+      ],
+      "log": "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/kemai_collection_logs/item_incremental.2026-11-07.20261108T020942884489.log",
+      "started_at": "2026-11-08T02:09:42",
+      "exit_code": 0,
+      "finished_at": "2026-11-08T02:18:14",
+      "seconds": 512
+    },
+    "suppliers": {
+      "status": "success",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "kemai_derive_suppliers.py"
+      ],
+      "log": "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/kemai_collection_logs/suppliers.2026-11-07.20261108T021814745051.log",
+      "started_at": "2026-11-08T02:18:14",
+      "exit_code": 0,
+      "finished_at": "2026-11-08T02:18:15",
+      "seconds": 1
+    },
+    "changed_refresh": {
+      "status": "failed",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "kemai_changed_refresh.py"
+      ],
+      "log": "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/kemai_collection_logs/changed_refresh.2026-11-07.20261108T021815335312.log",
+      "started_at": "2026-11-08T02:18:15",
+      "exit_code": 1,
+      "finished_at": "2026-11-08T02:22:36",
+      "seconds": 261
+    },
+    "changed_tabs": {
+      "status": "failed",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "kemai_changed_tabs.py"
+      ],
+      "log": "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/kemai_collection_logs/changed_tabs.2026-11-07.20261108T022236701599.log",
+      "started_at": "2026-11-08T02:22:36",
+      "exit_code": 1,
+      "finished_at": "2026-11-08T02:22:41",
+      "seconds": 5
+    },
+    "retail_order_lines": {
+      "status": "skipped_dependency"
+    },
+    "audit_retail_orders_2026-11-07": {
+      "status": "failed",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "kemai_retail_daily_audit.py",
+        "--kind",
+        "retail-orders",
+        "--include-incremental",
+        "--strict",
+        "--summary",
+        "--output",
+        "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/.local-audits/retail-orders-2026-11-07.json"
+      ],
+      "log": "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/kemai_collection_logs/audit_retail_orders_2026-11-07.log",
+      "started_at": "2026-11-08T02:22:41",
+      "exit_code": 1,
+      "finished_at": "2026-11-08T02:22:46",
+      "seconds": 5
+    },
+    "audit_retail_sales_2026-11-07": {
+      "status": "failed",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "kemai_retail_daily_audit.py",
+        "--include-incremental",
+        "--strict",
+        "--summary",
+        "--output",
+        "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/.local-audits/retail-sales-2026-11-07.json"
+      ],
+      "log": "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/kemai_collection_logs/audit_retail_sales_2026-11-07.log",
+      "started_at": "2026-11-08T02:22:46",
+      "exit_code": 1,
+      "finished_at": "2026-11-08T02:22:52",
+      "seconds": 5
+    },
+    "audit_purchase-orders_2026-11-07": {
+      "status": "failed",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "kemai_purchase_daily_audit.py",
+        "--kind",
+        "purchase-orders",
+        "--include-incremental",
+        "--strict",
+        "--summary",
+        "--output",
+        "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/.local-audits/purchase-orders-2026-11-07.json"
+      ],
+      "log": "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/kemai_collection_logs/audit_purchase-orders_2026-11-07.log",
+      "started_at": "2026-11-08T02:22:52",
+      "exit_code": 1,
+      "finished_at": "2026-11-08T02:22:57",
+      "seconds": 5
+    },
+    "audit_purchase-receipts_2026-11-07": {
+      "status": "success",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "kemai_purchase_daily_audit.py",
+        "--kind",
+        "purchase-receipts",
+        "--include-incremental",
+        "--strict",
+        "--summary",
+        "--output",
+        "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/.local-audits/purchase-receipts-2026-11-07.json"
+      ],
+      "log": "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/kemai_collection_logs/audit_purchase-receipts_2026-11-07.log",
+      "started_at": "2026-11-08T02:22:57",
+      "exit_code": 0,
+      "finished_at": "2026-11-08T02:22:59",
+      "seconds": 2
+    },
+    "audit_purchase-returns_2026-11-07": {
+      "status": "success",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "kemai_purchase_daily_audit.py",
+        "--kind",
+        "purchase-returns",
+        "--include-incremental",
+        "--strict",
+        "--summary",
+        "--output",
+        "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/.local-audits/purchase-returns-2026-11-07.json"
+      ],
+      "log": "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/kemai_collection_logs/audit_purchase-returns_2026-11-07.log",
+      "started_at": "2026-11-08T02:22:59",
+      "exit_code": 0,
+      "finished_at": "2026-11-08T02:22:59",
+      "seconds": 0
+    },
+    "integrity_2026-11-07": {
+      "status": "success",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "kemai_integrity_report.py",
+        "--strict",
+        "--summary",
+        "--output",
+        "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/.local-audits/integrity-2026-11-07.json"
+      ],
+      "log": "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/kemai_collection_logs/integrity_2026-11-07.log",
+      "started_at": "2026-11-08T02:22:59",
+      "exit_code": 0,
+      "finished_at": "2026-11-08T02:23:07",
+      "seconds": 7
+    },
+    "product_coverage_2026-11-07": {
+      "status": "failed",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "kemai_product_coverage_audit.py",
+        "--strict",
+        "--summary",
+        "--output",
+        "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/.local-audits/product-coverage-2026-11-07.json"
+      ],
+      "log": "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/kemai_collection_logs/product_coverage_2026-11-07.log",
+      "started_at": "2026-11-08T02:23:07",
+      "exit_code": 2,
+      "finished_at": "2026-11-08T02:23:10",
+      "seconds": 3
+    }
+  },
+  "checkpoints": {
+    "before": {
+      "purchase-orders": "2026-11-07",
+      "purchase-receipts": "2026-11-07",
+      "purchase-returns": "2026-11-07",
+      "retail-orders": "2026-11-07",
+      "retail-sales": "2026-11-07",
+      "purchase-receive-history": "2026-11-07"
+    },
+    "after": {
+      "purchase-orders": "2026-11-07",
+      "purchase-receipts": "2026-11-07",
+      "purchase-returns": "2026-11-07",
+      "retail-orders": "2026-11-07",
+      "retail-sales": "2026-11-07",
+      "purchase-receive-history": "2026-11-07"
+    }
+  },
+  "started_at": "2026-11-08T02:06:32",
+  "pid": 93080,
+  "tables": {
+    "purchase_document_detail_state": true,
+    "sync_reconcile_missing": true
+  },
+  "target_day": "2026-11-07",
+  "finished_at": "2026-11-08T02:23:10",
+  "result": "success"
+}

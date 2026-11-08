@@ -1,0 +1,430 @@
+schema ready: 17 CREATE TABLE statements
+list page=186 rows=0 source_total=18384
+details done=100 failed=0 last=2002267979953266797
+details done=200 failed=0 last=2002287086501158953
+details done=300 failed=0 last=2002294147255418905
+details done=400 failed=0 last=2002301934974845032
+details done=500 failed=0 last=2002992255509516359
+details done=600 failed=0 last=2003047142993752164
+details done=700 failed=0 last=2003277153055105061
+details done=800 failed=0 last=2003348017788305414
+details done=900 failed=0 last=2003701937639338099
+details done=1000 failed=0 last=2003712148873769023
+details done=1100 failed=0 last=2003720761952526392
+details done=1200 failed=0 last=2003740271875031064
+details done=1300 failed=0 last=2003746679219630150
+details done=1400 failed=0 last=2003747175204491322
+details done=1500 failed=0 last=2003761769880846336
+details done=1600 failed=0 last=2003786833514803283
+details done=1700 failed=0 last=2003786833548357741
+details done=1800 failed=0 last=2004008240484028456
+details done=1900 failed=0 last=2004025007696601207
+details done=2000 failed=0 last=2004038810098286637
+details done=2100 failed=0 last=2004080469313953826
+details done=2200 failed=0 last=2004080469351702555
+details done=2300 failed=0 last=2004080469397839980
+details done=2400 failed=0 last=2004080469435588689
+details done=2500 failed=0 last=2004080469473337444
+details done=2600 failed=0 last=2004088302168256517
+details done=2700 failed=0 last=2004397570813730885
+details done=2800 failed=0 last=2004435124132884565
+details done=2900 failed=0 last=2004452572282359906
+details done=3000 failed=0 last=2004491562196795405
+details done=3100 failed=0 last=2004507788490948659
+details done=3200 failed=0 last=2004848507726450778
+details done=3300 failed=0 last=2005534429249933384
+details done=3400 failed=0 last=2005534429287682146
+details done=3500 failed=0 last=2005538144040120422
+details done=3600 failed=0 last=2005574355089752139
+details done=3700 failed=0 last=2005848696264183848
+details done=3800 failed=0 last=2005848696297738257
+details done=3900 failed=0 last=2005879833724330061
+details done=4000 failed=0 last=2005904087203295325
+details done=4100 failed=0 last=2005920733632512084
+details done=4200 failed=0 last=2006198774577348654
+details done=4300 failed=0 last=2006241563591684142
+details done=4400 failed=0 last=2008059219592552558
+details done=4500 failed=0 last=2008371758280974432
+details done=4600 failed=0 last=2008728005069021277
+details done=4700 failed=0 last=2009139314411495528
+details done=4800 failed=0 last=2009139682482651227
+details done=4900 failed=0 last=2009149562354458672
+details done=5000 failed=0 last=2009176957333618807
+details done=5100 failed=0 last=2009176957367173152
+details done=5200 failed=0 last=2009512141924921383
+details done=5300 failed=0 last=2010548359441764452
+details done=5400 failed=0 last=2010661179160379486
+details done=5500 failed=0 last=2010951106079068201
+details done=5600 failed=0 last=2011028886959562821
+details done=5700 failed=0 last=2011028886993117307
+details done=5800 failed=0 last=2011044808659165219
+details done=5900 failed=0 last=2011678425819267077
+Traceback (most recent call last):
+  File "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/kemai_sync.py", line 249, in full_details
+    results = detail_batch(ids)
+  File "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/kemai_sync.py", line 107, in detail_batch
+    result = browser(expr)
+  File "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/kemai_sync.py", line 81, in browser
+    raise RuntimeError(f"OpenCLI browser failed ({p.returncode}): {p.stderr[-500:]}")
+RuntimeError: OpenCLI browser failed (1): ✖  Detached while handling command.
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/kemai_sync.py", line 379, in <module>
+    main()
+    ~~~~^^
+  File "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/kemai_sync.py", line 354, in main
+    done,failed=full_details(conn,run_id,args.rate,args.batch_size)
+                ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/kemai_sync.py", line 252, in full_details
+    raise RuntimeError(f"detail batch starting {ids[0]} failed: {e}") from e
+RuntimeError: detail batch starting 2011708879339397188 failed: OpenCLI browser failed (1): ✖  Detached while handling command.
+
+schema ready: 17 CREATE TABLE statements
+list page=187 rows=0 source_total=18385
+list reconciliation 18384/18385; rescanning once
+list page=1 rows=100 source_total=18385
+list page=10 rows=100 source_total=18385
+list page=20 rows=100 source_total=18385
+list page=30 rows=100 source_total=18385
+list page=40 rows=100 source_total=18385
+list page=50 rows=100 source_total=18385
+list page=60 rows=100 source_total=18385
+list page=70 rows=100 source_total=18385
+list page=80 rows=100 source_total=18385
+list page=90 rows=100 source_total=18385
+list page=100 rows=100 source_total=18385
+list page=110 rows=100 source_total=18385
+list page=120 rows=100 source_total=18385
+list page=130 rows=100 source_total=18385
+list page=140 rows=100 source_total=18385
+list page=150 rows=100 source_total=18385
+list page=160 rows=100 source_total=18385
+list page=170 rows=100 source_total=18385
+list page=180 rows=100 source_total=18385
+list page=184 rows=85 source_total=18385
+details done=100 failed=0 last=2011752161993961592
+details done=200 failed=0 last=2012068177617760390
+details done=300 failed=0 last=2012405222299070505
+details done=400 failed=0 last=2012449516489715778
+details done=500 failed=0 last=2013171383513038854
+details done=600 failed=0 last=2013204151605317667
+details done=700 failed=0 last=2013208808146759779
+details done=800 failed=0 last=2013444825122570302
+details done=900 failed=0 last=2013535176525053961
+details done=1000 failed=0 last=2013563748564316224
+details done=1100 failed=0 last=2013576514805141592
+details done=1200 failed=0 last=2013576514834501719
+details done=1300 failed=0 last=2013599415042301984
+details done=1400 failed=0 last=2013912749729882121
+details done=1500 failed=0 last=2014925811110871155
+details done=1600 failed=0 last=2015726688449056787
+details done=1700 failed=0 last=2015726688482611312
+details done=1800 failed=0 last=2015726688516165735
+details done=1900 failed=0 last=2015726688549720129
+details done=2000 failed=0 last=2016045290259718249
+details done=2100 failed=0 last=2016813452051939356
+details done=2200 failed=0 last=2016813452085493811
+details done=2300 failed=0 last=2017191247559069742
+details done=2400 failed=0 last=2017191247592624169
+details done=2500 failed=0 last=2018171382865174586
+details done=2600 failed=0 last=2018878718747496449
+details done=2700 failed=0 last=2018925564484247565
+details done=2800 failed=0 last=2019239895604264976
+details done=2900 failed=0 last=2021101815399592012
+details done=3000 failed=0 last=2021779095541129315
+details done=3100 failed=0 last=2026898118121480272
+details done=3200 failed=0 last=2027657804810702925
+details done=3300 failed=0 last=2028284642113249327
+details done=3400 failed=0 last=2028429241418924055
+details done=3500 failed=0 last=2028472487746592847
+details done=3600 failed=0 last=2029107109513801784
+details done=3700 failed=0 last=2029772834280763459
+details done=3800 failed=0 last=2029809094525390857
+details done=3900 failed=0 last=2029864501914558553
+details done=4000 failed=0 last=2030193109648461916
+details done=4100 failed=0 last=2030940505672179796
+details done=4200 failed=0 last=2031336807576809494
+details done=4300 failed=0 last=2031336807673278541
+details done=4400 failed=0 last=2031336807765553213
+details done=4500 failed=0 last=2031336807857827877
+details done=4600 failed=0 last=2031336948669022246
+details done=4700 failed=0 last=2031553760312623180
+details done=4800 failed=0 last=2031970930192453668
+details done=4900 failed=0 last=2032459860318810158
+details done=5000 failed=0 last=2034191059336769541
+details done=5100 failed=0 last=2035267249141141546
+details done=5200 failed=0 last=2036375579347636270
+details done=5300 failed=0 last=2037410047311220809
+details done=5400 failed=0 last=2038552975278604369
+details done=5500 failed=0 last=2039280518755528788
+details done=5600 failed=0 last=2041715418087596103
+details done=5700 failed=0 last=2042062087996072034
+details done=5800 failed=0 last=2042512472116363318
+details done=5900 failed=0 last=2042892463379394574
+details done=6000 failed=0 last=2043957081984053252
+details done=6100 failed=0 last=2044604533812621399
+details done=6200 failed=0 last=2046774927151722534
+details done=6300 failed=0 last=2047953626760880135
+details done=6400 failed=0 last=2051899899163648041
+details done=6500 failed=0 last=2053718415005143067
+details done=6600 failed=0 last=2054501433772863582
+details done=6700 failed=0 last=2056678874897498166
+details done=6800 failed=0 last=2056678875157545063
+details done=6900 failed=0 last=2057649741185994776
+details done=7000 failed=0 last=2058117363329445980
+details done=7100 failed=0 last=2058117363732099133
+details done=7200 failed=0 last=2060196498122043478
+details done=7300 failed=0 last=2062119165347631154
+details done=7400 failed=0 last=2064249735661875214
+details done=7500 failed=0 last=2066406789197492271
+details done=7600 failed=0 last=2066418219003068479
+details done=7700 failed=0 last=2069306110041595922
+details done=7800 failed=0 last=2072247186033434701
+details done=7900 failed=0 last=2074437633376055376
+details done=8000 failed=0 last=2076557764805869606
+details done=8100 failed=0 last=2076974270672875554
+details done=8200 failed=0 last=2079386476844797971
+details done=8300 failed=0 last=2080103336200568863
+details done=8400 failed=0 last=2080852291712639050
+details done=8500 failed=0 last=2080852291733610612
+details done=8600 failed=0 last=2082039533189681225
+details done=8700 failed=0 last=2084186702453629035
+details done=8800 failed=0 last=2084850896941293672
+details done=8900 failed=0 last=2087373089562669173
+details done=9000 failed=0 last=2089164249910226970
+details done=9100 failed=0 last=2091819765895557148
+details done=9200 failed=0 last=2095341705499365407
+details done=9300 failed=0 last=2096430550164819970
+details done=9400 failed=0 last=2097574613169598507
+details done=9500 failed=0 last=2098221453556744328
+details done=9600 failed=0 last=2100784523072217114
+details done=9700 failed=0 last=2102575280443613261
+details done=9800 failed=0 last=2102646581602541682
+details done=9900 failed=0 last=2103029819261055081
+details done=10000 failed=0 last=2106676494496227472
+details done=10100 failed=0 last=2106676494517198905
+details done=10200 failed=0 last=2106676494529781924
+details done=10300 failed=0 last=2108374187383803982
+details done=10400 failed=0 last=2108455995370786884
+details done=10500 failed=0 last=2109926307580993591
+details done=10600 failed=0 last=2111394907584090191
+details done=10700 failed=0 last=2114556311375892483
+details done=10800 failed=0 last=2114998454322180187
+details done=10900 failed=0 last=2114998454355734626
+details done=11000 failed=0 last=2114998454385094768
+details done=11100 failed=0 last=2114998454414454847
+details done=11200 failed=0 last=2115258887683711029
+details done=11300 failed=0 last=2116372135246028897
+queued item_tab_supply
+queued item_tab_retail_price
+queued item_tab_delivery_price
+queued item_tab_stock
+queued item_tab_promotion
+queued item_tab_barcode
+queued item_tab_grading
+queued item_tab_pack
+queued item_tab_history_price
+queued item_tab_scope
+queued item_tab_combination
+queued item_tab_mix
+queued item_tab_split
+queued item_tab_cut
+Traceback (most recent call last):
+  File "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/kemai_sync.py", line 379, in <module>
+    main()
+    ~~~~^^
+  File "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/kemai_sync.py", line 360, in main
+    sync_sections(conn,run_id,args.rate,args.batch_size)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/kemai_sections.py", line 147, in sync_sections
+    results=section_batch(section,ids,session)
+  File "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/kemai_sections.py", line 39, in section_batch
+    result=browser(expr,session)
+  File "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/kemai_sync.py", line 81, in browser
+    raise RuntimeError(f"OpenCLI browser failed ({p.returncode}): {p.stderr[-500:]}")
+RuntimeError: OpenCLI browser failed (1): ✖  TypeError: Cannot read properties of undefined (reading 'push')
+    at <anonymous>:1:89
+    at <anonymous>:1:576
+
+schema ready: 17 CREATE TABLE statements
+list page=185 rows=0 source_total=18385
+queued item_tab_supply
+queued item_tab_retail_price
+queued item_tab_delivery_price
+queued item_tab_stock
+queued item_tab_promotion
+queued item_tab_barcode
+queued item_tab_grading
+queued item_tab_pack
+queued item_tab_history_price
+queued item_tab_scope
+queued item_tab_combination
+queued item_tab_mix
+queued item_tab_split
+queued item_tab_cut
+item_tab_supply done=100 last=2001235141040558181
+item_tab_supply done=200 last=2001235141086695537
+item_tab_supply done=300 last=2001235141128638477
+item_tab_supply done=400 last=2001531857941811300
+item_tab_supply done=500 last=2001531857979559997
+item_tab_supply done=600 last=2001543487526273067
+item_tab_supply done=700 last=2001574910668886057
+item_tab_supply done=800 last=2001574910719217767
+item_tab_supply done=900 last=2001889941709185049
+item_tab_supply done=1000 last=2001956151385702434
+item_tab_supply done=1100 last=2001956151423451253
+item_tab_supply done=1200 last=2002287086471798859
+item_tab_supply done=1300 last=2002287086517936179
+item_tab_supply done=1400 last=2002301934958067813
+item_tab_supply done=1500 last=2002992255488544821
+item_tab_supply done=1600 last=2003033210501500971
+item_tab_supply done=1700 last=2003277153013162050
+item_tab_supply done=1800 last=2003293152454205478
+item_tab_supply done=1900 last=2003701937614172206
+item_tab_supply done=2000 last=2003701937656115237
+item_tab_supply done=2100 last=2003712148886351935
+item_tab_supply done=2200 last=2003740271845670945
+item_tab_supply done=2300 last=2003740271887614066
+item_tab_supply done=2400 last=2003746679232213077
+item_tab_supply done=2500 last=2003747175221268607
+item_tab_supply done=2600 last=2003786833493831715
+item_tab_supply done=2700 last=2003786833523191867
+item_tab_supply done=2800 last=2003786833560940599
+item_tab_supply done=2900 last=2004025007675629577
+item_tab_supply done=3000 last=2004038810064732213
+item_tab_supply done=3100 last=2004038810119258235
+item_tab_supply done=3200 last=2004080469326536734
+item_tab_supply done=3300 last=2004080469368479781
+item_tab_supply done=3400 last=2004080469410422825
+item_tab_supply done=3500 last=2004080469448171638
+item_tab_supply done=3600 last=2004088302147285078
+item_tab_supply done=3700 last=2004397570788565049
+item_tab_supply done=3800 last=2004397570834702378
+item_tab_supply done=3900 last=2004435124145467426
+item_tab_supply done=4000 last=2004463359713456234
+item_tab_supply done=4100 last=2004491562213572690
+item_tab_supply done=4200 last=2004507788503531564
+item_tab_supply done=4300 last=2005471339175067700
+item_tab_supply done=4400 last=2005534429266710557
+item_tab_supply done=4500 last=2005534429304459294
+item_tab_supply done=4600 last=2005543901586378796
+item_tab_supply done=4700 last=2005848696247406681
+item_tab_supply done=4800 last=2005848696276766753
+item_tab_supply done=4900 last=2005848696310321191
+item_tab_supply done=5000 last=2005886790841516124
+item_tab_supply done=5100 last=2005911440514461789
+item_tab_supply done=5200 last=2005924801989959743
+item_tab_supply done=5300 last=2006205288369217655
+item_tab_supply done=5400 last=2007756576491982875
+item_tab_supply done=5500 last=2008059219605135445
+item_tab_supply done=5600 last=2008437722922078208
+item_tab_supply done=5700 last=2009097427071860828
+item_tab_supply done=5800 last=2009139314424078407
+item_tab_supply done=5900 last=2009149562333487152
+item_tab_supply done=6000 last=2009149562371235872
+item_tab_supply done=6100 last=2009176957346201670
+item_tab_supply done=6200 last=2009199415218462763
+item_tab_supply done=6300 last=2009530044489465893
+item_tab_supply done=6400 last=2010661179135213660
+item_tab_supply done=6500 last=2010661179177156696
+item_tab_supply done=6600 last=2011028886938591261
+item_tab_supply done=6700 last=2011028886972145733
+item_tab_supply done=6800 last=2011044808642388067
+item_tab_supply done=6900 last=2011044808671748169
+item_tab_supply done=7000 last=2011709957699133548
+item_tab_supply done=7100 last=2011769226171658264
+item_tab_supply done=7200 last=2012072782158254138
+item_tab_supply done=7300 last=2012410729776730145
+item_tab_supply done=7400 last=2012449516498104418
+item_tab_supply done=7500 last=2013188320297123926
+item_tab_supply done=7600 last=2013208808121593878
+item_tab_supply done=7700 last=2013224609734127647
+item_tab_supply done=7800 last=2013501182458716173
+item_tab_supply done=7900 last=2013539448700522581
+item_tab_supply done=8000 last=2013563748568510519
+item_tab_supply done=8100 last=2013576514805141634
+item_tab_supply done=8200 last=2013583241592176662
+item_tab_supply done=8300 last=2013783587312631826
+item_tab_supply done=8400 last=2013966317925159021
+item_tab_supply done=8500 last=2015050894525583418
+item_tab_supply done=8600 last=2015726688453251165
+item_tab_supply done=8700 last=2015726688486805580
+item_tab_supply done=8800 last=2015726688520360023
+item_tab_supply done=8900 last=2015726688553914402
+item_tab_supply done=9000 last=2016095747988488222
+item_tab_supply done=9100 last=2016813452056133716
+item_tab_supply done=9200 last=2016813452085493853
+item_tab_supply done=9300 last=2017191247563264124
+item_tab_supply done=9400 last=2017191247596818477
+item_tab_supply done=9500 last=2018227980828504098
+item_tab_supply done=9600 last=2018897924050251807
+item_tab_supply done=9700 last=2018925564488441875
+item_tab_supply done=9800 last=2019298225676763173
+item_tab_supply done=9900 last=2021417430584795186
+item_tab_supply done=10000 last=2021779095545323553
+item_tab_supply done=10100 last=2026905193815879727
+item_tab_supply done=10200 last=2027667020543844405
+item_tab_supply done=10300 last=2028319767463079974
+item_tab_supply done=10400 last=2028429241418924097
+item_tab_supply done=10500 last=2028475619125907525
+item_tab_supply done=10600 last=2029377770782126148
+item_tab_supply done=10700 last=2029801434719629409
+item_tab_supply done=10800 last=2029809094550556704
+item_tab_supply done=10900 last=2029894664970756114
+item_tab_supply done=11000 last=2030818294885974024
+item_tab_supply done=11100 last=2031010684888338513
+item_tab_supply done=11200 last=2031336807589392445
+item_tab_supply done=11300 last=2031336807685861418
+item_tab_supply done=11400 last=2031336807778136100
+item_tab_supply done=11500 last=2031336807874605080
+item_tab_supply done=11600 last=2031336948685799455
+item_tab_supply done=11700 last=2031557196865249366
+item_tab_supply done=11800 last=2032117757856358491
+item_tab_supply done=11900 last=2033110402292445194
+item_tab_supply done=12000 last=2034446222509166629
+item_tab_supply done=12100 last=2035553549060624414
+item_tab_supply done=12200 last=2036615369221492764
+item_tab_supply done=12300 last=2037701566228348985
+item_tab_supply done=12400 last=2038558024226574358
+item_tab_supply done=12500 last=2039615712377163864
+item_tab_supply done=12600 last=2041715418116956263
+item_tab_supply done=12700 last=2042062088021237841
+item_tab_supply done=12800 last=2042517641755385910
+item_tab_supply done=12900 last=2042892463417143320
+item_tab_supply done=13000 last=2043975122478301282
+item_tab_supply done=13100 last=2044604533850370127
+item_tab_supply done=13200 last=2046847845395189839
+item_tab_supply done=13300 last=2047975758932856846
+item_tab_supply done=13400 last=2052265606795730992
+item_tab_supply done=13500 last=2054011542580506673
+item_tab_supply done=13600 last=2056187557654339673
+item_tab_supply done=13700 last=2056678874935246901
+Traceback (most recent call last):
+  File "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/kemai_sync.py", line 379, in <module>
+    if __name__ == "__main__":
+        ^^^^^^
+  File "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/kemai_sync.py", line 360, in main
+    from kemai_sections import sync_sections
+  File "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/kemai_sections.py", line 165, in sync_sections
+    results=section_batch(section,ids,session)
+  File "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/kemai_sections.py", line 55, in section_batch
+    result=session_request(expr,session)
+  File "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/kemai_sections.py", line 30, in session_request
+    return browser(expression,session)
+  File "/Users/tangshuang/data/gitlab/yuntoo/biz-case/fresh-market/kemai_sync.py", line 78, in browser
+    p = subprocess.run(["opencli", "browser", session, "eval", expression],
+                       capture_output=True, text=True, timeout=110)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 557, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 1221, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 2153, in _communicate
+    ready = selector.select(timeout)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/lib/python3.14/selectors.py", line 398, in select
+    fd_event_list = self._selector.poll(timeout)
+KeyboardInterrupt

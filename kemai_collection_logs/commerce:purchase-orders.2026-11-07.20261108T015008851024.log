@@ -1,0 +1,7 @@
+commerce schema ready: 13 tables
+purchase-orders 2026-11-07 single_scan_total=28
+purchase-orders 2026-11-07 saved=10/28
+purchase-orders 2026-11-07 saved=20/28
+purchase-orders 2026-11-07 verified captured_total=28
+purchase-orders 2026-11-07 pages=1 saved=28
+{"counts":{"purchase-orders":28},"run_id":54}

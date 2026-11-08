@@ -1,0 +1,32 @@
+<!-- @lovrabet.sqlCode: 21522951-69443334 -->
+<!-- @lovrabet.sqlName: kemaiPipelineProbeOps -->
+<!-- @lovrabet.dbId: 10510 -->
+<!-- @lovrabet.dbName: fresh-market -->
+<!-- @lovrabet.mode: mybatisXml -->
+<!-- @lovrabet.syncedAt: 2026-11-08T10:43:34.602Z -->
+
+<select id="query" resultType="map">
+<choose>
+ <when test="op == 'receipt'">
+  SELECT batch_id,capture_id,window_key,payload_hash,state,row_count,receipt,
+         SHA2(#{records_json},256) AS requested_hash
+  FROM kemai_pipeline_probe_batches WHERE batch_id=#{batch_id}
+  <if test="lock == true">FOR UPDATE</if>
+ </when>
+ <when test="op == 'manifest'">
+  SELECT batch_id,payload_hash,state,row_count,receipt FROM kemai_pipeline_probe_batches
+  WHERE capture_id=#{capture_id} AND window_key=#{window_key} ORDER BY batch_id FOR UPDATE
+ </when>
+ <when test="op == 'window'">
+  SELECT window_key,capture_id,row_count,evidence FROM kemai_pipeline_probe_windows WHERE window_key=#{window_key}
+ </when>
+ <when test="op == 'capture_count'">
+  SELECT COUNT(*) AS row_count FROM kemai_pipeline_probe_records r
+  JOIN kemai_pipeline_probe_batches b ON r.last_batch_id=b.batch_id
+  WHERE b.capture_id=#{capture_id} AND b.window_key=#{window_key} AND b.state='committed'
+ </when>
+ <otherwise>
+  SELECT COUNT(*) AS row_count FROM kemai_pipeline_probe_records WHERE last_batch_id=#{batch_id}
+ </otherwise>
+</choose>
+</select>

@@ -1,0 +1,315 @@
+import React, { useState } from "react";
+import { isInIcestark } from "@ice/stark-app";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import {
+  Layout,
+  Menu,
+  Button,
+  Breadcrumb,
+  Avatar,
+  Space,
+  Dropdown,
+} from "antd";
+import type { MenuProps } from "antd";
+import {
+  HomeOutlined,
+  DashboardOutlined,
+  ApiOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+  UserOutlined,
+  BarChartOutlined,
+  FileTextOutlined,
+  AppstoreOutlined,
+} from "@ant-design/icons";
+
+const { Header, Sider, Content } = Layout;
+
+// 路由配置，用于生成面包屑
+const routeConfig = [
+  { path: "/", title: "Home" },
+  { path: "/workbench", title: "Workbench" },
+  { path: "/dashboard", title: "Dashboard" },
+  { path: "/sdk-demo", title: "SDK demo" },
+  { path: "/components-demo", title: "Components demo" },
+  { path: "/data-screen", title: "Data screen" },
+];
+
+const MainLayout: React.FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // 菜单收起/展开状态
+  const [collapsed, setCollapsed] = useState(false);
+  // 菜单是否完全隐藏
+  const [menuHidden, setMenuHidden] = useState(false);
+
+  const menuItems: MenuProps["items"] = [
+    {
+      key: "/",
+      icon: <HomeOutlined />,
+      label: "Home",
+    },
+    {
+      key: "/sdk-demo",
+      icon: <ApiOutlined />,
+      label: "SDK demo",
+    },
+    {
+      key: "/components-demo",
+      icon: <AppstoreOutlined />,
+      label: "Components demo",
+    },
+    {
+      key: "page-examples",
+      icon: <FileTextOutlined />,
+      label: "Page examples",
+      children: [
+        {
+          key: "/workbench",
+          icon: <DashboardOutlined />,
+          label: "Workbench",
+        },
+        {
+          key: "/dashboard",
+          icon: <DashboardOutlined />,
+          label: "Dashboard",
+        },
+        {
+          key: "/data-screen",
+          icon: <BarChartOutlined />,
+          label: "Data screen",
+        },
+      ],
+    },
+  ];
+
+  const handleMenuClick = ({ key }: { key: string }) => {
+    // 如果是外部链接（以 http:// 或 https:// 开头），在新标签页打开
+    if (key.startsWith("http://") || key.startsWith("https://")) {
+      window.open(key, "_blank", "noopener,noreferrer");
+    } else {
+      navigate(key);
+    }
+  };
+
+  const toggleCollapsed = () => {
+    setCollapsed(!collapsed);
+  };
+
+  const toggleMenuHidden = () => {
+    setMenuHidden(!menuHidden);
+    // 如果隐藏菜单，同时收起菜单
+    if (!menuHidden) {
+      setCollapsed(true);
+    }
+  };
+
+  // 生成面包屑
+  const getBreadcrumbItems = () => {
+    const items: any[] = [{ title: "Home" }];
+    const currentRoute = routeConfig.find((r) => r.path === location.pathname);
+    if (currentRoute && currentRoute.path !== "/") {
+      items.push({ title: currentRoute.title });
+    }
+    return items;
+  };
+
+  // 用户菜单
+  const userMenuItems: MenuProps["items"] = [
+    {
+      key: "profile",
+      label: "Profile",
+      icon: <UserOutlined />,
+    },
+    {
+      key: "settings",
+      label: "Settings",
+    },
+    {
+      type: "divider",
+    },
+    {
+      key: "logout",
+      label: "Sign out",
+      danger: true,
+    },
+  ];
+
+  // 可选：根据isInIcestark()判断当前运行环境，被嵌入时，不渲染layout布局
+  if (isInIcestark()) {
+    return <Outlet />;
+  }
+
+  return (
+    <Layout style={{ minHeight: "100vh", background: "#fff" }}>
+      {!menuHidden && (
+        <Sider
+          trigger={null}
+          collapsible
+          collapsed={collapsed}
+          width={220}
+          style={{ background: "#fff" }}
+        >
+          {/* 系统标题 */}
+          <div
+            style={{
+              height: 64,
+              padding: collapsed ? "16px 8px" : "16px 20px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: collapsed ? "center" : "flex-start",
+              background: "#fff",
+              borderBottom: "1px solid #f0f0f0",
+            }}
+          >
+            {!collapsed ? (
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <img
+                  src="/logo.svg"
+                  alt="Logo"
+                  style={{ height: 28, width: 28 }}
+                />
+                <span
+                  style={{
+                    fontSize: 16,
+                    fontWeight: 600,
+                  }}
+                >
+                  Lovrabet System
+                </span>
+              </div>
+            ) : (
+              <img
+                src="/logo.svg"
+                alt="Logo"
+                style={{ height: 28, width: 28 }}
+              />
+            )}
+          </div>
+          <Menu
+            mode="inline"
+            selectedKeys={[location.pathname]}
+            items={menuItems}
+            onClick={handleMenuClick}
+            style={{
+              height: "calc(100vh - 64px)",
+              borderRight: 0,
+            }}
+            className="custom-menu"
+          />
+        </Sider>
+      )}
+      <Layout style={{ background: "#fff" }}>
+        <Header
+          style={{
+            padding: "0 24px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            boxShadow: "0 2px 8px 0 rgba(29,35,41,.05)",
+            height: 64,
+            background: "#fff",
+            borderBottom: "1px solid #f0f0f0",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <Button
+              type="text"
+              icon={
+                menuHidden ? (
+                  <MenuUnfoldOutlined />
+                ) : collapsed ? (
+                  <MenuUnfoldOutlined />
+                ) : (
+                  <MenuFoldOutlined />
+                )
+              }
+              onClick={menuHidden ? toggleMenuHidden : toggleCollapsed}
+              style={{
+                fontSize: 16,
+                width: 40,
+                height: 40,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            />
+            {menuHidden && (
+              <Button
+                type="text"
+                icon={<MenuUnfoldOutlined />}
+                onClick={toggleMenuHidden}
+                style={{
+                  fontSize: 14,
+                  height: 32,
+                }}
+              >
+                Show menu
+              </Button>
+            )}
+            {/* 面包屑导航 */}
+            <Breadcrumb
+              items={getBreadcrumbItems()}
+              style={{
+                marginLeft: menuHidden ? 0 : 16,
+                fontSize: 14,
+              }}
+              itemRender={(route, params, routes, paths) => {
+                const isLast = routes.indexOf(route) === routes.length - 1;
+                return (
+                  <span
+                    style={{
+                      color: isLast ? "#262626" : "#595959",
+                      fontWeight: isLast ? 500 : 400,
+                    }}
+                  >
+                    {route.title}
+                  </span>
+                );
+              }}
+            />
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            {/* 用户信息 */}
+            <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
+              <Space
+                style={{
+                  cursor: "pointer",
+                  padding: "4px 8px",
+                  borderRadius: 4,
+                  transition: "background 0.3s",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "rgba(0,0,0,0.06)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "transparent";
+                }}
+              >
+                <Avatar
+                  size="small"
+                  icon={<UserOutlined />}
+                  style={{ background: "#1890ff" }}
+                />
+                <span style={{ fontSize: 14 }}>Admin</span>
+              </Space>
+            </Dropdown>
+          </div>
+        </Header>
+        <Content
+          className="subapp-shell-content"
+          style={{
+            minHeight: 280,
+          }}
+        >
+          <div className="subapp-shell-stage">
+            <Outlet />
+          </div>
+        </Content>
+      </Layout>
+    </Layout>
+  );
+};
+
+export default MainLayout;

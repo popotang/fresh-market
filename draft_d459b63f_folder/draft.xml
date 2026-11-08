@@ -1,0 +1,69 @@
+<document>
+  <title>科迈云帆数据采集：OpenCLI 命令与用法</title>
+  <p>适用对象：维护科迈云帆商品、采购和零售数据同步的开发与运维同事。本文按 2026-11-06 工作区源码和已安装适配器核对；命令属于登录态下的 SaaS 内部接口，页面或接口调整后需重新验证。当前采集任务处于人工暂停状态，本文是操作参考，不代表任务已恢复。</p>
+
+  <h1 seq="auto">执行模型与前置条件</h1>
+  <p>OpenCLI 使用已登录的科迈云帆 PC 后台会话读取列表、详情和导出中心。站点命令返回 JSON；<b>写入 MySQL、日期断点、去重和对账由 Python 同步脚本负责</b>。运行前需有有效登录会话和对应菜单权限。数据库密码由脚本交互输入或通过匿名管道传递，不应写进命令行、日志或文档。</p>
+  <p>当前已安装的站点命令位于 <code>~/.opencli/clis/kemai/</code>，项目副本位于 <code>kemai_opencli/</code>，两者在本次核对时一致。统一使用 <code>-f json</code> 取得机器可处理的结果数组。单条站点命令仅负责一次读取或一次导出任务创建；大量数据请通过同步器编排。</p>
+
+  <h1 seq="auto">已安装的 12 条站点命令</h1>
+  <table>
+    <thead><tr><th><p>命令</p></th><th><p>输入</p></th><th><p>返回与用途</p></th></tr></thead>
+    <tbody>
+      <tr><td><p><code>purchase-orders</code></p></td><td><p>日期、页码、行数</p></td><td><p>采购订单列表；源单据 ID 和单号用于后续详情关联。</p></td></tr>
+      <tr><td><p><code>purchase-receipts</code></p></td><td><p>日期、页码、行数</p></td><td><p>采购收货单列表。</p></td></tr>
+      <tr><td><p><code>purchase-returns</code></p></td><td><p>日期、页码、行数</p></td><td><p>采购退货单列表。</p></td></tr>
+      <tr><td><p><code>purchase-receive-history</code></p></td><td><p>日期、页码、行数</p></td><td><p>“收货退货明细”报表中的已审核收货商品行。</p></td></tr>
+      <tr><td><p><code>retail-orders</code></p></td><td><p>日期、页码、行数</p></td><td><p>零售小票订单列表。</p></td></tr>
+      <tr><td><p><code>retail-sales</code></p></td><td><p>日期、页码、行数</p></td><td><p>零售逐商品销售流水，保留源端稳定 ID。</p></td></tr>
+      <tr><td><p><code>purchase-detail</code></p></td><td><p><code>--kind order|receipt|return --id ID</code></p></td><td><p>采购单头、商品明细、适用机构和审核记录。</p></td></tr>
+      <tr><td><p><code>retail-order-detail</code></p></td><td><p><code>--id ID --sale-time 'YYYY-MM-DD HH:mm:ss'</code></p></td><td><p>零售订单单头、商品行和支付流水。</p></td></tr>
+      <tr><td><p><code>purchase-receive-history-export-start</code></p></td><td><p><code>--from DAY --to DAY</code></p></td><td><p>创建或复用历史收货 Excel 异步任务。</p></td></tr>
+      <tr><td><p><code>retail-orders-export-start</code></p></td><td><p><code>--from DAY --to DAY</code></p></td><td><p>创建或复用零售订单 Excel 异步任务。</p></td></tr>
+      <tr><td><p><code>retail-sales-export-start</code></p></td><td><p><code>--from DAY --to DAY</code></p></td><td><p>创建或复用销售流水 Excel 异步任务。</p></td></tr>
+      <tr><td><p><code>export-task-list</code></p></td><td><p><code>--rows N</code>，默认 20</p></td><td><p>查询最近导出任务的状态、总行数及下载地址。</p></td></tr>
+    </tbody>
+  </table>
+  <p>六条列表命令都要求 <code>--from</code> 和 <code>--to</code>，格式为 <code>YYYY-MM-DD</code>；<code>--page</code> 从 1 开始，<code>--rows</code> 范围为 1–1000，默认 20。采购列表另有 <code>--date-type</code>，默认值 0（页面默认的制单时间维度）。列表返回记录数组；不能仅凭页面接口的 <code>totalRecord</code> 判断采购列表总数，因为已观察到有数据时仍返回 0。</p>
+
+  <h1 seq="auto">手工采样与详情查询</h1>
+  <p>以下日期和 ID 仅示范参数形态。运行站点命令会向科迈发起实际请求；当前人工暂停期间请勿把示例当作恢复指令。</p>
+  <pre lang="bash" caption="列表命令示例"><code>opencli kemai purchase-orders --from 2026-10-10 --to 2026-10-10 --page 1 --rows 20 -f json
+opencli kemai purchase-receive-history --from 2026-10-10 --to 2026-10-10 --page 1 --rows 20 -f json
+opencli kemai retail-orders --from 2026-10-10 --to 2026-10-10 --page 1 --rows 20 -f json
+opencli kemai retail-sales --from 2026-10-10 --to 2026-10-10 --page 1 --rows 20 -f json</code></pre>
+  <pre lang="bash" caption="详情命令示例"><code>opencli kemai purchase-detail --kind receipt --id SOURCE_DOCUMENT_ID -f json
+opencli kemai retail-order-detail --id SOURCE_ORDER_ID --sale-time '2026-10-10 12:30:00' -f json</code></pre>
+  <p>采购详情的 <code>--kind</code> 仅支持 <code>order</code>、<code>receipt</code>、<code>return</code>。零售详情同时需要源订单 ID 和原销售时间。实际 ID 应从列表响应取得；详情结果含嵌套明细，不等于再抓一个列表页。</p>
+
+  <h1 seq="auto">Excel 导出流程与数据用途</h1>
+  <ol>
+    <li>按日期发起对应的 <code>*-export-start</code>。返回导出任务 <code>id</code>、<code>status</code>、<code>totalRows</code> 和可能尚为空的 <code>sourceUrl</code>。</li>
+    <li>用 <code>export-task-list</code> 查同一个任务 ID。任务完成条件为 <code>status=2</code> 且有 <code>sourceUrl</code>；失败状态或 <code>failReason</code> 需停止处理。</li>
+    <li>历史收货由同步器下载 Excel，检查实际行数等于 <code>totalRows</code>，再按“单据号＋明细序号＋商品编码”生成稳定键并分批 upsert。</li>
+    <li>零售订单与销售流水的 Excel 主要提供独立的每日 <code>totalRows</code> 对账；入库仍优先使用列表 API 的源 ID。两者不应因为导出成功就视为完整详情已采集。</li>
+  </ol>
+  <pre lang="bash" caption="导出中心示例"><code>opencli kemai purchase-receive-history-export-start --from 2026-01-01 --to 2026-01-31 -f json
+opencli kemai retail-orders-export-start --from 2026-10-10 --to 2026-10-10 -f json
+opencli kemai retail-sales-export-start --from 2026-10-10 --to 2026-10-10 -f json
+opencli kemai export-task-list --rows 50 -f json</code></pre>
+  <p><b>副作用与复用：</b><code>export-start</code> 可能在 SaaS 内创建导出任务；相同文件名的已有任务也可能被复用。重复执行前应按任务 ID、日期、状态和总量检查是否确实需要新任务。命令内部为寻找新任务会短间隔查询导出中心，因此外层 <code>--rate</code> 不是底层每个 HTTP 请求的严格间隔。</p>
+
+  <h1 seq="auto">批量同步、全量与增量</h1>
+  <p><code>kemai_commerce_sync.py</code> 是 OpenCLI 之上的 MySQL 同步器；<code>sample</code> 取少量样本，<code>full</code> 按日期范围完成首轮，<code>incremental</code> 回扫最近 N 天。示例中的 <code>--rate 0.1</code> 表示同步器层面约每 10 秒一次命令调用。密码由运行时输入。</p>
+  <pre lang="bash" caption="同步器示例，仅在明确恢复任务后运行"><code>python3 kemai_commerce_sync.py sample --to 2026-11-06 --kind purchase-orders --sample-limit 2 --rate 0.1
+python3 kemai_commerce_sync.py full --from 2025-01-01 --to 2026-11-06 --kind purchase-orders --rate 0.1
+python3 kemai_commerce_sync.py incremental --to 2026-11-06 --kind retail-orders --lookback-days 30 --rate 0.1
+python3 kemai_integrity_report.py --strict</code></pre>
+  <p>全量以 <code>sync_checkpoints</code> 的完成日期续跑；同一天只分页扫描一轮。<code>--max-pages N</code> 适合有限页试跑，不写全量完成检查点；<code>full --restart</code> 会忽略日期完成检查点，可能重新请求历史范围。<code>sample</code> 也不写全量完成检查点。数据通过源 ID 或稳定业务键唯一约束与 upsert 防重复，原始响应存 <code>source_capture</code>，未覆盖的详情记录于 <code>sync_coverage_gaps</code>。</p>
+  <p>首次快速层：采购单据和零售订单先入单头；历史收货使用按月 Excel；零售流水用单轮分页及导出总量对账。采购完整商品明细、部分历史内部单据 ID、零售支付流水等缺口需后续增量补采。采购列表未验证可靠的“最后修改时间”筛选，因此只回扫近 30 天不能保证旧单变更全覆盖。</p>
+
+  <h1 seq="auto">商品主档和 14 类页签</h1>
+  <p>商品尚未注册成 <code>opencli kemai item-page</code>、<code>item-detail</code> 或 <code>item-section</code> 命令。当前由 <code>kemai_sync.py</code>、<code>kemai_product_incremental.py</code> 和 <code>kemai_sections.py</code> 调用 <code>opencli browser &lt;session&gt; eval</code>，复用已登录页面组件与请求能力。较早的 <code>opencli-sync-design.md</code> 把这些命令列为拟实现，不能作为当前命令清单。</p>
+  <p>商品清单增量只扫描一轮，核对唯一源 ID 数与源端总数；只有新增或列表稳定字段变化的商品才排队刷新主档与页签。页签范围为供货、零售价、配送价、库存、促销、条码、分级、包装、历史进价、经营范围、组合、混售、拆分和切割。不同页签分别保存状态，首轮未完成项保留缺口和逐商品断点。</p>
+
+  <h1 seq="auto">限流、错误与当前状态</h1>
+  <p>适配器识别 HTTP 429、HTTP 200 但业务消息为“您的操作太频繁，请稍后再试”，以及页面弹窗；同步器把限流事件写入 <code>kemai_rate_limit.log</code>，状态写入 <code>kemai_rate_limit_status.json</code>。命中后冷却 30 分钟。认证或权限错误（401、403）应停下检查登录态，不能把失败响应当作空列表。</p>
+  <p>截至 2026-11-06，历史收货恢复试探的第一笔导出请求仍得到 <code>RATE_LIMIT / HTTP 429</code>。任务已按用户要求人工暂停，自动恢复关闭；断点保存在 <code>kemai_manual_checkpoint.json</code>。后续恢复需先核对当前页面和数据库检查点，仅启一条流，以约 0.1 次/秒起步，并检查首个导出窗口的源端总量、唯一键和落库数。</p>
+  <p>源码与核验位置：<code>kemai_opencli/</code>、<code>kemai_commerce_sync.py</code>、<code>kemai_sync.py</code>、<code>kemai_sections.py</code>、<code>kemai_rate_limit.py</code>、<code>kemai_integrity_report.py</code>。本文记录的是 2026-11-06 的实现快照，接口、登录态和限流策略变化时应同步修订。</p>
+</document>

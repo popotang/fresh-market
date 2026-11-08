@@ -1,0 +1,15 @@
+<!-- @lovrabet.sqlCode: 21522951-ff70e8b5 -->
+<!-- @lovrabet.sqlName: kemaiProbeBatchRows -->
+<!-- @lovrabet.dbId: 10510 -->
+<!-- @lovrabet.dbName: fresh-market -->
+<!-- @lovrabet.mode: mybatisXml -->
+<!-- @lovrabet.syncedAt: 2026-11-08T10:45:02.662Z -->
+
+<insert id="batchRows">
+INSERT INTO kemai_pipeline_probe_records(source_key,payload,last_batch_id)
+VALUES
+<foreach collection="rows" item="row" separator=",">
+ (#{row.source_key},CAST(#{row.payload_json} AS JSON),#{batch_id})
+</foreach>
+ON DUPLICATE KEY UPDATE payload=VALUES(payload),last_batch_id=VALUES(last_batch_id)
+</insert>

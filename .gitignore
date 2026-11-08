@@ -1,0 +1,9 @@
+# Runtime data and private evidence; publish only sanitized summaries under docs/.
+.local-audits/
+.kemai-artifacts/
+.runtime/
+.samples/
+__pycache__/
+*.py[cod]
+.kemai*.lock
+.rabetbase/*.lock.json

@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "note": "A stream may write business rows only after its own transaction, rollback and real-window evidence exists. Promotion is a data change reviewed in git, not a code flag.",
+  "streams": {
+    "retail-sales": {
+      "accepted_at": "2026-11-08",
+      "evidence": "docs/kemai-standard-api-verification-2026-11-08.json",
+      "coverage": "list_only",
+      "verified": ["real-window-closed-loop", "same-capture-replay", "forced-rollback", "empty-day"]
+    },
+    "retail-orders": {
+      "accepted_at": "2026-11-08",
+      "evidence": "docs/kemai-standard-api-verification-2026-11-08.json",
+      "coverage": "list_only",
+      "verified": ["real-window-closed-loop", "reuse-export-evidence", "metadata-only-unchanged"]
+    }
+  }
+}

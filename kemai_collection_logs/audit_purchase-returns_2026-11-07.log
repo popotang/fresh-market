@@ -1,0 +1,13 @@
+{
+  "stream": "purchase-returns",
+  "checkpoint_scope": "full_and_incremental",
+  "checkpoint_day": "2026-11-07",
+  "audited_from": "2026-01-01",
+  "completed_source_days": 311,
+  "captured_confirmed_days": 280,
+  "database_capture_confirmed_days": 311,
+  "scan_only_nonempty_days": 278,
+  "independent_export_total_days": 0,
+  "issues": [],
+  "source_logs": 4
+}

@@ -1,0 +1,27 @@
+{
+  "schema_version": 2,
+  "retail_scope": {
+    "branch_ids": ["69028303"],
+    "branch_codes": "1001",
+    "meaning": "Observed scope of the connected account; not a claim of all merchant branches",
+    "retail-sales": {"time_field": "timeType", "upload_value": "1"},
+    "retail-orders": {"time_field": "dateType", "upload_value": "0"}
+  },
+  "purchase_scope": {
+    "time_field": "dateType",
+    "create_time_value": "0",
+    "create_time_meaning": "gmtCreate (制单时间); verified 2026-11-08 by small source samples",
+    "approve_time_value": "1",
+    "approve_time_meaning": "approveTime (审核时间); same-day sample contained rows created the previous day",
+    "total_record_reliable": false,
+    "total_record_evidence": "2026-11-08 sample: reported_total_rows=0 while 20 rows returned",
+    "late_modification_observed": "orders created 2026-11-07 carried gmtModified/approveTime on 2026-11-08",
+    "must_be_empty": ["keyword", "itemPackId", "status"],
+    "window_fields": ["operDateFrom", "operDateTo"],
+    "verified_at": "2026-11-08",
+    "feedback": {
+      "late_modification_policy": "create-day windows revisit the previous completed day; older revisions are a separate bounded reconciliation, never claimed as full incremental coverage",
+      "source_total_policy": "only single-round unique source keys may be declared; totalRecord=0 must be reported as unknown, not zero"
+    }
+  }
+}

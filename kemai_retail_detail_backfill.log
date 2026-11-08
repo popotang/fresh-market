@@ -1,0 +1,10 @@
+retail detail 2026-10-11 failed: OpenCLI retail-order-detail --id failed: ok: false
+error:
+  code: UNKNOWN
+  message: |-
+    Error: 零售详情等待超时
+        at <anonymous>:8:11
+  exitCode: 1
+# AutoFix: re-run with --trace=retain-on-failure for trace artifact
+# opencli kemai retail-order-detail --trace retain-on-failure
+
