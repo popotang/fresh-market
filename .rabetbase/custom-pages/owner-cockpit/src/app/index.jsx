@@ -40,6 +40,7 @@ const SQL_DAILY = "21522951-59797d83";
 const SQL_BREAKDOWN = "21522951-65f96f23";
 const SQL_PURCHASE = "21522951-95f72415";
 const SQL_STOCK = "21522951-0306b05f";
+const SQL_LATEST = "21522951-b95661de";
 
 const WEEKDAY_KEYS = [
   "weekday.sun",
@@ -455,17 +456,15 @@ const OwnerCockpit = () => {
   const $i18n = useI18n();
   const { token } = antdTheme.useToken();
 
-  const [range, setRange] = useState(() => [
-    dayjs().subtract(29, "day").startOf("day"),
-    dayjs().startOf("day"),
-  ]);
-  const [days, setDays] = useState(30);
+  const [range, setRange] = useState(null);
+  const [days, setDays] = useState(7);
+  const [latest, setLatest] = useState(() => readCache("bi:latest-date"));
+  const [retryKey, setRetryKey] = useState(0);
   const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [extraLoading, setExtraLoading] = useState(false);
   const [error, setError] = useState(false);
   const requestRef = useRef(0);
-  const anchoredRef = useRef(false);
 
   $i18n.addLocale(locales);
 
@@ -480,12 +479,44 @@ const OwnerCockpit = () => {
     [$i18n],
   );
 
-  const startDate = range[0].format("YYYY-MM-DD");
-  const endDate = range[1].format("YYYY-MM-DD");
+  const startDate = range?.[0]?.format("YYYY-MM-DD") || "";
+  const endDate = range?.[1]?.format("YYYY-MM-DD") || "";
+
+  useEffect(() => {
+    if (range || latest) return undefined;
+    let cancelled = false;
+    const resolveLatest = async () => {
+      try {
+        const result = await client.sql.execute({ sqlCode: SQL_LATEST });
+        if (!result || !result.execSuccess) throw new Error("latest date query failed");
+        const value = result.execResult?.[0]?.latest_date;
+        if (!cancelled && value) {
+          writeCache("bi:latest-date", value);
+          setLatest(value);
+        }
+      } catch (resolveError) {
+        if (cancelled) return;
+        console.error("resolve latest business date failed", resolveError);
+        setError(true);
+        setLoading(false);
+      }
+    };
+    void resolveLatest();
+    return () => {
+      cancelled = true;
+    };
+  }, [client, latest, range, retryKey]);
+
+  useEffect(() => {
+    if (range || !latest) return;
+    const anchor = dayjs(latest);
+    setRange([anchor.subtract(days - 1, "day").startOf("day"), anchor.startOf("day")]);
+  }, [days, latest, range]);
 
   const load = useCallback(
     async (force = false) => {
-      const cacheKey = `owner-cockpit:v2:${startDate}:${endDate}`;
+      if (!startDate || !endDate) return;
+      const cacheKey = `owner-cockpit:v3:${startDate}:${endDate}`;
       if (!force) {
         const cached = readCache(cacheKey);
         if (cached?.daily?.length) {
@@ -503,7 +534,13 @@ const OwnerCockpit = () => {
       setError(false);
       try {
         const params = { startDate, endDate };
-        const dailyRes = await client.sql.execute({ sqlCode: SQL_DAILY, params });
+        const dailyRes = await client.sql.execute({
+          sqlCode: SQL_DAILY,
+          params: {
+            startDate: dayjs(startDate).subtract(7, "day").format("YYYY-MM-DD"),
+            endDate,
+          },
+        });
         const base = {
           daily: readRows(dailyRes, "daily"),
         };
@@ -560,15 +597,18 @@ const OwnerCockpit = () => {
     const suppliersRaw = data.suppliers || [];
     const stocks = data.stocks || [];
 
+    const displayDaily = daily.filter(
+      (row) => row.biz_date >= startDate && row.biz_date <= endDate,
+    );
     const totals = {
-      sales: sumBy(daily, "sales_amount"),
-      orders: sumBy(daily, "order_count"),
-      qty: sumBy(daily, "qty"),
-      refund: sumBy(daily, "refund_amount"),
-      memberSales: sumBy(daily, "member_sales"),
-      memberOrders: sumBy(daily, "member_orders"),
-      grossProfit: sumBy(daily, "gross_profit"),
-      salesWithCost: sumBy(daily, "sales_with_cost"),
+      sales: sumBy(displayDaily, "sales_amount"),
+      orders: sumBy(displayDaily, "order_count"),
+      qty: sumBy(displayDaily, "qty"),
+      refund: sumBy(displayDaily, "refund_amount"),
+      memberSales: sumBy(displayDaily, "member_sales"),
+      memberOrders: sumBy(displayDaily, "member_orders"),
+      grossProfit: sumBy(displayDaily, "gross_profit"),
+      salesWithCost: sumBy(displayDaily, "sales_with_cost"),
     };
     const original = sumBy(departments, "original_amount");
     totals.discount = original ? Math.max(0, original - totals.sales) : 0;
@@ -587,7 +627,7 @@ const OwnerCockpit = () => {
       total: 0,
       days: 0,
     }));
-    daily.forEach((row) => {
+    displayDaily.forEach((row) => {
       const index = dayjs(row.biz_date).day();
       weekdayBuckets[index].total += toNumber(row.sales_amount);
       weekdayBuckets[index].days += 1;
@@ -619,7 +659,7 @@ const OwnerCockpit = () => {
     const coverage = ratio(totals.salesWithCost, totals.sales);
 
     return {
-      daily,
+      daily: displayDaily,
       departments,
       totals,
       recentSales,
@@ -634,7 +674,7 @@ const OwnerCockpit = () => {
       riskRows,
       margin,
       coverage,
-      latestDate: daily[daily.length - 1]?.biz_date,
+      latestDate: displayDaily[displayDaily.length - 1]?.biz_date,
       basket: totals.orders ? totals.sales / totals.orders : 0,
       previousBasket: sumBy(previous, "order_count")
         ? previousSales / sumBy(previous, "order_count")
@@ -647,15 +687,7 @@ const OwnerCockpit = () => {
       stockLoaded: Boolean(data.stocks),
       supplierLoaded: Boolean(data.suppliers),
     };
-  }, [data, $t]);
-
-  useEffect(() => {
-    if (anchoredRef.current || !view?.latestDate) return;
-    if (view.latestDate === endDate) return;
-    anchoredRef.current = true;
-    const anchor = dayjs(view.latestDate);
-    setRange([anchor.subtract(Math.max(days, 1) - 1, "day"), anchor]);
-  }, [view, endDate, days]);
+  }, [data, endDate, startDate, $t]);
 
   const trendOption = useMemo(
     () => (view ? createTrendOption(view.daily, $t, token) : null),
@@ -796,7 +828,7 @@ const OwnerCockpit = () => {
             ]}
             value={days}
             onChange={(value) => {
-              const anchor = view?.latestDate ? dayjs(view.latestDate) : dayjs();
+              const anchor = latest ? dayjs(latest) : dayjs();
               setDays(value);
               setRange([anchor.subtract(value - 1, "day").startOf("day"), anchor.startOf("day")]);
             }}
@@ -811,7 +843,13 @@ const OwnerCockpit = () => {
               }
             }}
           />
-          <Button loading={loading} onClick={() => void load(true)}>
+          <Button
+            loading={loading}
+            onClick={() => {
+              if (range) void load(true);
+              else setRetryKey((value) => value + 1);
+            }}
+          >
             {$t("owner.action.reload")}
           </Button>
         </div>
@@ -821,7 +859,13 @@ const OwnerCockpit = () => {
       {error ? (
         <Alert
           action={
-            <Button size="small" onClick={() => void load(true)}>
+            <Button
+              size="small"
+              onClick={() => {
+                if (range) void load(true);
+                else setRetryKey((value) => value + 1);
+              }}
+            >
               {$t("owner.action.retry")}
             </Button>
           }

@@ -6,6 +6,7 @@ import {
   ConfigProvider,
   DatePicker,
   Empty,
+  Segmented,
   Skeleton,
   Statistic,
   Table,
@@ -39,7 +40,7 @@ echarts.use([
 const SQL_DAILY = "21522951-59797d83";
 const SQL_BREAKDOWN = "21522951-65f96f23";
 const SQL_STOCK = "21522951-0306b05f";
-const WINDOW_DAYS = 14;
+const SQL_LATEST = "21522951-b95661de";
 const STOCK_WINDOW_DAYS = 7;
 
 const toNumber = (value) => {
@@ -382,11 +383,14 @@ const StoreOps = () => {
   const $i18n = useI18n();
   const { token } = antdTheme.useToken();
 
-  const [selectedDate, setSelectedDate] = useState(null);
+  const [latest, setLatest] = useState(() => readCache("bi:latest-date"));
+  const [mode, setMode] = useState("week");
+  const [range, setRange] = useState(null);
   const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [extraLoading, setExtraLoading] = useState(false);
   const [error, setError] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
   const requestRef = useRef(0);
 
   $i18n.addLocale(locales);
@@ -402,11 +406,58 @@ const StoreOps = () => {
     [$i18n],
   );
 
-  const businessDate = selectedDate || dayjs().format("YYYY-MM-DD");
+  const startDate = range?.[0]?.format("YYYY-MM-DD") || "";
+  const endDate = range?.[1]?.format("YYYY-MM-DD") || "";
+
+  useEffect(() => {
+    if (range || latest) return undefined;
+    let cancelled = false;
+    const resolveLatest = async () => {
+      try {
+        const result = await client.sql.execute({ sqlCode: SQL_LATEST });
+        if (!result || !result.execSuccess) throw new Error("latest date query failed");
+        const value = result.execResult?.[0]?.latest_date;
+        if (!cancelled && value) {
+          writeCache("bi:latest-date", value);
+          setLatest(value);
+        }
+      } catch (resolveError) {
+        if (cancelled) return;
+        console.error("resolve latest business date failed", resolveError);
+        setError(true);
+        setLoading(false);
+      }
+    };
+    void resolveLatest();
+    return () => {
+      cancelled = true;
+    };
+  }, [client, latest, range, retryKey]);
+
+  useEffect(() => {
+    if (range || !latest) return;
+    const anchor = dayjs(latest);
+    setRange([anchor.subtract(6, "day").startOf("day"), anchor.startOf("day")]);
+  }, [latest, range]);
+
+  const applyMode = useCallback(
+    (nextMode) => {
+      if (nextMode === mode) return;
+      const anchor = range?.[1] || (latest ? dayjs(latest) : dayjs());
+      setMode(nextMode);
+      setRange(
+        nextMode === "day"
+          ? [anchor.startOf("day"), anchor.startOf("day")]
+          : [anchor.subtract(6, "day").startOf("day"), anchor.startOf("day")],
+      );
+    },
+    [latest, mode, range],
+  );
 
   const load = useCallback(
     async (force = false) => {
-      const cacheKey = `store-ops:v2:${businessDate}`;
+      if (!startDate || !endDate) return;
+      const cacheKey = `store-ops:v4:${mode}:${startDate}:${endDate}`;
       if (!force) {
         const cached = readCache(cacheKey);
         if (cached?.daily?.length) {
@@ -423,35 +474,39 @@ const StoreOps = () => {
       setLoading(true);
       setError(false);
       try {
-        const day = dayjs(businessDate);
-        const dayParams = { startDate: businessDate, endDate: businessDate };
-        const windowStart = day
-          .subtract(WINDOW_DAYS - 1, "day")
-          .format("YYYY-MM-DD");
+        const end = dayjs(endDate);
+        const start = dayjs(startDate);
+        const span = Math.max(0, end.diff(start, "day"));
+        const prevEnd =
+          mode === "week" ? start.subtract(1, "day") : start.subtract(7, "day");
+        const prevStart =
+          mode === "week" ? prevEnd.subtract(span, "day") : prevEnd;
 
-        const dailyRes = await client.sql.execute({
-          sqlCode: SQL_DAILY,
-          params: { startDate: windowStart, endDate: businessDate },
-        });
+        const [prevRes, currentRes] = await Promise.all([
+          client.sql.execute({
+            sqlCode: SQL_DAILY,
+            params: {
+              startDate: prevStart.format("YYYY-MM-DD"),
+              endDate: prevEnd.format("YYYY-MM-DD"),
+            },
+          }),
+          client.sql.execute({ sqlCode: SQL_DAILY, params: { startDate, endDate } }),
+        ]);
         const base = {
-          daily: readRows(dailyRes, "daily"),
+          daily: [
+            ...readRows(prevRes, "daily-prev"),
+            ...readRows(currentRes, "daily"),
+          ],
         };
         if (requestId !== requestRef.current) return;
         setData(base);
         setLoading(false);
-
-        if (!selectedDate && base.daily.length) {
-          const latest = base.daily[base.daily.length - 1]?.biz_date;
-          if (latest && latest !== businessDate) {
-            setSelectedDate(latest);
-            return;
-          }
-        }
-
         setExtraLoading(true);
+
+        const dayParams = { startDate, endDate };
         const stockParams = {
-          startDate: day.subtract(STOCK_WINDOW_DAYS - 1, "day").format("YYYY-MM-DD"),
-          endDate: businessDate,
+          startDate: end.subtract(STOCK_WINDOW_DAYS - 1, "day").format("YYYY-MM-DD"),
+          endDate,
         };
         const [hourRes, cashierRes, categoryRes, itemRes, stockRes] =
           await Promise.all([
@@ -495,7 +550,7 @@ const StoreOps = () => {
         }
       }
     },
-    [businessDate, client, selectedDate],
+    [client, endDate, mode, startDate],
   );
 
   useEffect(() => {
@@ -503,25 +558,30 @@ const StoreOps = () => {
   }, [load]);
 
   const view = useMemo(() => {
-    if (!data) return null;
+    if (!data || !startDate || !endDate) return null;
     const daily = [...data.daily].sort((a, b) =>
       String(a.biz_date).localeCompare(String(b.biz_date)),
     );
-    const today = daily.find((row) => row.biz_date === businessDate) || null;
-    const lastWeekDate = dayjs(businessDate).subtract(7, "day").format("YYYY-MM-DD");
-    const lastWeek = daily.find((row) => row.biz_date === lastWeekDate) || null;
-    const latestDate = daily[daily.length - 1]?.biz_date || businessDate;
-
-    const sales = toNumber(today?.sales_amount);
-    const orders = toNumber(today?.order_count);
+    const periodRows = daily.filter(
+      (row) => row.biz_date >= startDate && row.biz_date <= endDate,
+    );
+    const prevRows = daily.filter(
+      (row) => row.biz_date < startDate || row.biz_date > endDate,
+    );
     const categories = data.categories || [];
     const cashiers = data.cashiers || [];
     const items = data.items || [];
     const stocks = data.stocks || [];
+
+    const sales = sumBy(periodRows, "sales_amount");
+    const orders = sumBy(periodRows, "order_count");
+    const qty = sumBy(periodRows, "qty");
+    const memberSales = sumBy(periodRows, "member_sales");
+    const memberOrders = sumBy(periodRows, "member_orders");
+    const prevSales = sumBy(prevRows, "sales_amount");
+    const prevOrders = sumBy(prevRows, "order_count");
     const original = sumBy(categories, "original_amount");
     const discount = original ? Math.max(0, original - sales) : 0;
-    const memberSales = toNumber(today?.member_sales);
-    const memberOrders = toNumber(today?.member_orders);
 
     const hourly = [...(data.hourly || [])];
     const peak = hourly.reduce(
@@ -622,17 +682,15 @@ const StoreOps = () => {
 
     return {
       daily,
-      today,
-      lastWeek,
-      latestDate,
+      periodRows,
+      branchName: periodRows[0]?.branch_name || "",
+      latestDate: latest || endDate,
       sales,
       orders,
-      qty: toNumber(today?.qty),
+      qty,
       basket: orders ? sales / orders : 0,
-      lastWeekSales: toNumber(lastWeek?.sales_amount),
-      lastWeekOrders: toNumber(lastWeek?.order_count),
-      salesChange: safeChange(sales, lastWeek?.sales_amount),
-      ordersChange: safeChange(orders, lastWeek?.order_count),
+      salesChange: safeChange(sales, prevSales),
+      ordersChange: safeChange(orders, prevOrders),
       memberSales,
       memberOrders,
       guestSales: Math.max(0, sales - memberSales),
@@ -649,7 +707,7 @@ const StoreOps = () => {
       actions,
       extrasLoaded: Boolean(data.stocks),
     };
-  }, [data, businessDate, $t]);
+  }, [data, endDate, latest, startDate, $t]);
 
   const hourlyOption = useMemo(
     () => (view ? createHourlyOption(view.hourly, $t, token) : null),
@@ -734,22 +792,48 @@ const StoreOps = () => {
         <div className="ops-header__main">
           <h1 className="ops-header__title">{$t("ops.title")}</h1>
           <p className="ops-header__subtitle">
-            {$t("ops.subtitle", {
-              date: businessDate,
+            {$t(mode === "week" ? "ops.subtitle" : "ops.subtitleDay", {
+              period: mode === "week" ? `${startDate} ~ ${endDate}` : startDate || "-",
               latest: view?.latestDate || "-",
-              warehouse: view?.today?.branch_name || "-",
+              warehouse: view?.branchName || "-",
             })}
           </p>
         </div>
         <div className="ops-header__actions">
-          <DatePicker
-            allowClear={false}
-            value={dayjs(businessDate)}
-            onChange={(value) => {
-              if (value) setSelectedDate(value.format("YYYY-MM-DD"));
-            }}
+          <Segmented
+            options={[
+              { label: $t("ops.range.week"), value: "week" },
+              { label: $t("ops.range.day"), value: "day" },
+            ]}
+            value={mode}
+            onChange={applyMode}
           />
-          <Button loading={loading} onClick={() => void load(true)}>
+          {mode === "week" ? (
+            <DatePicker.RangePicker
+              allowClear={false}
+              value={range}
+              onChange={(dates) => {
+                if (dates && dates[0] && dates[1]) {
+                  setRange([dates[0].startOf("day"), dates[1].startOf("day")]);
+                }
+              }}
+            />
+          ) : (
+            <DatePicker
+              allowClear={false}
+              value={range?.[0] || null}
+              onChange={(value) => {
+                if (value) setRange([value.startOf("day"), value.startOf("day")]);
+              }}
+            />
+          )}
+          <Button
+            loading={loading}
+            onClick={() => {
+              if (startDate) void load(true);
+              else setRetryKey((value) => value + 1);
+            }}
+          >
             {$t("ops.action.reload")}
           </Button>
         </div>
@@ -759,7 +843,13 @@ const StoreOps = () => {
       {error ? (
         <Alert
           action={
-            <Button size="small" onClick={() => void load(true)}>
+            <Button
+              size="small"
+              onClick={() => {
+                if (startDate) void load(true);
+                else setRetryKey((value) => value + 1);
+              }}
+            >
               {$t("ops.action.retry")}
             </Button>
           }
@@ -804,7 +894,7 @@ const StoreOps = () => {
                 prefix="¥"
               />
               <span className="ops-kpi__hint">
-                {$t("ops.kpi.vsLastWeek", {
+                {$t(mode === "week" ? "ops.kpi.vsPrevPeriod" : "ops.kpi.vsLastWeek", {
                   value:
                     view.salesChange === null
                       ? "-"
@@ -815,7 +905,7 @@ const StoreOps = () => {
             <Card className="ops-kpi" classNames={{ body: "ops-kpi__body" }}>
               <Statistic title={$t("ops.kpi.orders")} value={view.orders} />
               <span className="ops-kpi__hint">
-                {$t("ops.kpi.vsLastWeek", {
+                {$t(mode === "week" ? "ops.kpi.vsPrevPeriod" : "ops.kpi.vsLastWeek", {
                   value:
                     view.ordersChange === null
                       ? "-"
@@ -944,7 +1034,7 @@ const StoreOps = () => {
 
           <footer className="ops-footer">
             <h3 className="ops-footer__title">{$t("ops.footer.title")}</h3>
-            <p>{$t("ops.footer.scope", { date: businessDate })}</p>
+            <p>{$t("ops.footer.scope", { start: startDate, end: endDate })}</p>
             <p>{$t("ops.footer.stock")}</p>
             <p>{$t("ops.footer.noWrite")}</p>
             <p>{$t("ops.footer.generated", { time: dayjs().format("YYYY-MM-DD HH:mm") })}</p>
