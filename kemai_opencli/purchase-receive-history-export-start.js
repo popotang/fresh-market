@@ -2,6 +2,8 @@ import {awaitExportSubmission} from './export-submit.js';
 import { cli, Strategy } from '@jackwener/opencli/registry';
 import { ensurePage } from './utils.js';
 import { withSourceLease } from './source-gate.js';
+import { publicExportTask } from './export-task-projection.js';
+import { validateDate } from './source-validation.js';
 
 cli({
   site: 'kemai',
@@ -17,13 +19,13 @@ cli({
     { name: 'to', type: 'string', required: true },
     {name:'capture-id',type:'string',help:'32位采集版本；限定本轮导出任务，防止复用旧快照'},
   ],
-  columns: ['id', 'taskNo', 'fileName', 'sheetType', 'status', 'totalRows', 'sourceUrl', 'createTime'],
+  columns: ['id', 'taskNo', 'fileName', 'sheetType', 'status', 'totalRows', 'download_ready', 'createTime'],
   func: (page, kwargs) => withSourceLease('kemai:purchase-receive-history-export-start', async () => {
+    const from=validateDate(kwargs.from),to=validateDate(kwargs.to);
     await ensurePage(page, 'purchase-receive-history');
-    const from=String(kwargs.from),to=String(kwargs.to);
     const captureId=String(kwargs['capture-id']||'');
     if(captureId&&!/^[a-f0-9]{32}$/.test(captureId))throw new Error('invalid capture-id');
-    return page.evaluate(`(async()=>{
+    const result=await page.evaluate(`(async()=>{
       const submitExport=${awaitExportSubmission.toString()};
       const v=[...document.querySelectorAll('#singlePageDiv *')].map(e=>e.__vue__).filter(Boolean).flatMap(v=>[v,...(v.$children||[])]).find(v=>v.$options?.name==='pi_zsReport');
       const r=v.$refs.reportPage;
@@ -60,5 +62,6 @@ cli({
       assertNoLimit();
       throw Error('导出任务未出现');
     })()`);
+    return result.map(publicExportTask);
   }),
 });

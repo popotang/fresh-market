@@ -2,6 +2,8 @@ import { cli, Strategy } from '@jackwener/opencli/registry';
 import { CliError } from '@jackwener/opencli/errors';
 import { assertNoRateLimit } from './utils.js';
 import { withSourceLease } from './source-gate.js';
+import { publicExportTask } from './export-task-projection.js';
+import { validateDate } from './source-validation.js';
 
 cli({
   site: 'kemai',
@@ -16,12 +18,9 @@ cli({
     { name: 'snapshot', type: 'string', required: true, help: '导出任务创建日期 YYYY-MM-DD，用于复用当天任务' },
     { name: 'expected-total', type: 'int', help: '商品清单总数；只复用行数相同的已完成任务' },
   ],
-  columns: ['id', 'taskNo', 'fileName', 'sheetType', 'status', 'totalRows', 'sourceUrl', 'createTime'],
+  columns: ['id', 'taskNo', 'fileName', 'sheetType', 'status', 'totalRows', 'download_ready', 'createTime'],
   func: (page, kwargs) => withSourceLease('kemai:item-archives-export-start', async () => {
-    const snapshot = String(kwargs.snapshot);
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(snapshot) || Number.isNaN(Date.parse(`${snapshot}T00:00:00`))) {
-      throw new CliError('INVALID_ARGUMENT', '快照日期必须是 YYYY-MM-DD');
-    }
+    const snapshot = validateDate(kwargs.snapshot);
     const expectedTotal = kwargs['expected-total'] == null ? null : Number(kwargs['expected-total']);
     if (expectedTotal !== null && (!Number.isInteger(expectedTotal) || expectedTotal < 0)) {
       throw new CliError('INVALID_ARGUMENT', '--expected-total 必须是非负整数');
@@ -81,6 +80,6 @@ cli({
       }
       throw Error('商品档案导出任务创建后未在导出中心出现');
     })()`);
-    return result;
+    return result.map(publicExportTask);
   }),
 });

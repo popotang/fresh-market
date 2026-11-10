@@ -29,11 +29,17 @@ def scaled(row,key,scale=10000):
 def timestamp(row,key):
     value=row.get(key)
     if value is None or value=='':return None
-    if isinstance(value,(float,int)):
-        return datetime.fromtimestamp(value/1000,SHANGHAI).strftime('%Y-%m-%d %H:%M:%S')
-    parsed=datetime.fromisoformat(str(value).replace('Z','+00:00'))
-    if parsed.tzinfo:parsed=parsed.astimezone(SHANGHAI)
-    return parsed.strftime('%Y-%m-%d %H:%M:%S')
+    try:
+        if isinstance(value,(float,int)):
+            return datetime.fromtimestamp(value/1000,SHANGHAI).strftime('%Y-%m-%d %H:%M:%S')
+        parsed=datetime.fromisoformat(str(value).replace('Z','+00:00'))
+        if parsed.tzinfo:parsed=parsed.astimezone(SHANGHAI)
+        return parsed.strftime('%Y-%m-%d %H:%M:%S')
+    except (ValueError,OverflowError,OSError) as error:
+        # Sanitized like detail_state's last_error policy: field name + error
+        # type only; the raw cell text (which may carry URLs or credentials)
+        # is never copied into the raised error or its chained context.
+        raise ValueError(f'Invalid timestamp in field {key}: {type(error).__name__}') from None
 
 
 def history_key(row):
@@ -80,4 +86,24 @@ def normalize(stream,row):
         if not data['source_document_id']:raise ValueError('History API row lacks document ID; Excel requires separately validated reference mapping')
         data.update(source_line_key=source_id,quantity=scaled(row,'qty'),amount=scaled(row,'amt'),approved_at=timestamp(row,'approveTime'))
     else:raise ValueError('No verified normalized mapping for '+stream)
+    return {'source_key':source_id,'data':data}
+
+
+def normalize_history_export_row(row):
+    """XLSX history export row (no id column): the stable key is history_key only.
+
+    Output is structurally identical to normalize() (source_key plus data with
+    payload/payload_hash), but never touches the id-requiring API branch.
+    Export quantities/amounts are plain decimals (scale=1), unlike the ×10000
+    list API; reference IDs are absent from exports, so codes are carried as-is.
+    """
+    if not isinstance(row,dict):raise ValueError('Source row must be an object')
+    source_id=history_key(row)
+    payload=dump(row)
+    data={'payload':payload,'payload_hash':hashlib.sha256(payload.encode()).hexdigest()}
+    names={'sheet_no':'sheetNo','source_supplier_code':'supplierCode','source_branch_code':'branchCode',
+      'source_item_code':'itemCode','business_date':'warehousingDate'}
+    data.update({dest:text(row,key) for dest,key in names.items()})
+    data.update(source_line_key=source_id,quantity=scaled(row,'qty',1),amount=scaled(row,'amt',1),
+      approved_at=timestamp(row,'approveTime'))
     return {'source_key':source_id,'data':data}

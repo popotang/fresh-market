@@ -1,0 +1,502 @@
+{
+  "schema_version": 1,
+  "adapter": "kemai",
+  "adapter_version": "1.0.0",
+  "runtime_requirements": {
+    "node_minimum_major": 20,
+    "opencli_version": "2.0.3",
+    "opencli_supported_versions": [
+      "1.8.8",
+      "2.0.3"
+    ]
+  },
+  "limitations": [
+    "The capabilities command is static metadata: it does not check authentication, browser state, source reachability, or real source acceptance.",
+    "Source commands require an existing authenticated Kemai session and the shared source gate; access=read does not bypass either requirement.",
+    "Export-start commands create or reuse a source-side export task even though their OpenCLI access level is read.",
+    "export-download writes only the explicitly requested local XLSX artifact and its integrity metadata; it does not write a data center.",
+    "Signed source download URLs are private runtime inputs and are not part of public columns or capabilities output.",
+    "Source transports advertise commands only; field coverage, cross-source identity, data-center acceptance and route selection belong to the runner."
+  ],
+  "commands": [
+    {
+      "name": "capabilities",
+      "file": "capabilities.js",
+      "access": "read",
+      "static": true,
+      "creates_export_task": false,
+      "local_download": false,
+      "output_contract": {
+        "type": "row_array",
+        "columns": [
+          "schema_version",
+          "adapter",
+          "adapter_version",
+          "command_count",
+          "source_requests",
+          "authentication",
+          "source_acceptance"
+        ]
+      }
+    },
+    {
+      "name": "capture-page",
+      "file": "capture-page.js",
+      "access": "read",
+      "static": false,
+      "creates_export_task": false,
+      "local_download": false,
+      "output_contract": {
+        "type": "row_array",
+        "columns": [
+          "schema_version",
+          "stream",
+          "page",
+          "page_size",
+          "total_rows",
+          "observed_at"
+        ]
+      }
+    },
+    {
+      "name": "export-download",
+      "file": "export-download.js",
+      "access": "read",
+      "static": false,
+      "creates_export_task": false,
+      "local_download": true,
+      "output_contract": {
+        "type": "row_array",
+        "columns": [
+          "task_id",
+          "path",
+          "rows",
+          "bytes",
+          "sha256"
+        ]
+      }
+    },
+    {
+      "name": "export-task-list",
+      "file": "export-task-list.js",
+      "access": "read",
+      "static": false,
+      "creates_export_task": false,
+      "local_download": false,
+      "output_contract": {
+        "type": "row_array",
+        "columns": [
+          "id",
+          "taskNo",
+          "fileName",
+          "sheetType",
+          "status",
+          "totalRows",
+          "download_ready",
+          "createTime",
+          "gmtCreate",
+          "gmtModified",
+          "failReason"
+        ]
+      }
+    },
+    {
+      "name": "item-archives-export-start",
+      "file": "item-archives-export-start.js",
+      "access": "read",
+      "static": false,
+      "creates_export_task": true,
+      "local_download": false,
+      "output_contract": {
+        "type": "row_array",
+        "columns": [
+          "id",
+          "taskNo",
+          "fileName",
+          "sheetType",
+          "status",
+          "totalRows",
+          "download_ready",
+          "createTime"
+        ]
+      }
+    },
+    {
+      "name": "master-list",
+      "file": "master-list.js",
+      "access": "read",
+      "static": false,
+      "creates_export_task": false,
+      "local_download": false,
+      "output_contract": {
+        "type": "row_array",
+        "columns": [
+          "schema_version",
+          "kind",
+          "object_key",
+          "section",
+          "observed_at"
+        ]
+      }
+    },
+    {
+      "name": "product-detail",
+      "file": "product-detail.js",
+      "access": "read",
+      "static": false,
+      "creates_export_task": false,
+      "local_download": false,
+      "output_contract": {
+        "type": "row_array",
+        "columns": [
+          "schema_version",
+          "kind",
+          "object_key",
+          "section",
+          "observed_at"
+        ]
+      }
+    },
+    {
+      "name": "product-list",
+      "file": "product-list.js",
+      "access": "read",
+      "static": false,
+      "creates_export_task": false,
+      "local_download": false,
+      "output_contract": {
+        "type": "row_array",
+        "columns": [
+          "schema_version",
+          "kind",
+          "object_key",
+          "section",
+          "observed_at"
+        ]
+      }
+    },
+    {
+      "name": "product-section",
+      "file": "product-section.js",
+      "access": "read",
+      "static": false,
+      "creates_export_task": false,
+      "local_download": false,
+      "output_contract": {
+        "type": "row_array",
+        "columns": [
+          "schema_version",
+          "kind",
+          "object_key",
+          "section",
+          "observed_at"
+        ]
+      }
+    },
+    {
+      "name": "purchase-detail",
+      "file": "purchase-detail.js",
+      "access": "read",
+      "static": false,
+      "creates_export_task": false,
+      "local_download": false,
+      "output_contract": {
+        "type": "row_array",
+        "columns": [
+          "id",
+          "sheetNo",
+          "supplierId",
+          "branchId",
+          "status"
+        ]
+      }
+    },
+    {
+      "name": "purchase-orders",
+      "file": "purchase-orders.js",
+      "access": "read",
+      "static": false,
+      "creates_export_task": false,
+      "local_download": false,
+      "output_contract": {
+        "type": "row_array",
+        "columns": [
+          "id",
+          "sheetNo",
+          "supplierId",
+          "receiveBranchId",
+          "status",
+          "version",
+          "gmtModified"
+        ]
+      }
+    },
+    {
+      "name": "purchase-receipts",
+      "file": "purchase-receipts.js",
+      "access": "read",
+      "static": false,
+      "creates_export_task": false,
+      "local_download": false,
+      "output_contract": {
+        "type": "row_array",
+        "columns": [
+          "id",
+          "sheetNo",
+          "sourceId",
+          "sourceNo",
+          "supplierId",
+          "branchId",
+          "status"
+        ]
+      }
+    },
+    {
+      "name": "purchase-receive-history",
+      "file": "purchase-receive-history.js",
+      "access": "read",
+      "static": false,
+      "creates_export_task": false,
+      "local_download": false,
+      "output_contract": {
+        "type": "row_array",
+        "columns": [
+          "id",
+          "sheetNo",
+          "sheetType",
+          "approveTime",
+          "itemId",
+          "qty",
+          "amt"
+        ]
+      }
+    },
+    {
+      "name": "purchase-receive-history-export-start",
+      "file": "purchase-receive-history-export-start.js",
+      "access": "read",
+      "static": false,
+      "creates_export_task": true,
+      "local_download": false,
+      "output_contract": {
+        "type": "row_array",
+        "columns": [
+          "id",
+          "taskNo",
+          "fileName",
+          "sheetType",
+          "status",
+          "totalRows",
+          "download_ready",
+          "createTime"
+        ]
+      }
+    },
+    {
+      "name": "purchase-returns",
+      "file": "purchase-returns.js",
+      "access": "read",
+      "static": false,
+      "creates_export_task": false,
+      "local_download": false,
+      "output_contract": {
+        "type": "row_array",
+        "columns": [
+          "id",
+          "sheetNo",
+          "sourceId",
+          "sourceNo",
+          "supplierId",
+          "branchId",
+          "status"
+        ]
+      }
+    },
+    {
+      "name": "query-scope",
+      "file": "query-scope.js",
+      "access": "read",
+      "static": false,
+      "creates_export_task": false,
+      "local_download": false,
+      "output_contract": {
+        "type": "row_array",
+        "columns": [
+          "kind",
+          "query_scope",
+          "time_options"
+        ]
+      }
+    },
+    {
+      "name": "retail-order-detail",
+      "file": "retail-order-detail.js",
+      "access": "read",
+      "static": false,
+      "creates_export_task": false,
+      "local_download": false,
+      "output_contract": {
+        "type": "row_array",
+        "columns": [
+          "id",
+          "receiptNo",
+          "branchId",
+          "saleAmt",
+          "gmtSale"
+        ]
+      }
+    },
+    {
+      "name": "retail-orders",
+      "file": "retail-orders.js",
+      "access": "read",
+      "static": false,
+      "creates_export_task": false,
+      "local_download": false,
+      "output_contract": {
+        "type": "row_array",
+        "columns": [
+          "id",
+          "receiptNo",
+          "branchId",
+          "gmtSale",
+          "saleAmt",
+          "orderAmt",
+          "sourceType",
+          "saleFlag"
+        ]
+      }
+    },
+    {
+      "name": "retail-orders-export-start",
+      "file": "retail-orders-export-start.js",
+      "access": "read",
+      "static": false,
+      "creates_export_task": true,
+      "local_download": false,
+      "output_contract": {
+        "type": "row_array",
+        "columns": [
+          "id",
+          "taskNo",
+          "fileName",
+          "sheetType",
+          "status",
+          "totalRows",
+          "download_ready",
+          "createTime"
+        ]
+      }
+    },
+    {
+      "name": "retail-sales",
+      "file": "retail-sales.js",
+      "access": "read",
+      "static": false,
+      "creates_export_task": false,
+      "local_download": false,
+      "output_contract": {
+        "type": "row_array",
+        "columns": [
+          "id",
+          "sheetId",
+          "receiptNo",
+          "itemId",
+          "qty",
+          "saleAmt",
+          "gmtSale"
+        ]
+      }
+    },
+    {
+      "name": "retail-sales-export-start",
+      "file": "retail-sales-export-start.js",
+      "access": "read",
+      "static": false,
+      "creates_export_task": true,
+      "local_download": false,
+      "output_contract": {
+        "type": "row_array",
+        "columns": [
+          "id",
+          "taskNo",
+          "fileName",
+          "sheetType",
+          "status",
+          "totalRows",
+          "download_ready",
+          "createTime"
+        ]
+      }
+    },
+    {
+      "name": "purchase-detail-batch",
+      "file": "purchase-detail-batch.js",
+      "access": "read",
+      "static": false,
+      "creates_export_task": false,
+      "local_download": false,
+      "local_artifacts": true,
+      "output_contract": {
+        "type": "row_array",
+        "columns": [
+          "schema_version",
+          "requested",
+          "completed",
+          "outcome",
+          "command_seconds"
+        ]
+      }
+    }
+  ],
+  "source_transports": {
+    "retail-sales": {
+      "list_command": "capture-page",
+      "list_kind": "retail-sales",
+      "export_start_command": "retail-sales-export-start",
+      "export_task_command": "export-task-list",
+      "export_download_command": "export-download",
+      "detail_batch_command": null
+    },
+    "retail-orders": {
+      "list_command": "capture-page",
+      "list_kind": "retail-orders",
+      "export_start_command": "retail-orders-export-start",
+      "export_task_command": "export-task-list",
+      "export_download_command": "export-download",
+      "detail_batch_command": null
+    },
+    "purchase-orders": {
+      "list_command": "capture-page",
+      "list_kind": "purchase-orders",
+      "export_start_command": null,
+      "export_task_command": "export-task-list",
+      "export_download_command": "export-download",
+      "detail_batch_command": "purchase-detail-batch"
+    },
+    "purchase-receipts": {
+      "list_command": "capture-page",
+      "list_kind": "purchase-receipts",
+      "export_start_command": null,
+      "export_task_command": "export-task-list",
+      "export_download_command": "export-download",
+      "detail_batch_command": "purchase-detail-batch"
+    },
+    "purchase-returns": {
+      "list_command": "capture-page",
+      "list_kind": "purchase-returns",
+      "export_start_command": null,
+      "export_task_command": "export-task-list",
+      "export_download_command": "export-download",
+      "detail_batch_command": "purchase-detail-batch"
+    },
+    "purchase-receive-history": {
+      "list_command": "capture-page",
+      "list_kind": "purchase-receive-history",
+      "export_start_command": "purchase-receive-history-export-start",
+      "export_task_command": "export-task-list",
+      "export_download_command": "export-download",
+      "detail_batch_command": null
+    }
+  }
+}

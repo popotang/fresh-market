@@ -9,8 +9,6 @@ import os
 import subprocess
 import tempfile
 import time
-import urllib.request
-from urllib.parse import quote, urlsplit, urlunsplit
 from datetime import date, datetime, timedelta
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
@@ -495,7 +493,7 @@ def wait_export(command,start,end,rate):
     pause(started,rate)
     task_id=str(task["id"])
     for _ in range(30):
-        if task.get("sourceUrl") and str(task.get("status"))=="2" and task.get("totalRows") is not None:
+        if task.get("download_ready") is True and str(task.get("status"))=="2" and task.get("totalRows") is not None:
             return task
         if task.get("failReason") or str(task.get("status"))=="3":
             raise RuntimeError(f"export task failed: {task.get('failReason')}")
@@ -504,7 +502,7 @@ def wait_export(command,start,end,rate):
         latest=next((row for row in tasks if str(row.get("id"))==task_id),None)
         if latest:
             task={**task,**{key:value for key,value in latest.items() if value is not None}}
-    raise RuntimeError(f"export task {task_id} did not provide a completed source URL and row total")
+    raise RuntimeError(f"export task {task_id} did not become download ready with a row total")
 
 
 def normalize_history_keys(conn):
@@ -579,22 +577,37 @@ def normalize_history_keys(conn):
     print(f"history stable-key normalization complete rows={len(rows)} captures={len(captures)}",flush=True)
 
 
-def encoded_export_url(url):
-    if not url.startswith("https://yunfan-store.kemai.com.cn/"):
-        raise RuntimeError("unexpected history export URL")
-    parts=urlsplit(url)
-    # Export names can contain Chinese characters. Keep existing percent escapes
-    # and the signed query bytes intact while encoding only non-ASCII characters.
-    return urlunsplit((parts.scheme,parts.netloc,quote(parts.path,safe="/%"),
-                      quote(parts.query,safe="=&%/?+,:;@!$'()*[]-._~"),parts.fragment))
+def download_export(task, output):
+    """Download through OpenCLI and authenticate its public task/row receipt."""
+    task_id=str(task.get("id") or "")
+    raw_total=task.get("totalRows")
+    if isinstance(raw_total,bool) or not (type(raw_total) is int or
+            (isinstance(raw_total,str) and raw_total.isdigit())):
+        raise RuntimeError("export task row count is invalid")
+    expected=int(raw_total)
+    output=Path(output)
+    receipts=call("export-download","--task-id",task_id,"--output",str(output))
+    if len(receipts)!=1 or not isinstance(receipts[0],dict):
+        raise RuntimeError("export download did not return exactly one receipt")
+    receipt=receipts[0]
+    if str(receipt.get("task_id") or "")!=task_id:
+        raise RuntimeError("export download receipt identity mismatch")
+    actual=receipt.get("rows")
+    if isinstance(actual,bool) or not (type(actual) is int or
+            (isinstance(actual,str) and actual.isdigit())) or int(actual)!=expected:
+        raise RuntimeError("export download receipt row count mismatch")
+    if not receipt.get("path") or Path(receipt["path"]).resolve()!=output.resolve():
+        raise RuntimeError("export download receipt path mismatch")
+    if not output.is_file():
+        raise RuntimeError("export download artifact is missing")
+    return receipt
 
 
 def history_export_rows(task):
-    url=encoded_export_url(str(task.get("sourceUrl") or ""))
     from openpyxl import load_workbook
     with tempfile.TemporaryDirectory(prefix="kemai-history-") as temp_dir:
         path=Path(temp_dir)/"history.xlsx"
-        urllib.request.urlretrieve(url,path)
+        download_export(task,path)
         ws=load_workbook(path,read_only=True,data_only=True).active
         headers=[str(value or "") for value in next(ws.iter_rows(min_row=3,max_row=3,values_only=True))]
         fields=[HISTORY_EXPORT_FIELDS.get(header) for header in headers]

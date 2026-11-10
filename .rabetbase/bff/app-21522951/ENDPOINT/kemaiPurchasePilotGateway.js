@@ -39,6 +39,8 @@ const __KEMAI_ACCEPTED_STREAMS__=["purchase-orders", "purchase-receipts", "purch
 const ACCEPTED_STREAMS=(typeof __KEMAI_ACCEPTED_STREAMS__!=='undefined')
   ?__KEMAI_ACCEPTED_STREAMS__:['retail-sales','retail-orders'];
 export default async function kemaiPurchasePilotGateway(p, context) {
+  // Re-frozen 2026-11-09 after the acceptance closed loop completed (all three
+  // pilot streams go). Unpause again only for an authorized re-run.
   throw new Error('PILOT_PAUSED_FOR_HANDOFF');
   if(p.op!=='capabilities' && (!['purchase-orders','purchase-receipts','purchase-returns'].includes(p.stream) || (p.op==='state' ? (p.from!=='2026-11-07'||p.to!=='2026-11-07') : p.op!=='batch.result'&&p.window_key!=='2026-11-07'))) throw new Error('PILOT_SCOPE_ONLY');
   const TENANT='205149';

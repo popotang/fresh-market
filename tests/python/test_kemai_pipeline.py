@@ -59,6 +59,52 @@ class PlannerTests(unittest.TestCase):
         self.assertEqual(capture_method("retail-sales",export_mapping_verified=True),
                          "api_for_data+export_for_count")
 
+    def test_catchup_budget_exposes_pending_backlog_without_executing_it(self):
+        result = incremental_plan({"retail-sales":self.state},self.now,max_days=2)
+        self.assertEqual([row['day'] for row in result['planning_pending']],
+                         ['2026-11-10','2026-11-11','2026-11-12','2026-11-13',
+                          '2026-11-14','2026-11-15','2026-11-16','2026-11-17'])
+        self.assertEqual(result['backlog_remaining'],8)
+        self.assertEqual(result['backlog_by_stream'],{'retail-sales':8})
+        self.assertTrue(all(row['reason']=='outage_catchup'
+                            for row in result['tasks'] if row['mode']=='final'))
+
+    def test_provisional_and_late_revisit_are_not_outage_backlog(self):
+        result = incremental_plan({"retail-sales":self.state},self.now,max_days=2)
+        scheduled={(row['stream'],row['day']) for row in result['tasks']+result['planning_pending']}
+        self.assertNotIn(('retail-sales','2026-11-18'),{
+            (row['stream'],row['day']) for row in result['planning_pending']})
+        self.assertEqual(result['backlog_remaining'],len(result['planning_pending']))
+        self.assertTrue(scheduled)
+
+    def test_coverage_gaps_are_reported_but_never_mixed_into_day_tasks(self):
+        state={**self.state,'coverage_gaps':[{'stream':'retail-sales','scope_key':'detail:1',
+                                             'missing_parts':['detail'],'status':'pending'}]}
+        result=incremental_plan({'retail-sales':state},self.now,max_days=1)
+        self.assertEqual(result['coverage_gaps'][0]['scheduling'],'unscheduled')
+        self.assertTrue(all(row['day'] for row in result['tasks']))
+
+    def test_cooling_plan_has_explicit_zero_source_and_write_counts(self):
+        result=incremental_plan({'retail-sales':self.state},self.now,
+                                cooldown_until=self.now+timedelta(minutes=30))
+        self.assertEqual(result['status'],'cooling')
+        self.assertEqual(result['source_requests'],0)
+        self.assertEqual(result['db_writes'],0)
+
+    def test_cooling_preserves_backlog_gaps_and_deferred_tasks(self):
+        state={**self.state,'coverage_gaps':[{'stream':'retail-sales','scope_key':'detail:1',
+                                             'missing_parts':['detail'],'status':'pending'}]}
+        normal=incremental_plan({'retail-sales':state},self.now,max_days=2)
+        result=incremental_plan({'retail-sales':state},self.now,max_days=2,
+                                cooldown_until=self.now+timedelta(minutes=30))
+        self.assertEqual(result['tasks'],[])
+        self.assertEqual(len(result['deferred_tasks']),len(normal['tasks']))
+        expected_backlog=[row for row in normal['tasks'] if row['mode']=='final']+normal['planning_pending']
+        self.assertEqual(result['planning_pending'],expected_backlog)
+        self.assertEqual(result['backlog_remaining'],len(expected_backlog))
+        self.assertEqual(result['coverage_gaps'][0]['scope_key'],'detail:1')
+        self.assertEqual(result['resume_after'],(self.now+timedelta(minutes=30)).isoformat())
+
 
 class AdapterTests(unittest.TestCase):
     def client(self, responses):

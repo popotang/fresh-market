@@ -79,12 +79,17 @@ class ContractFactsTests(unittest.TestCase):
 
 class AcceptanceTests(unittest.TestCase):
     def test_only_evidenced_streams_may_write(self):
-        self.assertEqual(acceptance.accepted_streams(), ["retail-orders", "retail-sales"])
-        for stream in ("purchase-orders", "purchase-receipts", "purchase-returns",
-                       "purchase-receive-history"):
-            self.assertIsNone(acceptance.acceptance(stream))
-            with self.assertRaisesRegex(ValueError, "STREAM_ACCEPTANCE_REQUIRED"):
-                acceptance.require(stream)
+        promoted = ("purchase-orders", "purchase-receipts", "purchase-returns",
+                    "retail-orders", "retail-sales")
+        self.assertEqual(acceptance.accepted_streams(), sorted(promoted))
+        for stream in promoted:
+            record = acceptance.require(stream)
+            self.assertIn("evidence", record)
+            self.assertEqual(record["coverage"], "list_only")
+            self.assertTrue(record["verified"])
+        self.assertIsNone(acceptance.acceptance("purchase-receive-history"))
+        with self.assertRaisesRegex(ValueError, "STREAM_ACCEPTANCE_REQUIRED"):
+            acceptance.require("purchase-receive-history")
 
     def test_promotion_is_a_registry_change(self):
         record = acceptance.require("retail-sales")

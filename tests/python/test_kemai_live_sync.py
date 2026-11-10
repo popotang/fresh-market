@@ -462,6 +462,57 @@ class LineMappingInvariantTests(unittest.TestCase):
         self.assertTrue(upserts)
         self.assertIn("source_kind='sales_flow'", upserts[0])
 
+class LegacyExportDownloadTests(unittest.TestCase):
+    def test_wait_export_accepts_public_download_readiness_without_source_url(self):
+        task = {"id": 17, "status": 2, "totalRows": 1, "download_ready": True}
+        with patch.object(commerce, "call", return_value=[task]), \
+             patch.object(commerce, "pause"), patch.object(commerce.time, "sleep"):
+            self.assertEqual(commerce.wait_export("retail-sales-export-start",
+                                                  date(2026, 11, 8), date(2026, 11, 8), .5), task)
+
+    def test_history_rows_come_from_export_download_receipt(self):
+        task = {"id": 17, "status": 2, "totalRows": 1, "download_ready": True}
+
+        def fetch(*args):
+            self.assertEqual(args[:3], ("export-download", "--task-id", "17"))
+            output = Path(args[4])
+            from openpyxl import Workbook
+            book = Workbook()
+            sheet = book.active
+            sheet.append(["历史收货"])
+            sheet.append(["导出明细"])
+            sheet.append(["单据编号", "商品编码", "明细序号"])
+            sheet.append(["CG001", "ITEM1", 1])
+            book.save(output)
+            return [{"task_id": "17", "path": str(output), "rows": 1}]
+
+        with patch.object(commerce, "call", side_effect=fetch), \
+             patch("urllib.request.urlretrieve", side_effect=AssertionError("URL fallback used")):
+            rows = commerce.history_export_rows(task)
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["sheetNo"], "CG001")
+        self.assertEqual(rows[0]["itemCode"], "ITEM1")
+
+    def test_history_receipt_rejects_task_identity_and_row_count_mismatch(self):
+        from openpyxl import Workbook
+        for receipt, message in (({"task_id": "18", "rows": 1}, "identity"),
+                                 ({"task_id": "17", "rows": 2}, "row count")):
+            with self.subTest(receipt=receipt):
+                def fetch(*args):
+                    output = Path(args[4])
+                    book = Workbook()
+                    sheet = book.active
+                    sheet.append(["历史收货"])
+                    sheet.append(["导出明细"])
+                    sheet.append(["单据编号", "商品编码", "明细序号"])
+                    sheet.append(["CG001", "ITEM1", 1])
+                    book.save(output)
+                    return [dict(receipt, path=str(output))]
+
+                with patch.object(commerce, "call", side_effect=fetch):
+                    with self.assertRaisesRegex(RuntimeError, message):
+                        commerce.history_export_rows({"id": 17, "totalRows": 1, "download_ready": True})
+
 
 
 if __name__ == "__main__":

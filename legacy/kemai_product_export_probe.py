@@ -2,16 +2,13 @@
 """Inspect one Kemai itemArchives Excel export after source sync is idle."""
 
 import argparse
-import csv
 import json
 import os
-import tempfile
 import time
-import urllib.request
 from datetime import datetime
 from pathlib import Path
 
-from kemai_commerce_sync import ROOT, call, encoded_export_url, pause
+from kemai_commerce_sync import ROOT, call, download_export, pause
 
 
 def ensure_source_idle():
@@ -30,7 +27,7 @@ def ensure_source_idle():
 
 
 def completed(task):
-    return (str(task.get("status")) == "2" and task.get("sourceUrl")
+    return (str(task.get("status")) == "2" and task.get("download_ready") is True
             and task.get("totalRows") is not None)
 
 
@@ -81,26 +78,17 @@ def inspect_rows(rows):
 def inspect_file(path):
     with path.open("rb") as stream:
         signature = stream.read(4)
-    if signature.startswith(b"PK\x03\x04"):
-        from openpyxl import load_workbook
-        # openpyxl rejects the temporary .download suffix even when the file
-        # signature is XLSX. Keep the stream open through lazy worksheet reads.
-        with path.open("rb") as stream:
-            book = load_workbook(stream, read_only=True, data_only=True)
-            try:
-                return {"format": "xlsx", "sheets": {
-                    sheet.title: inspect_rows(sheet.iter_rows(values_only=True))
-                    for sheet in book.worksheets}}
-            finally:
-                book.close()
-    for encoding in ("utf-8-sig", "gb18030"):
+    if not signature.startswith(b"PK\x03\x04"):
+        raise RuntimeError("product export must be strict XLSX/ZIP; CSV and other formats are rejected")
+    from openpyxl import load_workbook
+    with path.open("rb") as stream:
+        book = load_workbook(stream, read_only=True, data_only=True)
         try:
-            with path.open("r", encoding=encoding, newline="") as stream:
-                return {"format": "csv", "encoding": encoding,
-                        "sheets": {"csv": inspect_rows(csv.reader(stream))}}
-        except UnicodeDecodeError:
-            continue
-    raise RuntimeError("product export is neither xlsx nor a decodable CSV")
+            return {"format": "xlsx", "sheets": {
+                sheet.title: inspect_rows(sheet.iter_rows(values_only=True))
+                for sheet in book.worksheets}}
+        finally:
+            book.close()
 
 
 def main():
@@ -123,19 +111,9 @@ def main():
     task = await_export(snapshot, args.expected_total)
     if task.get("sheetType") != "itemArchives":
         raise RuntimeError(f"unexpected product export sheet type: {task.get('sheetType')}")
-    url = encoded_export_url(str(task["sourceUrl"]))
-    with tempfile.NamedTemporaryFile(prefix="kemai-product-", suffix=".download", dir=ROOT,
-                                     delete=False) as temp:
-        temp_path = Path(temp.name)
-    try:
-        urllib.request.urlretrieve(url, temp_path)
-        os.chmod(temp_path, 0o600)
-        inspected = inspect_file(temp_path)
-        extension = ".xlsx" if inspected["format"] == "xlsx" else ".csv"
-        file_path = ROOT / f"kemai_item_archives_{snapshot}{extension}"
-        temp_path.replace(file_path)
-    finally:
-        temp_path.unlink(missing_ok=True)
+    file_path = ROOT / ".kemai-artifacts" / f"kemai_item_archives_{snapshot}.xlsx"
+    download_export(task, file_path)
+    inspected = inspect_file(file_path)
     task_total = int(task["totalRows"])
     report = {
         "checked_at": datetime.now().astimezone().isoformat(timespec="seconds"),
@@ -147,7 +125,8 @@ def main():
         "downloaded_file": str(file_path),
         **inspected,
     }
-    report_path = ROOT / f"kemai_item_archives_export_probe_{snapshot}.json"
+    report_path = ROOT / ".local-audits" / f"kemai_item_archives_export_probe_{snapshot}.json"
+    report_path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
     temp_report = report_path.with_suffix(".json.tmp")
     temp_report.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
     os.chmod(temp_report, 0o600)

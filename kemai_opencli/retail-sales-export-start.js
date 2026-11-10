@@ -2,6 +2,8 @@ import {awaitExportSubmission} from './export-submit.js';
 import { cli, Strategy } from '@jackwener/opencli/registry';
 import { ensurePage } from './utils.js';
 import { withSourceLease } from './source-gate.js';
+import { publicExportTask } from './export-task-projection.js';
+import { validateDate } from './source-validation.js';
 
 const args=[
   {name:'from',type:'string',required:true,help:'开始日期 YYYY-MM-DD'},
@@ -21,17 +23,17 @@ cli({
   browser:true,
   navigateBefore:false,
   args,
-  columns:['id','taskNo','fileName','sheetType','status','totalRows','sourceUrl','createTime'],
+  columns:['id','taskNo','fileName','sheetType','status','totalRows','download_ready','createTime'],
   func:(page,kwargs)=>withSourceLease('kemai:retail-sales-export-start',async()=>{
+    const from=validateDate(kwargs.from),to=validateDate(kwargs.to);
     await ensurePage(page,'retail-sales');
-    const from=String(kwargs.from),to=String(kwargs.to);
     const captureId=String(kwargs['capture-id']||'');
     const timeType=kwargs['time-type']==null?null:String(kwargs['time-type']);
     if(timeType!==null&&!['1','2'].includes(timeType))throw new Error('invalid time-type');
     const queryScope=kwargs['scope-json']?JSON.parse(kwargs['scope-json']):{};
     if(!queryScope||Array.isArray(queryScope)||typeof queryScope!=='object')throw new Error('invalid scope-json');
     if(captureId&&!/^[a-f0-9]{32}$/.test(captureId))throw new Error('invalid capture-id');
-    return page.evaluate(`(async()=>{
+    const result=await page.evaluate(`(async()=>{
       const submitExport=${awaitExportSubmission.toString()};
       const v=[...document.querySelectorAll('#singlePageDiv *')].map(e=>e.__vue__).filter(Boolean).flatMap(v=>[v,...(v.$children||[])]).find(v=>v.$options?.name==='SalesDetails');
       const r=v.$refs.reportPage;
@@ -71,5 +73,6 @@ cli({
       if(latest) return [latest];
       throw Error('导出任务创建后未在导出中心出现且无可复用任务');
     })()`);
+    return result.map(publicExportTask);
   }),
 });

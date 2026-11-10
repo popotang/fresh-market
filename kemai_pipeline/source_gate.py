@@ -65,7 +65,7 @@ def cooldown_until(directory):
 
 
 @contextmanager
-def source_lease(label):
+def source_lease(label, *, fail_on_cooldown=False):
     """Reserve a global start slot, then hold the exclusive lock through the call."""
     directory = gate_dir()
     directory.mkdir(parents=True, exist_ok=True)
@@ -84,6 +84,8 @@ def source_lease(label):
                                 float(state.get("last_finished_epoch") or 0))
             next_start = last_boundary + interval_seconds()
             resume = cooldown_until(directory)
+            if fail_on_cooldown and resume > now:
+                raise RuntimeError("RATE_LIMIT: shared cooldown active")
             wait = max(next_start, resume) - now
             if wait <= 0:
                 lease_state = {
@@ -124,6 +126,7 @@ def main():
     sub.add_parser("configure", help="write the non-secret adapter configuration")
     lease = sub.add_parser("lease", help="hold a lease until stdin closes")
     lease.add_argument("label")
+    lease.add_argument("--fail-on-cooldown", action="store_true")
     run = sub.add_parser("run", help="run a manual OpenCLI browser operation under the gate")
     run.add_argument("command", nargs=argparse.REMAINDER)
     args = parser.parse_args()
@@ -131,7 +134,7 @@ def main():
         configure()
         return
     if args.action == "lease":
-        with source_lease(args.label):
+        with source_lease(args.label, fail_on_cooldown=args.fail_on_cooldown):
             print("READY", flush=True)
             for line in sys.stdin:
                 if line.startswith("RATE_LIMIT "):

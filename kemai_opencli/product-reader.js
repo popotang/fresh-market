@@ -23,7 +23,7 @@ export async function productRead(page,kind,args){
       if(x.kind==='list'){
         const v=[...document.querySelectorAll('#singlePageDiv *')].find(e=>e.__vue__?.$options?.name==='ListPage')?.__vue__;
         if(!v)throw Error('AUTH_REQUIRED: item list unavailable');
-        response=await v.getDataApi({page:x.page,rows:x.rows,params:v.QueryParam,filters:[],orders:[]},v.Action,true);
+        response=await v.getDataApi({page:x.page,rows:x.rows,params:{},filters:[],orders:[]},v.Action,true);
       }else if(x.kind==='detail'){
         const v=document.querySelector('#itemInfo')?.__vue__?.$refs?.infopage;
         if(!v)throw Error('AUTH_REQUIRED: item detail unavailable');
@@ -45,6 +45,6 @@ export async function productRead(page,kind,args){
     if(kind==='detail'&&String(result.data.entity?.id)!==id)throw new CliError('API_ERROR','Item identity mismatch');
     return [{schema_version:1,kind,object_key:id||null,section:args.section||null,
       page:number,page_size:kind==='section'&&args.section==='history_price'?10:size,
-      observed_at:new Date().toISOString(),data:result.data}];
+      observed_at:new Date().toISOString(),query_scope:kind==='list'?{}:null,data:result.data}];
   });
 }

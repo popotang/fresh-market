@@ -3,9 +3,58 @@
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 from .capabilities import CAPABILITIES
+from .lovrabet_adapter import ContractError
 
 TZ = ZoneInfo("Asia/Shanghai")
 METHODS = {"reused_export_total_and_capture","export_total_and_capture", "single_scan_and_capture", "single_scan_unique_keys", "single_scan_count", "legacy_log_and_db", "empty_page_and_db"}
+
+DETAIL_STREAM_KIND = {"purchase-orders": "order", "purchase-receipts": "receipt",
+                      "purchase-returns": "return"}
+
+
+def detail_coverage(client, stream, start, end):
+    """Aggregate purchase_document_detail_state for the purchase streams.
+
+    verified requires, for every purchase_documents row of the day
+    (document_kind, source_created_at day range): exactly one state row per
+    document, all rows status=success, and each state row's source_version
+    aligned with the document's current source_version (same rule as
+    detail_workflow._verify: a NULL document version is always aligned).
+    Any failed row -> failed; missing rows / non-success statuses / stale
+    versions -> partial. Streams without state rows and unregistered
+    (placeholder) detail datasets stay 'not_checked'."""
+    kind = DETAIL_STREAM_KIND.get(stream)
+    if kind is None:
+        return "not_checked"
+    try:
+        docs = client.read_all("purchase_documents",
+            where={"document_kind": {"$eq": kind},
+                   "source_created_at": {"$gte": start.isoformat(),
+                                         "$lt": (end + timedelta(days=1)).isoformat()}},
+            select=["id", "source_version"])
+        ids = [row["id"] for row in docs]
+        rows = client.read_all("purchase_document_detail_state",
+            where={"document_id": {"$in": ids}},
+            select=["document_id", "status", "source_version"]) if ids else []
+    except ContractError:
+        return "not_checked"
+    if not rows:
+        return "not_checked"
+    if any(str(row.get("status")) == "failed" for row in rows):
+        return "failed"
+    by_document = {str(row.get("document_id")): row for row in rows}
+    if len(rows) != len(docs) or len(by_document) != len(rows):
+        return "partial"  # missing rows (or duplicate rows) never claim verified
+    for doc in docs:
+        state = by_document.get(str(doc["id"]))
+        if state is None or str(state.get("status")) != "success":
+            return "partial"
+        doc_version = doc.get("source_version")
+        if (doc_version is not None and
+                (state.get("source_version") is None or
+                 str(doc_version) != str(state.get("source_version")))):
+            return "partial"  # state row verified an older document version
+    return "verified"
 
 
 def source_day(value):
@@ -78,6 +127,6 @@ def check_history(client, stream, start, end):
             "last_contiguous_verified_day": None,
             "range_contiguous_recorded_counts_through": contiguous,
             "holes": [row for row in days if row["status"] != "recorded_counts_match"],
-            "detail_coverage": "not_checked",
+            "detail_coverage": detail_coverage(client, stream, start, end),
             "limitation": "Recorded event counts rechecked against DB; no new source capture, "
                           "no key-set or detail validation, no proof of global continuous history"}

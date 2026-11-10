@@ -5,6 +5,7 @@ from pathlib import Path
 import tempfile
 import uuid
 from .contracts import digest
+from .capabilities import capture_method
 
 
 class ArtifactError(ValueError):
@@ -36,11 +37,12 @@ class CaptureStore:
             raise ArtifactError('Invalid capture ID')
         return self.root / capture_id
 
-    def create(self, *, tenant, stream, window_key, source_key_version, mode):
+    def create(self, *, tenant, stream, window_key, source_key_version, mode, method=None):
         capture_id=uuid.uuid4().hex
+        method=method or capture_method(stream,provisional=mode=='provisional')
         state={'schema_version':1,'capture_id':capture_id,'tenant':tenant,'stream':stream,
             'window_key':window_key,'source_key_version':source_key_version,'mode':mode,
-            'phase':'capturing','pages':[],'batches':[],'receipts':{},'evidence':None}
+            'method':method,'phase':'capturing','pages':[],'batches':[],'receipts':{},'evidence':None}
         self.save(state)
         return state
 

@@ -13,6 +13,24 @@
       "evidence": "docs/kemai-standard-api-verification-2026-11-08.json",
       "coverage": "list_only",
       "verified": ["real-window-closed-loop", "reuse-export-evidence", "metadata-only-unchanged"]
+    },
+    "purchase-orders": {
+      "accepted_at": "2026-11-09",
+      "evidence": ".local-audits/kemai-acceptance/purchase-orders/",
+      "coverage": "list_only",
+      "verified": ["forced-rollback", "small-window-closed-loop", "same-capture-zero-source-replay", "key-hash-audit"]
+    },
+    "purchase-receipts": {
+      "accepted_at": "2026-11-09",
+      "evidence": ".local-audits/kemai-acceptance/purchase-receipts/",
+      "coverage": "list_only",
+      "verified": ["forced-rollback", "small-window-closed-loop", "same-capture-zero-source-replay", "key-hash-audit"]
+    },
+    "purchase-returns": {
+      "accepted_at": "2026-11-09",
+      "evidence": ".local-audits/kemai-acceptance/purchase-returns/",
+      "coverage": "list_only",
+      "verified": ["forced-rollback", "small-window-closed-loop", "same-capture-zero-source-replay", "key-hash-audit"]
     }
   }
 }

@@ -1,5 +1,6 @@
 import { CliError } from '@jackwener/opencli/errors';
 import { withSourceLease } from './source-gate.js';
+import { validateDate, assertSourceIdentity } from './source-validation.js';
 
 const RATE_LIMIT_RE = /(?:您的)?操作太频繁|请稍后再试|too many requests|rate[ -]?limit|\b429\b/i;
 
@@ -29,13 +30,6 @@ export const listArgs = [
   { name: 'date-type', type: 'string', default: '0', help: '采购日期类型，默认制单时间；零售不用' },
 ];
 
-function validateDate(s) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(s)) || Number.isNaN(Date.parse(`${s}T00:00:00`))) {
-    throw new CliError('INVALID_ARGUMENT', '日期必须是 YYYY-MM-DD');
-  }
-  return String(s);
-}
-
 export async function ensurePage(page, type) {
   if (!page) throw new CliError('INTERNAL_ERROR', 'OpenCLI browser bridge 不可用');
   const config = TYPES[type];
@@ -60,13 +54,13 @@ export async function listPageResult(page, kwargs, type) {
 }
 
 async function unguardedListPageResult(page, kwargs, type) {
-  const c = await ensurePage(page, type);
   const from = validateDate(kwargs.from), to = validateDate(kwargs.to);
-  if (from > to) throw new CliError('INVALID_ARGUMENT', '--from 晚于 --to');
   const pageNo = Number(kwargs.page ?? 1), rows = Number(kwargs.rows ?? 20);
   if (!Number.isInteger(pageNo) || pageNo < 1 || !Number.isInteger(rows) || rows < 1 || rows > 1000) {
     throw new CliError('INVALID_ARGUMENT', '页码须大于 0，每页须为 1-1000');
   }
+  const c = await ensurePage(page, type);
+  if (from > to) throw new CliError('INVALID_ARGUMENT', '--from 晚于 --to');
   const until=kwargs.until==null?null:String(kwargs.until);
   if(until&&(!/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(until)||!until.startsWith(to+' ')||c.group!=='retail'||until.slice(11)>'23:59:59'))throw new CliError('INVALID_ARGUMENT','Invalid retail cutoff');
   const timeType=kwargs['time-type']==null?null:String(kwargs['time-type']);
@@ -120,19 +114,7 @@ async function unguardedDetail(page, kwargs, type) {
   const id=String(kwargs.id||'');
   if(!/^\d{1,32}$/.test(id)) throw new CliError('INVALID_ARGUMENT','--id 必须是源系统单据 ID');
   if(c.group==='purchase') {
-    const result=await page.evaluate(`(async()=>{
-      const v=[...document.querySelectorAll('#singlePageDiv *')].find(e=>e.__vue__?.$options?.name==='ListPage')?.__vue__;
-      const info=v?.$parent?.$refs?.info?.$refs?.infopage;
-      if(!info) throw Error('单据详情组件未就绪');
-      const a=await info.loadEntityApi({param:{},id:${JSON.stringify(id)}},${JSON.stringify(c.action)});
-      const message=a?.data?.message||a?.data?.msg||'';
-      const bodyText=document.body?.innerText||'';
-      const signal=[a?.response?.status,a?.status,a?.data?.code,message,bodyText].join(' ');
-      return {httpStatus:a?.response?.status||a?.status||200,code:a?.data?.code,message,rateLimited:/(?:您的)?操作太频繁|请稍后再试|too many requests|rate[ -]?limit|\\b429\\b/i.test(signal),entity:a?.data?.data?.entity};
-    })()`);
-    if(result?.rateLimited||RATE_LIMIT_RE.test(result?.message||'')) throw new CliError('RATE_LIMIT',`科迈限流：HTTP ${result?.httpStatus||200}，业务码 ${result?.code}，${result?.message||'操作太频繁，请稍后再试'}`);
-    if(result?.code!==0||!result.entity) throw new CliError('API_ERROR',`采购单详情请求失败；${result?.message||'未知错误'}`);
-    return [result.entity];
+    return [(await readPreparedPurchase(page,c,id)).entity];
   }
   const saleTime=String(kwargs['sale-time']||'');
   if(!/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(saleTime)) throw new CliError('INVALID_ARGUMENT','零售详情需 --sale-time "YYYY-MM-DD HH:mm:ss"');
@@ -154,4 +136,24 @@ async function unguardedDetail(page, kwargs, type) {
     throw Error('零售详情等待超时');
   })()`);
   return [result];
+}
+
+// Called after one shared page preparation; each caller must hold a per-document source lease.
+export async function readPreparedPurchase(page,c,id) {
+    const result=await page.evaluate(`(async()=>{
+      const v=[...document.querySelectorAll('#singlePageDiv *')].find(e=>e.__vue__?.$options?.name==='ListPage')?.__vue__;
+      const info=v?.$parent?.$refs?.info?.$refs?.infopage;
+      if(!info) throw Error('单据详情组件未就绪');
+      if(!location.href.startsWith('https://yunfan.kemai.com.cn'+${JSON.stringify(c.route)})) throw Error('PAGE_CHANGED');
+      if(/(?:您的)?操作太频繁|请稍后再试|too many requests|rate[ -]?limit|\\b429\\b/i.test(document.body?.innerText||'')) throw Error('RATE_LIMIT');
+      const apiStarted=performance.now();
+      const a=await info.loadEntityApi({param:{},id:${JSON.stringify(id)}},${JSON.stringify(c.action)});
+      const message=a?.data?.message||a?.data?.msg||'';
+      const bodyText=document.body?.innerText||'';
+      const signal=[a?.response?.status,a?.status,a?.data?.code,message,bodyText].join(' ');
+      return {apiMethodMs:performance.now()-apiStarted,httpStatus:a?.response?.status||a?.status||200,code:a?.data?.code,message,rateLimited:/(?:您的)?操作太频繁|请稍后再试|too many requests|rate[ -]?limit|\\b429\\b/i.test(signal),entity:a?.data?.data?.entity};
+    })()`);
+    if(result?.rateLimited||RATE_LIMIT_RE.test(result?.message||'')) throw new CliError('RATE_LIMIT',`科迈限流：HTTP ${result?.httpStatus||200}，业务码 ${result?.code}，${result?.message||'操作太频繁，请稍后再试'}`);
+    if(result?.code!==0) throw new CliError('API_ERROR',`采购单详情请求失败；${result?.message||'未知错误'}`);
+    return {entity:assertSourceIdentity(result.entity,id), api_method_seconds:result.apiMethodMs/1000};
 }

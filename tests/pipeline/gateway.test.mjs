@@ -3,31 +3,33 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createHash,randomUUID} from 'node:crypto';
 const text=readFileSync('.rabetbase/bff/app-21522951/ENDPOINT/kemaiSyncGateway.js','utf8').replace('const WRITES_ENABLED=false','const WRITES_ENABLED=true');
+const withAccepted=(source,streams)=>source.replace(/const __KEMAI_ACCEPTED_STREAMS__=\[[^\n]*\];/,
+  `const __KEMAI_ACCEPTED_STREAMS__=${JSON.stringify(streams)};`);
 const gateway=(await import('data:text/javascript;base64,'+Buffer.from(text).toString('base64'))).default;
 const hash=v=>createHash('sha256').update(typeof v==='string'?v:JSON.stringify(v)).digest('hex');
 function fixture(gatewayImpl=gateway,{dropPurchaseHash=false}={}){
   let tables={},next=1,tail=Promise.resolve();
+  const operations=[];
   const matches=(row,where)=>Object.entries(where).every(([key,filters])=>Object.entries(filters).every(([op,value])=>
     op==='$eq'?row[key]===value:op==='$in'?value.includes(row[key]):op==='$gte'?row[key]>=value:op==='$lte'?row[key]<=value:false));
-  const models=state=>({byTable(name){return {
-    async filter({where}){const rows=(state()[name]||[]).filter(r=>matches(r,where));return {tableData:structuredClone(rows),paging:{totalCount:rows.length}};},
-    async aggregate({where,aggregate}){return {tableData:[{[aggregate[0].alias]:(state()[name]||[]).filter(r=>matches(r,where)).length}]};},
-    async create(row){const all=state()[name]??=[];const created={...structuredClone(row),id:next++};all.push(created);return created.id;},
-    async batchCreate(rows){const ids=[];for(const row of rows)ids.push(await this.create(row));return ids;},
-    async update(row){const old=(state()[name]||[]).find(r=>r.id===row.id);assert.ok(old,'update target exists');
+  const models=(state,transaction=false)=>({byTable(name){const record=operation=>operations.push({transaction,table:name,operation});return {
+    async filter({where}){record('filter');const rows=(state()[name]||[]).filter(r=>matches(r,where));return {tableData:structuredClone(rows),paging:{totalCount:rows.length}};},
+    async aggregate({where,aggregate}){record('aggregate');return {tableData:[{[aggregate[0].alias]:(state()[name]||[]).filter(r=>matches(r,where)).length}]};},
+    async create(row){record('create');const all=state()[name]??=[];const created={...structuredClone(row),id:next++};all.push(created);return created.id;},
+    async batchCreate(rows){record('batchCreate');const ids=[];for(const row of rows)ids.push(await this.create(row));return ids;},
+    async update(row){record('update');const old=(state()[name]||[]).find(r=>r.id===row.id);assert.ok(old,'update target exists');
       const value=structuredClone(row);if(dropPurchaseHash&&name==='purchase_documents')delete value.source_list_hash;
       Object.assign(old,value);}
   };}});
   const client={models:models(()=>tables),db:{transaction:async action=>{
     const previous=tail;let release;tail=new Promise(r=>release=r);await previous;
     let working=structuredClone(tables);
-    try{const result=await action({models:models(()=>working)});tables=working;return result;}finally{release();}
+    try{const result=await action({models:models(()=>working,true)});tables=working;return result;}finally{release();}
   }}};
-  return {call:p=>gatewayImpl(p,{client}),tables:()=>tables};
+  return {call:p=>gatewayImpl(p,{client}),tables:()=>tables,operations:()=>operations};
 }
 function purchaseFixture(options){
-  const promoted=text.replace('__KEMAI_ACCEPTED_STREAMS__=["retail-orders", "retail-sales"]',
-    '__KEMAI_ACCEPTED_STREAMS__=["purchase-orders","purchase-receipts","retail-orders","retail-sales"]');
+  const promoted=withAccepted(text,['purchase-orders','purchase-receipts','purchase-returns','retail-orders','retail-sales']);
   return import('data:text/javascript;base64,'+Buffer.from(promoted).toString('base64')).then(mod=>fixture(mod.default,options));
 }
 function scope(capture_id=randomUUID().replaceAll('-','')){return {tenant:'205149',stream:'retail-sales',capture_id,window_key:'2026-11-07',mode:'final',source_key_version:'source-id-v1'};}
@@ -38,6 +40,19 @@ function makeBatch(s,value=1,sequence=0){
   return {...s,op:'batch.upsert',sequence,batch_id:hash(['205149',s.stream,s.capture_id,sequence]),records_json,payload_hash:hash(records_json)};
 }
 function commit(s,b){return {...s,op:'window.commit',batch_ids:[b.batch_id],evidence:{source_rows:1,export_total:1,export_task_id:'task',verification_method:'export_total_and_capture'}};}
+
+test('serial operations lock the stream controller before the first transactional read',async()=>{
+  const f=fixture(),s=scope(),b=makeBatch(s);
+  for(const request of [{...s,op:'capture.begin'},b,commit(s,b)]){
+    await f.call(request);
+    const transactional=f.operations().filter(row=>row.transaction);
+    assert.equal(transactional[0].table,'sync_pipeline_streams');
+    assert.equal(transactional[0].operation,'update');
+    assert.equal(transactional[1].table,'sync_pipeline_streams');
+    assert.equal(transactional[1].operation,'filter');
+    f.operations().length=0;
+  }
+});
 
 test('business/raw/receipt and final event/window commit together; same batch is idempotent',async()=>{
   const f=fixture(),s=scope(),b=makeBatch(s);
@@ -126,7 +141,9 @@ test('order query metadata alone does not rewrite business/raw rows; business ch
 });
 
 test('purchase streams are blocked until the acceptance registry promotes them',async()=>{
-  const f=fixture();
+  const demoted=withAccepted(text,['retail-orders','retail-sales']);
+  const gatewayImpl=(await import('data:text/javascript;base64,'+Buffer.from(demoted).toString('base64'))).default;
+  const f=fixture(gatewayImpl);
   const purchase={tenant:'205149',stream:'purchase-orders',capture_id:randomUUID().replaceAll('-',''),
     window_key:'2026-11-07',mode:'final',source_key_version:'purchase-id-v1'};
   await assert.rejects(()=>f.call({...purchase,op:'capture.begin'}),/STREAM_ACCEPTANCE_REQUIRED/);
@@ -137,8 +154,7 @@ test('purchase streams are blocked until the acceptance registry promotes them',
 test('promotion is data-driven: the accepted list is injected, not hardcoded',async()=>{
   const path='.rabetbase/bff/app-21522951/ENDPOINT/kemaiSyncGateway.js';
   const original=readFileSync(path,'utf8');
-  const injected=original.replace('__KEMAI_ACCEPTED_STREAMS__=["retail-orders", "retail-sales"]',
-    '__KEMAI_ACCEPTED_STREAMS__=["purchase-orders","retail-orders","retail-sales"]');
+  const injected=withAccepted(original,['purchase-orders','retail-orders','retail-sales']);
   assert.notEqual(injected,original,'injected registry constant not found');
   const promoted=(await import('data:text/javascript;base64,'+Buffer.from(injected).toString('base64'))).default;
   const caps=await promoted({op:'capabilities'},{});

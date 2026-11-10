@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "api_only_streams": ["purchase-orders", "purchase-receipts", "purchase-returns"],
+  "export_min_scan_rows": 5000,
+  "export_min_backlog_days": 3,
+  "api_page_size": 1000,
+  "cost_min_samples": 3,
+  "cost_max_age_hours": 168,
+  "export_cost_margin": 0.8
+}

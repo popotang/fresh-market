@@ -6,6 +6,7 @@ import {open,mkdir,unlink} from 'node:fs/promises';
 import {recoverArtifact,publishArtifact} from './artifact-files.js';
 import {resolve,dirname} from 'node:path';
 import {createHash} from 'node:crypto';
+import {trustedExportUrl,fetchWithRedactedErrors} from './source-validation.js';
 
 cli({site:'kemai',name:'export-download',access:'read',description:'下载指定导出任务为私有 XLSX 工件，校验类型与摘要，不写数据中心',
   domain:'yunfan.kemai.com.cn',strategy:Strategy.COOKIE,browser:true,navigateBefore:false,
@@ -24,11 +25,10 @@ cli({site:'kemai',name:'export-download',access:'read',description:'下载指定
       return a.data.data.results.find(r=>String(r.id)===${JSON.stringify(taskId)})||null;
     })()`);
     if(!task||String(task.status)!=='2'||!task.sourceUrl)throw new CliError('EXPORT_NOT_READY','Exact task is not ready or outside the bounded task list');
-    const url=new URL(task.sourceUrl);
-    if(url.protocol!=='https:'||url.hostname!=='yunfan-store.kemai.com.cn'||url.port||url.username||url.password)throw new CliError('UNTRUSTED_EXPORT','Unexpected export origin');
+    const url=trustedExportUrl(task.sourceUrl);
     const rows=Number(task.totalRows);if(task.totalRows==null||!Number.isSafeInteger(rows)||rows<0)throw new CliError('API_ERROR','Export row total missing');
     await new Promise(r=>setTimeout(r,2000));
-    const response=await fetch(url,{redirect:'error',signal:AbortSignal.timeout(120000)});
+    const response=await fetchWithRedactedErrors(url,{redirect:'error',signal:AbortSignal.timeout(120000)});
     if(response.status===429)throw new CliError('RATE_LIMIT','Export download HTTP 429');
     if(!response.ok)throw new CliError('EXPORT_FAILED','Export download status '+response.status);
     await mkdir(dirname(output),{recursive:true,mode:0o700});

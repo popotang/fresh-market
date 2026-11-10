@@ -11,9 +11,30 @@ from .source_gate import cooldown_until, gate_dir
 class SourceError(RuntimeError): pass
 class SourceCooling(SourceError): pass
 class SourceRejected(SourceError): pass
+class SourceAuthenticationRequired(SourceError): pass
+
+
+def authentication_signal(value):
+    """Inspect diagnostic fields only; never scan product names or raw payload text."""
+    if isinstance(value, dict):
+        return any(authentication_signal(value.get(key)) for key in
+                   ('error', 'message', 'msg', 'code', 'data', 'response', 'result'))
+    if isinstance(value, list):
+        return any(authentication_signal(item) for item in value if isinstance(item, dict))
+    return isinstance(value, str) and any(text in value for text in
+        ('登录认证失败', '登录已过期', '登录失效', '未登录', 'AUTH_REQUIRED', 'UNAUTHORIZED'))
 
 
 PURCHASE_STREAMS=("purchase-orders","purchase-receipts","purchase-returns")
+DETAIL_KINDS=('order','receipt','return')
+
+
+def _contains_url(value):
+    """Any URL material (signed download links, credentials) is forbidden in receipts."""
+    if isinstance(value,str):return 'http' in value.lower()
+    if isinstance(value,dict):return any(_contains_url(key) or _contains_url(item) for key,item in value.items())
+    if isinstance(value,(list,tuple)):return any(_contains_url(item) for item in value)
+    return False
 
 
 def _source_contracts():
@@ -70,14 +91,24 @@ class OpenCLISource:
         if is_rate_limited(result.stderr) or (result.returncode and is_rate_limited(result.stdout)):
             record_limit(command,'RATE_LIMIT: source CLI response',wait=False)
             raise SourceCooling('Rate limited; persisted 30-minute cooldown')
-        if result.returncode and 'EXPORT_REJECTED' in result.stderr:
+        if result.returncode and 'EXPORT_REJECTED' in (result.stderr + result.stdout):
             raise SourceRejected('Source explicitly rejected the export; no successful submission confirmed')
+        try: decoded=json.loads(result.stdout)
+        except ValueError: decoded=None
+        if authentication_signal(decoded) or (result.returncode and authentication_signal(result.stderr)):
+            raise SourceAuthenticationRequired('Kemai authentication failed; sign in again, then resume the same capture')
         if result.returncode: raise SourceError('OpenCLI failed; check session and command contract')
         try: data=json.loads(result.stdout)
         except ValueError as error: raise SourceError('Source JSON invalid') from error
         if rate_limit_signal(data):
             record_limit(command,'RATE_LIMIT: HTTP/business response',wait=False)
             raise SourceCooling('Rate limited; persisted 30-minute cooldown')
+        # OpenCLI 2.x always wraps JSON, including explicit -f json. Keep 1.x
+        # decoding for rollback, but never mistake an error envelope for data.
+        if isinstance(data,dict):
+            if data.get('ok') is not True:
+                raise SourceError('OpenCLI error envelope; outcome unknown, inspect saved artifacts before retry')
+            data=data.get('data')
         if not isinstance(data,list): raise SourceError('Expected OpenCLI record array')
         return data
 
@@ -145,3 +176,55 @@ class OpenCLISource:
         if len(matches)!=1 or not matches[0].get('id'):
             raise SourceError('Cannot uniquely recover export task; inspect or abandon this capture, never resubmit blindly')
         return {'task_id':str(matches[0]['id']),'stream':stream,'day':day,'file_name':matches[0]['fileName']}
+
+    def export_download(self, task, output_path):
+        """Download a completed export via OpenCLI; the receipt is re-validated locally.
+
+        Goes through self.call so it shares the operation budget and the
+        cooldown gate with export_start/export_status. The receipt must bind
+        the task identity, the task's totalRows, and the resolved output path;
+        no field anywhere in the receipt may carry URL material.
+        """
+        output=Path(output_path)
+        raw=task.get('totalRows')
+        if isinstance(raw,bool) or not (type(raw) is int or (isinstance(raw,str) and raw.isdigit())):
+            raise SourceError('Export task row count is invalid')
+        expected=int(raw)
+        rows=self.call('export-download','--task-id',str(task['task_id']),'--output',str(output))
+        if len(rows)!=1 or not isinstance(rows[0],dict):
+            raise SourceError('Export download did not return exactly one receipt')
+        receipt=rows[0]
+        if _contains_url(receipt):raise SourceError('Export download receipt carries URL material; refusing to persist it')
+        if str(receipt.get('task_id') or '')!=str(task['task_id']):
+            raise SourceError('Export download receipt identity mismatch')
+        actual=receipt.get('rows')
+        if isinstance(actual,bool) or not (type(actual) is int or (isinstance(actual,str) and actual.isdigit())) \
+                or int(actual)!=expected:
+            raise SourceError('Export download receipt row count mismatch')
+        if not receipt.get('path') or Path(str(receipt['path'])).resolve()!=output.resolve():
+            raise SourceError('Export download receipt path mismatch')
+        if not output.is_file():raise SourceError('Export download artifact is missing')
+        return receipt
+
+    def document_details(self, kind, docs, directory):
+        from .batch_source import document_details
+        return document_details(self, kind, docs, directory)
+
+    def document_detail(self, kind, source_id):
+        """Fetch one purchase document (header + detail arrays) via OpenCLI.
+
+        Goes through self.call so it shares the operation budget, cooldown gate,
+        and error handling with export_start/export_status/export_download.
+        Contract: the CLI returns an array of exactly one entity whose id echoes
+        the requested source_id (CLI-side SOURCE_IDENTITY_MISMATCH; rechecked here).
+        """
+        if kind not in DETAIL_KINDS:raise ValueError(f'Unknown purchase detail kind: {kind}')
+        if isinstance(source_id,bool) or not isinstance(source_id,(str,int)) or not str(source_id).strip():
+            raise ValueError('source_id must be a non-empty string or number')
+        rows=self.call('purchase-detail','--kind',kind,'--id',str(source_id))
+        if len(rows)!=1 or not isinstance(rows[0],dict):
+            raise SourceError('Purchase detail must return exactly one entity')
+        entity=rows[0]
+        if str(entity.get('id') or '')!=str(source_id):
+            raise SourceError('Source detail identity mismatch; do not trust this entity')
+        return entity

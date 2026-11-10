@@ -18,10 +18,10 @@ function gateScript() {
   return config.script_path;
 }
 
-function openLease(label) {
+function openLease(label, failOnCooldown = false) {
   return new Promise((resolve, reject) => {
     const child = spawn(process.env.KEMAI_SOURCE_GATE_PYTHON || 'python3',
-      [gateScript(), 'lease', label], { stdio: ['pipe', 'pipe', 'pipe'] });
+      [gateScript(), 'lease', label, ...(failOnCooldown ? ['--fail-on-cooldown'] : [])], { stdio: ['pipe', 'pipe', 'pipe'] });
     let ready = false;
     let stdout = '';
     let stderr = '';
@@ -53,8 +53,10 @@ function openLease(label) {
   });
 }
 
-export async function withSourceLease(label, operation) {
-  const release = await openLease(label);
+export async function withSourceLease(label, operation, timings = null) {
+  const started = performance.now();
+  const release = await openLease(label, timings !== null);
+  if (timings) timings.gate_wait_seconds = (performance.now()-started)/1000;
   let failure;
   try {
     return await operation();

@@ -6,7 +6,8 @@
   <p>OpenCLI 使用已登录的科迈云帆 PC 后台会话读取列表、详情和导出中心。站点命令返回 JSON；<b>写入 MySQL、日期断点、去重和对账由 Python 同步脚本负责</b>。运行前需有有效登录会话和对应菜单权限。数据库密码由脚本交互输入或通过匿名管道传递，不应写进命令行、日志或文档。</p>
   <p>当前已安装的站点命令位于 <code>~/.opencli/clis/kemai/</code>，项目副本位于 <code>kemai_opencli/</code>，两者在本次核对时一致。统一使用 <code>-f json</code> 取得机器可处理的结果数组。单条站点命令仅负责一次读取或一次导出任务创建；大量数据请通过同步器编排。</p>
 
-  <h1 seq="auto">已安装的 12 条站点命令</h1>
+  <h1 seq="auto">核心站点命令</h1>
+  <p>完整注册清单、输入输出和副作用以 <code>opencli kemai capabilities -f json</code> 为准；该静态命令不打开浏览器、不访问科迈。下表保留常用数据命令说明。</p>
   <table>
     <thead><tr><th><p>命令</p></th><th><p>输入</p></th><th><p>返回与用途</p></th></tr></thead>
     <tbody>
@@ -21,7 +22,8 @@
       <tr><td><p><code>purchase-receive-history-export-start</code></p></td><td><p><code>--from DAY --to DAY</code></p></td><td><p>创建或复用历史收货 Excel 异步任务。</p></td></tr>
       <tr><td><p><code>retail-orders-export-start</code></p></td><td><p><code>--from DAY --to DAY</code></p></td><td><p>创建或复用零售订单 Excel 异步任务。</p></td></tr>
       <tr><td><p><code>retail-sales-export-start</code></p></td><td><p><code>--from DAY --to DAY</code></p></td><td><p>创建或复用销售流水 Excel 异步任务。</p></td></tr>
-      <tr><td><p><code>export-task-list</code></p></td><td><p><code>--rows N</code>，默认 20</p></td><td><p>查询最近导出任务的状态、总行数及下载地址。</p></td></tr>
+      <tr><td><p><code>export-task-list</code></p></td><td><p><code>--rows N</code>，默认 20</p></td><td><p>查询最近导出任务的状态、总行数及 <code>download_ready</code>；公开结果不返回签名下载地址。</p></td></tr>
+      <tr><td><p><code>export-download</code></p></td><td><p><code>--task-id ID --output PATH</code></p></td><td><p>在源租约内查询指定任务、下载并校验 XLSX 工件；签名 URL 仅用于内部下载，不进入公开输出。</p></td></tr>
     </tbody>
   </table>
   <p>六条列表命令都要求 <code>--from</code> 和 <code>--to</code>，格式为 <code>YYYY-MM-DD</code>；<code>--page</code> 从 1 开始，<code>--rows</code> 范围为 1–1000，默认 20。采购列表另有 <code>--date-type</code>，默认值 0（页面默认的制单时间维度）。列表返回记录数组；不能仅凭页面接口的 <code>totalRecord</code> 判断采购列表总数，因为已观察到有数据时仍返回 0。</p>
@@ -38,15 +40,16 @@ opencli kemai retail-order-detail --id SOURCE_ORDER_ID --sale-time '2026-10-10 1
 
   <h1 seq="auto">Excel 导出流程与数据用途</h1>
   <ol>
-    <li>按日期发起对应的 <code>*-export-start</code>。返回导出任务 <code>id</code>、<code>status</code>、<code>totalRows</code> 和可能尚为空的 <code>sourceUrl</code>。</li>
-    <li>用 <code>export-task-list</code> 查同一个任务 ID。任务完成条件为 <code>status=2</code> 且有 <code>sourceUrl</code>；失败状态或 <code>failReason</code> 需停止处理。</li>
-    <li>历史收货由同步器下载 Excel，检查实际行数等于 <code>totalRows</code>，再按“单据号＋明细序号＋商品编码”生成稳定键并分批 upsert。</li>
+    <li>按日期发起对应的 <code>*-export-start</code>。返回导出任务 <code>id</code>、<code>status</code>、<code>totalRows</code> 和 <code>download_ready</code>，不返回签名 URL。</li>
+    <li>用 <code>export-task-list</code> 查同一个任务 ID。任务完成条件为 <code>status=2</code> 且 <code>download_ready=true</code>；失败状态或 <code>failReason</code> 需停止处理。</li>
+    <li>需要 Excel 行数据时，用 <code>export-download --task-id ID --output PATH</code> 下载到私有工件目录。当前仅接受严格 XLSX/ZIP；历史收货还须检查实际行数等于 <code>totalRows</code>，再按“单据号＋明细序号＋商品编码”生成稳定键并分批 upsert。</li>
     <li>零售订单与销售流水的 Excel 主要提供独立的每日 <code>totalRows</code> 对账；入库仍优先使用列表 API 的源 ID。两者不应因为导出成功就视为完整详情已采集。</li>
   </ol>
   <pre lang="bash" caption="导出中心示例"><code>opencli kemai purchase-receive-history-export-start --from 2026-01-01 --to 2026-01-31 -f json
 opencli kemai retail-orders-export-start --from 2026-10-10 --to 2026-10-10 -f json
 opencli kemai retail-sales-export-start --from 2026-10-10 --to 2026-10-10 -f json
-opencli kemai export-task-list --rows 50 -f json</code></pre>
+opencli kemai export-task-list --rows 50 -f json
+opencli kemai export-download --task-id EXPORT_TASK_ID --output .kemai-artifacts/exports/history.xlsx -f json</code></pre>
   <p><b>副作用与复用：</b><code>export-start</code> 可能在 SaaS 内创建导出任务；相同文件名的已有任务也可能被复用。重复执行前应按任务 ID、日期、状态和总量检查是否确实需要新任务。命令内部为寻找新任务会短间隔查询导出中心，因此外层 <code>--rate</code> 不是底层每个 HTTP 请求的严格间隔。</p>
 
   <h1 seq="auto">批量同步、全量与增量</h1>

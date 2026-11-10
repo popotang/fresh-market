@@ -3,6 +3,14 @@
   "appcode": "app-21522951",
   "tenant_id": "205149",
   "dblink_id": 10510,
+  "tenantless_datasets": [
+    "purchase_document_detail_state",
+    "purchase_document_lines",
+    "purchase_document_branches",
+    "purchase_document_approvals",
+    "product_profile",
+    "product_child_records"
+  ],
   "datasets": {
     "sync_objects": "edfb7b0eb0304e6ba1002a839e3e224a",
     "sync_stream_events": "b864ca67ee41418c9a6c3a189b726be6",
@@ -17,6 +25,16 @@
     "sync_pipeline_batches": "677bfd62ca074e04ab6e9704b7b1f473",
     "sync_pipeline_captures": "28da04cf072041b6813c755521258a1d",
     "sync_pipeline_streams": "6bc0b3040a8c44e2ba98ac44a20bc779",
-    "sync_pipeline_windows": "a4c44ad02a4046fa9e304939310e9a20"
+    "sync_pipeline_windows": "a4c44ad02a4046fa9e304939310e9a20",
+    "purchase_document_detail_state": "dc38d6660b134b2b9f59543a0b59b4d6",
+    "purchase_document_lines": "f571f75aeafa4cc38d15817a986d75b4",
+    "purchase_document_branches": "34af837a060449e8a0406e16701b1657",
+    "purchase_document_approvals": "22b5495ac27c40f6b4c56b8ca064f1e0",
+    "products": "9f2033555f88447082c5f66bb73a0c24",
+    "product_profile": "279154665eff407b9b03010c7a3a6bb5",
+    "product_child_records": "a7d3466b1baf492b8919e0f1725b9585"
+  },
+  "primary_keys": {
+    "product_profile": "product_id"
   }
 }

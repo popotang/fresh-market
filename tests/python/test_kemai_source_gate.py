@@ -68,6 +68,15 @@ class SourceGateTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("already uses this gate", result.stderr)
 
+    def test_batch_lease_fails_fast_during_existing_cooldown(self):
+        (self.directory / 'legacy-rate.json').write_text(json.dumps({
+            'resume_after_epoch': time.time()+1800}))
+        result = subprocess.run([sys.executable, str(SCRIPT), 'lease', 'batch', '--fail-on-cooldown'],
+                                input='', capture_output=True, text=True, env=self.env, timeout=3)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertNotIn('READY', result.stdout)
+        self.assertIn('RATE_LIMIT', result.stderr)
+
     def test_node_adapter_shares_gate_and_records_business_limit(self):
         program = ("import {withSourceLease} from './kemai_opencli/source-gate.js';"
                    "await withSourceLease('offline-node', async()=>{"

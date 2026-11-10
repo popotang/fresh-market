@@ -1,6 +1,8 @@
 import { cli, Strategy } from '@jackwener/opencli/registry';
 import { ensurePage } from './utils.js';
 import { withSourceLease } from './source-gate.js';
+import { publicExportTask } from './export-task-projection.js';
+import { validateTaskRows } from './source-validation.js';
 
 cli({
   site:'kemai',
@@ -12,11 +14,11 @@ cli({
   browser:true,
   navigateBefore:false,
   args:[{name:'rows',type:'int',default:20,help:'返回最近任务数'}],
-  columns:['id','fileName','status','sourceUrl','gmtCreate','gmtModified'],
+  columns:['id','taskNo','fileName','sheetType','status','totalRows','download_ready','createTime','gmtCreate','gmtModified','failReason'],
   func:(page,args)=>withSourceLease('kemai:export-task-list',async()=>{
+    const rows=validateTaskRows(args.rows??20);
     await ensurePage(page,'retail-sales');
-    const rows=Number(args.rows||20);
-    return page.evaluate(`(async()=>{
+    const tasks=await page.evaluate(`(async()=>{
       const v=[...document.querySelectorAll('#singlePageDiv *')].map(e=>e.__vue__).filter(Boolean).flatMap(v=>[v,...(v.$children||[])]).find(v=>v.$options?.name==='SalesDetails');
       const r=v.$refs.reportPage;
       const a=await r.getDataApi({page:1,rows:${rows},params:{status:'',operDateFrom:'',operDateTo:''},filters:[],orders:[],currentPageOrders:[]},'/web/api/user/exportTask/',true);
@@ -25,5 +27,6 @@ cli({
       if(a?.data?.code!==0) throw Error('科迈导出中心请求失败：'+(a?.data?.message||a?.data?.msg||'未知错误'));
       return a?.data?.data?.results||[];
     })()`);
+    return tasks.map(publicExportTask);
   }),
 });
