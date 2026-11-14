@@ -1,8 +1,8 @@
 # 科迈采购与零售同步
 
-> 2026-11-08 18:03 CST 状态更新：旧日常 supervisor 仍暂停；新小时级零售服务完成一次真实源手动验收与短暂试启后，按用户目标澄清已停止，当前没有常驻采集。最新验收见 [交付记录](../kemai-sync-delivery-2026-11-08.md)。以下历史运行记录中的“监督进程在运行”不代表当前状态。
+> 2026-11-08 18:03 CST 状态更新：旧日常 supervisor 仍暂停；新小时级零售服务完成一次真实源手动验收与短暂试启后，按用户目标澄清已停止，当前没有常驻采集。最新验收见 [交付记录](../archive/2026-11-14/process/kemai-sync-delivery-2026-11-08.md)。以下历史运行记录中的“监督进程在运行”不代表当前状态。
 
-先按业务动作找命令，可看 [能力清单与操作词典](../kemai-sync-capability-map-2026-11-08.md)；四层分工见 [同步体系目标架构](../kemai-data-sync-target-architecture-2026-11-08.md)，工作包与验收顺序见 [开发计划](../kemai-sync-development-plan-2026-11-08.md)。
+先按业务动作找命令，可看 [能力清单与操作词典](../kemai-sync-capability-map-2026-11-08.md)；四层分工见 [同步体系目标架构](../archive/2026-11-14/process/kemai-data-sync-target-architecture-2026-11-08.md)，工作包与验收顺序见 [开发计划](../archive/2026-11-14/process/kemai-sync-development-plan-2026-11-08.md)。
 
 ## 已验证的源数据
 

@@ -14,7 +14,7 @@
 
 ## 后续更新
 
-小时级零售采集的本地实现见 [设计与运行指引](../kemai-hourly-incremental-design-2026-11-08.md)，M1/M2/M4 交付说明见 [本次交付文档](../kemai-sync-delivery-2026-11-08.md)。`sync_live_cursors` 保存当天临时快照进度，`live:retail-orders`、`live:retail-sales` 和 `live:retail-order-lines` 在现有状态/事件表中另列。临时状态的 `covered_through` 为空，页面以“当日同步距今”显示新鲜度；日终核对后才推进原日期检查点。
+小时级零售采集的本地实现见 [设计与运行指引](../archive/2026-11-14/process/kemai-hourly-incremental-design-2026-11-08.md)，M1/M2/M4 交付说明见 [本次交付文档](../archive/2026-11-14/process/kemai-sync-delivery-2026-11-08.md)。`sync_live_cursors` 保存当天临时快照进度，`live:retail-orders`、`live:retail-sales` 和 `live:retail-order-lines` 在现有状态/事件表中另列。临时状态的 `covered_through` 为空，页面以“当日同步距今”显示新鲜度；日终核对后才推进原日期检查点。
 
 **当前状态（2026-11-08 18:03 北京时间快照）**：零售当日真实源 `once` 已通过，`sync_live_cursors` 的订单和流水两行已更新；订单商品行当时有 56 条新流水尚无订单头，状态明确标为 `partial`，前一轮的 55 条暂缺已在下一轮补齐。新小时级服务曾试启，现已按用户目标澄清停止；旧日常 supervisor 保持 `paused_by_user`，当前没有常驻采集。停止时的未完成事件已记为 `interrupted`，上一轮成功时间保留。进程退出后的外部守护/开机自启尚未配置，实时状态请用 `kemai_live_service.py status --db` 核对。
 

@@ -7,3 +7,7 @@ __pycache__/
 *.py[cod]
 .kemai*.lock
 .rabetbase/*.lock.json
+
+# 本地报告与 Agent 记忆：含真实业绩数字，不入库
+reports/
+.workbuddy/

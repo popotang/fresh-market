@@ -1,6 +1,6 @@
 # 科迈同步架构升级：标准接口实现与验收
 
-这是已实施范围和实测证据的记录，操作命令集中在[操作指引](kemai-pipeline-operations-2026-11-08.md)。本次按[开发计划](kemai-sync-development-plan-2026-11-08.md)先落地公共内核和零售纵向链路。**公共内核可运行，不代表采购详情、全部商品对象、Excel 数据首录和常驻运维已全部迁移。**
+这是已实施范围和实测证据的记录，操作命令集中在[操作指引](kemai-pipeline-operations-2026-11-08.md)。本次按[开发计划](archive/2026-11-14/process/kemai-sync-development-plan-2026-11-08.md)先落地公共内核和零售纵向链路。**公共内核可运行，不代表采购详情、全部商品对象、Excel 数据首录和常驻运维已全部迁移。**
 
 ## 已落地的体系
 
@@ -16,7 +16,7 @@ OpenCLI 源捕获 → 私有不可变工件 → Python 确定性核对与批次 
 
 ## 真实验证结果
 
-脱敏汇总见 [机器可读证据](kemai-standard-api-verification-2026-11-08.json)；完整源工件、回执和诊断在 `.kemai-artifacts/`、`.local-audits/`，均不应提交到仓库。
+脱敏汇总见 [机器可读证据](archive/2026-11-14/evidence/kemai-standard-api-verification-2026-11-08.json)；完整源工件、回执和诊断在 `.kemai-artifacts/`、`.local-audits/`，均不应提交到仓库。
 
 本地最终回归为 142 项 Python 测试与 21 项 Node 测试，全部通过；测试数量以机器可读证据为准。
 

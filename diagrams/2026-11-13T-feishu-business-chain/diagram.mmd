@@ -1,0 +1,22 @@
+flowchart LR
+    A[科迈业务数据<br/>销售 · 采购 · 商品] -->|只读获取| B{按数据量选择}
+    B -->|数据量不大| C[分页读取]
+    B -->|数据量较大| D[Excel 导出]
+    C --> E[自动整理与核对]
+    D --> E
+    E --> F[企业自有数据中心]
+    F --> G[经营看板与分析]
+    F --> H[记录进度与缺口]
+    H -->|继续补齐| E
+    I[智能 Skill<br/>分析状态 · 建议下一步] -.-> B
+    I -.-> H
+    classDef source fill:#E8F1FF,stroke:#3973C6,color:#17365D
+    classDef process fill:#EAF8F0,stroke:#3B9B66,color:#1D5135
+    classDef store fill:#FFF4DF,stroke:#C68A21,color:#62450E
+    classDef insight fill:#F1EAFE,stroke:#8154BF,color:#43256B
+    classDef decision fill:#FFF8E8,stroke:#C68A21,color:#62450E
+    class A source
+    class B decision
+    class C,D,E process
+    class F,H store
+    class G,I insight
