@@ -21,7 +21,7 @@ def stream_state(client,stream,through):
         if isinstance(evidence,str):evidence=json.loads(evidence)
         if (evidence.get('window_time_field')==cap.date_field
             and type(evidence.get('source_rows')) is int and evidence['source_rows']==window['row_count']
-            and evidence.get('verification_method') in ('export_total_and_capture','reused_export_total_and_capture','single_scan_count',
+            and evidence.get('verification_method') in ('export_total_and_capture','reused_export_total_and_capture','statistical_total_and_capture','single_scan_count',
                 'empty_page_and_db','legacy_export_and_db','legacy_single_scan_and_db','xlsx_rows_v1')):
             if evidence.get('verification_method')=='xlsx_rows_v1' and (
                     cap.export_role!='data_with_validated_mapping'

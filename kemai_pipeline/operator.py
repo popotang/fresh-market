@@ -13,13 +13,40 @@ from .workflow import WindowWorkflow
 from .source_gate import cooldown_until, gate_dir
 from .routing import annotate_plan, route_task
 from .lines_only_workflow import LinesOnlyWorkflow
+from .sync_mode import coverage_annotations
 
 ROOT=Path(__file__).resolve().parents[1]
 COVERAGE_GAP_DETAIL_LIMIT=1000
 
 
+def _attach_mode(plan, sync_mode, *, list_scope):
+    """Attach the mode contract and separated coverage semantics to a plan."""
+    if not sync_mode:
+        return plan
+    mode, demand = sync_mode['mode'], sync_mode['demand']
+    planning_only = str(demand.get('detail_execution', '')).startswith('planning_only_pending_unit3')
+    detail_coverage = ('blocked: paused_by_user' if demand['detail_demand'] == 'blocked' else
+                       'not scheduled; list evidence only' if demand['detail_demand'] == 'none' else
+                       'detail not scheduled; execution pending unit 3' if planning_only else
+                       'bounded detail planned for the requested fields/scope; '
+                       'per-object verification, never whole-stream completeness')
+    mode_block = {**mode, 'detail_demand': demand['detail_demand']}
+    if 'note' in demand:
+        mode_block['note'] = demand['note']
+    if 'detail_execution' in demand:
+        mode_block['detail_execution'] = demand['detail_execution']
+    plan['sync_mode'] = mode_block
+    plan['detail_fields'] = sync_mode['groups']
+    plan['detail_demand'] = demand['detail_demand']
+    plan['coverage'] = coverage_annotations(mode, demand, list_scope=list_scope,
+                                            detail_coverage=detail_coverage,
+                                            detail_scope=demand.get('detail_scope'))
+    return plan
+
+
 def plan_incremental(client, streams, *, max_days=2, now=None, include_details=False,
-                     strategy='auto', estimated_rows=None, missing_rows=None, required_fields=()):
+                     strategy='auto', estimated_rows=None, missing_rows=None, required_fields=(),
+                     sync_mode=None):
     now=now or datetime.now(ZoneInfo('Asia/Shanghai'))
     cooling=cooldown_until(gate_dir())
     states={stream:stream_state(client,stream,now.date()-timedelta(days=1)) for stream in streams}
@@ -77,11 +104,13 @@ def plan_incremental(client, streams, *, max_days=2, now=None, include_details=F
         for task in plan.get(key,[]):
             task['estimated_rows']=states[task['stream']].get('estimated_scan_rows')
             task['estimate_basis']=states[task['stream']].get('estimate_basis')
-    return annotate_plan(plan,ROOT/'.kemai-artifacts',strategy=strategy,estimated_rows=estimated_rows,
-                         missing_rows=missing_rows,required_fields=required_fields)
+    return _attach_mode(annotate_plan(plan,ROOT/'.kemai-artifacts',strategy=strategy,estimated_rows=estimated_rows,
+                         missing_rows=missing_rows,required_fields=required_fields),
+                        sync_mode, list_scope='planned day windows, backlog and provisional snapshot')
 
 
-def history_plan(stream,start,end, *, strategy='auto', estimated_rows=None, missing_rows=None, required_fields=()):
+def history_plan(stream,start,end, *, strategy='auto', estimated_rows=None, missing_rows=None,
+                 required_fields=(), sync_mode=None):
     cap=CAPABILITIES[stream]
     if cap.paused or cap.granularity!='day':raise ValueError('Use separate object backfill workflow')
     if not 1<=(end-start).days+1<=31:raise ValueError('Use bounded windows of 1..31 days')
@@ -91,8 +120,9 @@ def history_plan(stream,start,end, *, strategy='auto', estimated_rows=None, miss
                      for i in range((end-start).days+1)],
             'blocked':[],'planning_pending':[],'backlog_remaining':0,'backlog_by_stream':{},
             'coverage_gaps':[],'status':'planned','source_requests':0,'db_writes':0}
-    return annotate_plan(plan,ROOT/'.kemai-artifacts',strategy=strategy,estimated_rows=estimated_rows,
-                         missing_rows=missing_rows,required_fields=required_fields)
+    return _attach_mode(annotate_plan(plan,ROOT/'.kemai-artifacts',strategy=strategy,estimated_rows=estimated_rows,
+                         missing_rows=missing_rows,required_fields=required_fields),
+                        sync_mode, list_scope=f'{start.isoformat()}..{end.isoformat()} day windows')
 
 
 def execute_tasks(client, tasks, *, artifact_root=None, source=None):

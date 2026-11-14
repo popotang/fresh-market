@@ -16,6 +16,7 @@ from .locking import writer_lock
 from .lovrabet_adapter import ContractError
 from .normalize import timestamp, scaled
 from .source import SourceError, SourceCooling, SourceAuthenticationRequired
+from .sync_mode import db_budget, estimate_db_reads
 
 SECTIONS = ('supply','retail_price','delivery_price','stock','promotion','barcode',
             'grading','pack','history_price','scope','combination','mix','split','cut')
@@ -54,6 +55,12 @@ def product_row(entity, observed_at, kind='detail'):
         if entity.get(key) is not None:row[target]=scaled(entity,key)
     for target,key in (('source_created_at','gmtCreate'),('source_modified_at','gmtModified'),('source_approved_at','approveTime')):
         if entity.get(key) not in (None,''):row[target]=timestamp(entity,key)
+    return row
+
+
+def product_create_row(entity, observed_at, kind='detail'):
+    row = product_row(entity, observed_at, kind=kind)
+    row['first_seen_at'] = observed_at
     return row
 
 
@@ -115,11 +122,57 @@ class ProductWorkflow:
             raise ContractError('Product capture scope mismatch')
         return state
 
-    def plan(self, ids=None, *, after_id=0, limit=10, sections=DEFAULT_SECTIONS, inventory=None, changed_only=True):
+    def _detail_versions(self, product_ids):
+        """Detail-verified versions read from committed profiles. The master row's
+        source_version is last-observed (list refreshes rewrite it) and can never
+        serve as the detail-debt baseline. Missing profile/version yields None,
+        which the caller treats as unknown debt, not as complete."""
+        versions={}
+        for offset in range(0,len(product_ids),100):
+            chunk=product_ids[offset:offset+100]
+            profiles=self.db.read_all('product_profile',where={'product_id':{'$in':chunk}},
+                                      select=['product_id','payload']) if chunk else []
+            for profile in profiles:
+                payload=profile.get('payload')
+                if isinstance(payload,str):
+                    try:payload=json.loads(payload)
+                    except ValueError:payload=None
+                version=payload.get('version') if isinstance(payload,dict) else None
+                key=str(profile['product_id'])
+                if key in versions:raise ContractError('Duplicate product profile')
+                versions[key]=str(version) if version is not None else None
+        return versions
+
+    def plan(self, ids=None, *, after_id=0, limit=10, sections=DEFAULT_SECTIONS, inventory=None,
+             changed_only=True, list_only=False, sync_mode=None, max_db_requests=400,
+             tab_demands=()):
         if not 1<=limit<=100:raise ValueError('Plan limit must be 1..100')
         sections=list(dict.fromkeys(sections))
         if any(s not in SECTIONS for s in sections):raise ValueError('Unknown product section')
-        catalog=None;rows=[];list_evidence={}
+        if tab_demands and inventory:
+            # Inventory-scoped tab demand cannot be proven complete: unchanged
+            # masters with no version signal (detail_unknown) are only one leak
+            # class, and a fully verified master with missing tabs leaks too.
+            # Until tab-level TTL/coverage selection lands (unit 3), only an
+            # explicit object selection may schedule tab detail. Fail before
+            # any capture manifest is persisted, so `run` cannot bypass the gate.
+            raise ValueError('inventory-scoped tab demand is planning-only until unit 3 '
+                             'tab-level TTL selection; select objects explicitly via --id')
+        if tab_demands and ids is None and not inventory:
+            raise ValueError('cursor-scoped tab demand is planning-only; select objects explicitly via --id')
+        if not 1<=limit<=100:raise ValueError('Plan limit must be 1..100')
+        sections=list(dict.fromkeys(sections))
+        if any(s not in SECTIONS for s in sections):raise ValueError('Unknown product section')
+        if sync_mode is not None:
+            if not isinstance(sync_mode,dict) or 'sync_mode' not in sync_mode:
+                raise ValueError('sync_mode must be a resolved mode contract')
+            if list_only and sync_mode.get('detail_demand')=='bounded':
+                raise ValueError('list_only plan cannot carry a bounded detail demand')
+        if list_only and not inventory:
+            # A list-only capture can only materialize list evidence rows; without
+            # a sealed inventory the run would fail on the first object.
+            raise ValueError('list-only plan requires a sealed inventory with list evidence')
+        catalog=None;rows=[];list_evidence={};detail_needed=[];detail_unknown=[]
         if inventory:
             catalog=self.load(inventory)
             if catalog.get('phase')!='inventory_complete':raise ContractError('Inventory is not sealed')
@@ -131,25 +184,60 @@ class ProductWorkflow:
                 for row in envelope['data']['results']:
                     key=item_id(row.get('id'))
                     if key in list_evidence:raise ContractError('Duplicate inventory item')
-                    list_evidence[key]={'hash':digest(row),'version':str(row['version']) if row.get('version') is not None else None}
+                    list_evidence[key]={'hash':digest(row),'version':str(row['version']) if row.get('version') is not None else None,
+                                        'row':row,'observed_at':envelope['observed_at']}
             if set(list_evidence)!=set(ids) or len(ids)!=catalog['source_total']:
                 raise ContractError('Inventory ID/count mismatch')
+            # Fail closed on the plan-phase DB budget before any data-center read:
+            # the selection pass reads one products page per 100 items and at most
+            # one profile page per 100 items when list evidence carries versions.
+            if changed_only:
+                verdict=db_budget(estimate_db_reads(len(ids)),max_db_requests)
+                if verdict['over_budget']:
+                    raise ValueError('Plan DB budget exceeded: estimated %d > cap %d; %s'
+                                     %(verdict['estimated_db_requests'],verdict['db_request_budget'],
+                                       verdict['strategy']))
+                plan_db_reads=verdict['estimated_db_requests']
+            else:plan_db_reads=0
             if changed_only:
                 selected=[]
                 for offset in range(0,len(ids),100):
-                    existing=self.db.read_all('products',where={'source_item_id':{'$in':ids[offset:offset+100]}},
-                                              select=['source_item_id','list_hash','detail_hash'])
+                    chunk=ids[offset:offset+100]
+                    existing=self.db.read_all('products',where={'source_item_id':{'$in':chunk}},
+                                              select=['id','source_item_id','list_hash','detail_hash'])
                     by_id={str(row['source_item_id']):row for row in existing}
                     if len(by_id)!=len(existing):raise ContractError('Duplicate product source IDs')
-                    for key in ids[offset:offset+100]:
-                        prior=by_id.get(key,{})
-                        if prior.get('list_hash')!=list_evidence[key]['hash'] or not prior.get('detail_hash'):
-                            selected.append(key)
+                    # Version comparison only applies where the list evidence carries a
+                    # version; real inventories often omit it entirely, so profiles are
+                    # read only for rows that can actually be compared.
+                    compare={key for key in chunk if by_id.get(key,{}).get('detail_hash')
+                             and list_evidence[key]['version'] is not None}
+                    verified_versions=self._detail_versions([by_id[key]['id'] for key in compare]) if compare else {}
+                    for key in chunk:
+                        prior=by_id.get(key);evidence=list_evidence[key]
+                        list_changed=prior is None or prior.get('list_hash')!=evidence['hash']
+                        # List diff drives the list queue: detail debt (missing detail_hash
+                        # or a source version newer than the committed profile) is tracked
+                        # separately and must not re-enqueue an unchanged master. Comparing
+                        # against the master row would lose the debt as soon as a list
+                        # refresh rewrites its version (Codex comment-2 repro).
+                        stale_detail=(prior is None or not prior.get('detail_hash')
+                                      or (key in compare
+                                          and verified_versions.get(str(prior['id']))!=evidence['version']))
+                        if stale_detail:detail_needed.append(key)
+                        # Without a list version, freshness of an existing profile cannot
+                        # be judged: record it as unknown (visible to on-demand detail
+                        # selectors) instead of silently treating detail as complete.
+                        if prior is not None and not stale_detail and evidence['version'] is None:
+                            detail_unknown.append(key)
+                        if list_changed or (stale_detail and not list_only):selected.append(key)
                 ids=selected
         elif ids is None:
+            plan_db_reads=1  # after_id cursor page only
             rows,_=self.db.page('products',where={'id':{'$gt':after_id}},
                                 select=['source_item_id'],size=limit)
             ids=[r['source_item_id'] for r in rows]
+        else:plan_db_reads=0  # explicit ids: no plan-phase DB read
         ids=[item_id(i) for i in ids]
         if len(ids)!=len(set(ids)) or (not inventory and len(ids)>100):raise ValueError('Duplicate or oversized ID plan')
         state={'schema_version':1,'capture_id':uuid.uuid4().hex,'tenant':self.tenant,
@@ -157,13 +245,22 @@ class ProductWorkflow:
                'ids':ids,'objects':{},'run_id':uuid.uuid4().int % (2**52),
                'list_evidence':{key:list_evidence[key] for key in ids} if inventory else {},
                'selection':'new_or_changed_master' if inventory and changed_only else 'explicit_objects',
+               'list_only':bool(list_only),
+               'detail_needed':detail_needed,
+               'detail_unknown':detail_unknown,
+               'sync_mode':dict(sync_mode) if sync_mode else {'sync_mode':'list' if list_only else 'on_demand',
+                                                              'mode_basis':'implicit'},
+               'estimated_db_requests':plan_db_reads,
+               'db_request_budget':max_db_requests if inventory and changed_only else None,
                'next_after_id':rows[-1]['id'] if not inventory and rows else None,
                'coverage':'selected_objects_only','events':{}}
         self.save(state);return self.summary(state)
 
-    def read(self,kind,source_id=None,section=None,page=1):
+    def read(self,kind,source_id=None,section=None,page=1,from_time=None,sort=None):
         command={'list':'product-list','detail':'product-detail','section':'product-section'}[kind]
         args=['--page',str(page),'--rows','100'] if kind=='list' else ['--id',source_id]
+        if kind=='list' and sort is not None:args=['--sort',sort]+args
+        if kind=='list' and from_time is not None:args=['--from',str(from_time)]+args
         if section:args+=['--section',section,'--page',str(page)]
         rows=self.source.call(command,*args)
         if len(rows)!=1 or not isinstance(rows[0],dict):raise SourceError('Missing product envelope')
@@ -177,17 +274,32 @@ class ProductWorkflow:
             raise SourceError('Product detail identity mismatch')
         return e
 
-    def inventory(self, max_pages=200):
+    def inventory(self, max_pages=200, from_time=None, sort=None):
         """Capture IDs once. No unsafe continuation of unstable page offsets."""
         if not 1<=max_pages<=1000:raise ValueError('Inventory page budget 1..1000')
+        if sort is not None and sort not in ('gmtCreate','approveTime'):
+            raise ValueError('Product inventory sort must be gmtCreate or approveTime')
+        if from_time is not None and not re.fullmatch(
+                r'\d{4}-\d{2}-\d{2}(?: \d{2}:\d{2}(?::\d{2})?)?',str(from_time)):
+            raise ValueError('Product inventory from_time must be YYYY-MM-DD or YYYY-MM-DD HH:mm:ss')
+        requested_sort=sort
+        sort=requested_sort or 'gmtCreate'
+        start=(str(from_time)+' 00:00:00' if len(str(from_time))==10 else
+               str(from_time)+':00' if len(str(from_time))==16 else str(from_time)) if from_time else None
+        scope=({} if not start and requested_sort is None else {
+            'params':({('startGmtCreate' if sort=='gmtCreate' else 'startApproveTime'):start} if start else {}),
+            'orders':[{'fieldName':sort,'order':'desc','frontendSort':False}]})
+        if not start and requested_sort is None:scope={}
         with writer_lock():
             state={'schema_version':1,'capture_id':uuid.uuid4().hex,'tenant':self.tenant,
-                   'phase':'inventory_capturing','created_at':now(),'ids':[],'pages':[]}
+                   'phase':'inventory_capturing','created_at':now(),'ids':[],'pages':[],
+                   'query_scope':scope}
             self.save(state);total=None;seen=set()
             try:
                 for page in range(1,max_pages+1):
-                    e=self.read('list',page=page)
-                    if e.get('query_scope')!={}:raise SourceError('Product list scope is not explicit API-default scope')
+                    e=self.read('list',page=page,from_time=from_time,sort=sort)
+                    if e.get('query_scope')!=scope:
+                        raise SourceError('Product list scope does not match requested window')
                     data=e.get('data',{});rows=data.get('results');observed=data.get('totalRecord')
                     if isinstance(observed,str) and observed.isdigit():observed=int(observed)
                     if not isinstance(rows,list) or type(observed) is not int or observed<0:
@@ -202,7 +314,8 @@ class ProductWorkflow:
                     state['pages'].append({'file':name,'hash':digest(e)});self.save(state)
                     if len(seen)==total:
                         state.update(phase='inventory_complete',source_total=total,completed_at=now(),
-                                     coverage='accessible_api_default_list_single_pass')
+                                     coverage='filtered_time_window_single_pass' if start or requested_sort
+                                     else 'accessible_api_default_list_single_pass')
                         self.save(state);return self.summary(state)
                 raise SourceError('Product inventory page budget exhausted')
             except Exception as error:
@@ -274,6 +387,90 @@ class ProductWorkflow:
             raise ContractError('Product child key set changed during write')
         return {'rows':len(desired),'retained_stale_rows':extras,'status':'partial' if extras else 'verified'}
 
+    def run_list_only(self,state,limit,started,source_before,db_before):
+        """One bounded batch per call: pre-read, grouped writes, whole-batch readback,
+        then persist this batch's verified object set before any reporting write."""
+        objects=state.setdefault('objects',{})
+        pending=[i for i in state['ids'] if objects.get(i,{}).get('list',{}).get('status') not in ('verified','partial')]
+        batch=pending[:limit]
+        content_changes=observation_updates=unchanged=0
+        if batch:
+            desired=[];seen=set()
+            for source_id in batch:
+                listed=state.get('list_evidence',{}).get(source_id)
+                if not listed or not isinstance(listed.get('row'),dict):
+                    raise ContractError('List-only plan lacks source list row evidence')
+                observed=timestamp({'value':listed['observed_at']},'value')
+                desired.append((source_id,observed,product_row(listed['row'],observed,kind='list')))
+                seen.add(observed)
+            before=self.db.read_all('products',where={'source_item_id':{'$in':batch}})
+            existing={}
+            for old in before:
+                key=str(old['source_item_id'])
+                if key in existing:raise ContractError('Duplicate product source ID in database')
+                existing[key]=old
+            creates=[];changes=[]
+            for source_id,observed,row in desired:
+                prior=existing.get(source_id)
+                if prior and any(timestamp(r,'last_seen_at')>observed for r in [prior] if r.get('last_seen_at')):
+                    raise ContractError('Newer product exists; start a fresh object plan')
+                if prior is None:
+                    row['first_seen_at']=observed
+                    creates.append(row);content_changes+=1
+                else:
+                    # An unknown write outcome is resolved by unique key and field readback:
+                    # a row already matching this plan confirms a prior partially-applied
+                    # batch and is never replayed through batchCreate.
+                    patch={k:v for k,v in row.items() if not self.db._same(prior.get(k),v)}
+                    if not patch:unchanged+=1;continue
+                    if set(patch)<={'last_seen_at'}:observation_updates+=1
+                    else:content_changes+=1
+                    changes.append({'id':prior['id'],**patch})
+            chunks=[];chunk=[]
+            for row in creates:
+                if len(dump([row]).encode())>48000:raise ContractError('Product exceeds batch byte budget')
+                if chunk and (len(chunk)>=100 or len(dump(chunk+[row]).encode())>48000):chunks.append(chunk);chunk=[]
+                chunk.append(row)
+            if chunk:chunks.append(chunk)
+            for chunk in chunks:
+                self.db.batch_create('products',chunk,unique_keys=['source_item_id'],preflight=False)
+            groups={}
+            for patch in changes:groups.setdefault(dump({k:v for k,v in patch.items() if k!='id'}),[]).append(patch)
+            for _,patches in groups.items():
+                ids_to_update=[p['id'] for p in patches]
+                patch={k:v for k,v in patches[0].items() if k!='id'}
+                self.db.invoke('data','update','--code',self.db.dataset_code('products'),
+                               '--params',dump({'id':ids_to_update,**patch}))
+            actual=self.db.read_all('products',where={'source_item_id':{'$in':batch}})
+            by_id={str(row['source_item_id']):row for row in actual}
+            if len(by_id)!=len(actual):raise ContractError('Duplicate product source ID in readback')
+            written=time.monotonic()
+            for source_id,observed,row in desired:
+                saved=by_id.get(source_id)
+                if saved is None or any(not self.db._same(saved.get(k),v) for k,v in row.items()):
+                    raise ContractError('UPSERT_OUTCOME_UNKNOWN: product list batch readback mismatch')
+                objects.setdefault(source_id,{})['list']={'status':'verified','rows':1,
+                    'source_observed_at':observed,'source_seconds':0,'db_seconds':round(written-started,3)}
+            if desired:state['source_observed_at']=max(seen)
+            for key in ('error','error_reason','failed_section'):state.pop(key,None)
+            state.update(phase='running',last_run_content_changes=content_changes,
+                         last_run_observation_updates=observation_updates,last_run_unchanged=unchanged)
+            # Durable business completion of this batch precedes any reporting write;
+            # a failed audit is retried on resume through pending_audits.
+            if 'list' not in state.setdefault('pending_audits',[]):state['pending_audits'].append('list')
+            self.save(state)
+        remaining=len(pending)-len(batch)
+        for section in list(state.get('pending_audits',[])):
+            self.audit(state,section,'partial' if remaining else 'success')
+            state['pending_audits'].remove(section);self.save(state)
+        state.update(last_run_seconds=round(time.monotonic()-started,3),
+                     last_run_source_operations=getattr(self.source,'operations',0)-source_before,
+                     last_run_db_requests=self.db.requests-db_before)
+        # An empty selection or a fully verified object list closes the capture; a
+        # bounded batch with work left keeps the same object list resumable.
+        state['phase']='complete' if not remaining else 'running'
+        self.save(state)
+
     def audit(self,state,section,status,error=None):
         # One stable event per capture/section; retries update it rather than append duplicates.
         stream='product-object:'+section
@@ -302,15 +499,33 @@ class ProductWorkflow:
         if status=='success':latest['last_success_at']=finished
         self.db.upsert('sync_stream_status',latest,unique_keys=['tenant_id','stream'])
 
-    def run(self,capture,limit=5):
+    def run(self,capture,limit=5,list_only=None):
         if not 1<=limit<=100:raise ValueError('Run limit must be 1..100')
         with writer_lock():
             state=self.load(capture)
             if state['phase'].startswith('inventory'):raise ValueError('Create an object plan from inventory first')
+            list_only=state.get('list_only',False) if list_only is None else bool(list_only)
+            if list_only and state.get('phase')=='complete':
+                # A finished capture replays its original acceptance result before any
+                # standard API request: no event/status rewrite, no last_success_at refresh.
+                return self.summary(state)
             started=time.monotonic();done=0
             source_before=getattr(self.source,'operations',0);db_before=self.db.requests
+            if list_only:
+                try:
+                    self.run_list_only(state,limit,started,source_before,db_before)
+                    return self.summary(state)
+                except Exception as error:
+                    state.update(phase='cooling' if isinstance(error,SourceCooling) else
+                                 'auth_required' if isinstance(error,SourceAuthenticationRequired) else 'failed',
+                                 error=type(error).__name__,failed_section='list',
+                                 error_reason=str(error)[:300] if isinstance(error,(SourceError,ContractError)) else type(error).__name__)
+                    self.save(state)
+                    try:self.audit(state,'list',state['phase'],error)
+                    except Exception:pass
+                    raise
             for source_id in state['ids']:
-                phases=['detail',*state['sections']]
+                phases=['list'] if list_only else ['detail',*state['sections']]
                 obj=state['objects'].setdefault(source_id,{})
                 if all(obj.get(p,{}).get('status') in ('verified','partial') for p in phases):continue
                 if done>=limit:break
@@ -318,14 +533,36 @@ class ProductWorkflow:
                     if obj.get(section,{}).get('status') in ('verified','partial'):continue
                     step=time.monotonic()
                     try:
-                        envelopes=self.snapshot(state,source_id,section)
-                        source_seconds=time.monotonic()-step;write_start=time.monotonic()
-                        observed=timestamp({'value':envelopes[-1]['observed_at']},'value')
+                        if section=='list':
+                            listed=state.get('list_evidence',{}).get(source_id)
+                            if not listed or not isinstance(listed.get('row'),dict):
+                                raise ContractError('List-only plan lacks source list row evidence')
+                            entity=listed['row']
+                            observed=timestamp({'value':listed['observed_at']},'value')
+                            source_seconds=0
+                        else:
+                            envelopes=self.snapshot(state,source_id,section)
+                            source_seconds=time.monotonic()-step
+                            observed=timestamp({'value':envelopes[-1]['observed_at']},'value')
+                            entity=envelopes[0]['data']['entity'] if section=='detail' else None
+                        write_start=time.monotonic()
                         state['source_observed_at']=observed
-                        if section=='detail':
-                            entity=envelopes[0]['data']['entity'];row=product_row(entity,observed)
+                        if section=='list':
                             prior,_=self.db.page('products',where={'source_item_id':{'$eq':source_id}},
                                                  select=['last_seen_at'],size=2)
+                            row=(product_create_row(entity,observed,kind='list') if not prior
+                                 else product_row(entity,observed))
+                            if any(timestamp(r,'last_seen_at')>observed for r in prior if r.get('last_seen_at')):
+                                raise ContractError('Newer product exists; start a fresh object plan')
+                            result=self.db.upsert('products',row,unique_keys=['source_item_id'])
+                            obj['product_id']=result['row']['id']
+                            outcome={'status':'verified','rows':1}
+                        elif section=='detail':
+                            entity=envelopes[0]['data']['entity']
+                            prior,_=self.db.page('products',where={'source_item_id':{'$eq':source_id}},
+                                                 select=['last_seen_at'],size=2)
+                            row=(product_create_row(entity,observed) if not prior
+                                 else product_row(entity,observed))
                             if any(timestamp(r,'last_seen_at')>observed for r in prior if r.get('last_seen_at')):
                                 raise ContractError('Newer product exists; start a fresh object plan')
                             result=self.db.upsert('products',row,unique_keys=['source_item_id'])
@@ -367,7 +604,7 @@ class ProductWorkflow:
                 self.audit(state,section,'partial' if any(v.get(section,{}).get('status')=='partial' for v in state['objects'].values()) else 'success')
                 state['pending_audits'].remove(section);self.save(state)
             remaining=sum(not all(state['objects'].get(i,{}).get(s,{}).get('status') in ('verified','partial')
-                                  for s in ['detail',*state['sections']]) for i in state['ids'])
+                                  for s in (['list'] if list_only else ['detail',*state['sections']])) for i in state['ids'])
             state.update(phase='partial' if not remaining and any(v.get(s,{}).get('status')=='partial'
                          for v in state['objects'].values() for s in state['sections']) else 'complete' if not remaining else 'running',
                          last_run_seconds=round(time.monotonic()-started,3))
@@ -377,11 +614,18 @@ class ProductWorkflow:
 
     @staticmethod
     def summary(state):
-        objects=state.get('objects',{});sections=['detail',*state.get('sections',[])]
+        objects=state.get('objects',{});sections=['list'] if state.get('list_only') else ['detail',*state.get('sections',[])]
         complete=sum(all(v.get(s,{}).get('status')=='verified' for s in sections) for v in objects.values())
         terminal=sum(all(v.get(s,{}).get('status') in ('verified','partial') for s in sections) for v in objects.values())
+        mode=state.get('sync_mode') or {}
         return {k:state.get(k) for k in ('capture_id','phase','coverage','selection','next_after_id','last_run_seconds',
                                         'last_run_source_operations','last_run_db_requests',
+                                        'last_run_content_changes','last_run_observation_updates','last_run_unchanged',
+                                        'estimated_db_requests','db_request_budget',
                                         'failed_section','error','error_reason')} | {
+            'sync_mode':mode.get('sync_mode'),'mode_basis':mode.get('mode_basis'),
+            'detail_demand':mode.get('detail_demand'),
             'selected':len(state['ids']),'verified_objects':complete,'remaining_objects':len(state['ids'])-terminal,
-            'partial_objects':terminal-complete,'sections':state.get('sections',[])}
+            'partial_objects':terminal-complete,'sections':state.get('sections',[]),
+            'detail_needed':len(state.get('detail_needed') or []),
+            'detail_unknown':len(state.get('detail_unknown') or [])}

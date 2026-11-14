@@ -316,9 +316,20 @@ export default async function kemaiSyncGateway(p, context) {
     if(control.active_capture_id!==p.capture_id||capture.state!=='running')throw new Error('CAPTURE_NOT_ACTIVE');
     const e={...p.evidence},ids=p.batch_ids;
     if(!e||!Number.isSafeInteger(e.source_rows)||e.source_rows<0||!Array.isArray(ids)||ids.length>5000||new Set(ids).size!==ids.length)throw new Error('INVALID_MANIFEST');
-    if(p.mode==='final'&&!['export_total_and_capture','reused_export_total_and_capture','single_scan_count','empty_page_and_db'].includes(e.verification_method))throw new Error('INVALID_FINAL_EVIDENCE');
+    if(p.mode==='final'&&!['export_total_and_capture','reused_export_total_and_capture','statistical_total_and_capture','single_scan_count','empty_page_and_db'].includes(e.verification_method))throw new Error('INVALID_FINAL_EVIDENCE');
     if(e.verification_method==='empty_page_and_db'&&e.source_rows!==0)throw new Error('INVALID_EMPTY_EVIDENCE');
-    if(p.mode==='final'&&p.stream.startsWith('retail-')&&e.source_rows>0&&!['export_total_and_capture','reused_export_total_and_capture'].includes(e.verification_method))throw new Error('RETAIL_EXPORT_TOTAL_REQUIRED');
+    if(p.mode==='final'&&p.stream.startsWith('retail-')&&e.source_rows>0&&!['export_total_and_capture','reused_export_total_and_capture','statistical_total_and_capture'].includes(e.verification_method))throw new Error('RETAIL_INDEPENDENT_TOTAL_REQUIRED');
+    if(e.verification_method==='statistical_total_and_capture'){
+      const q=e.query_scope,day=p.window_key,timeField=p.stream==='retail-sales'?'timeType':'dateType';
+      if(!['retail-sales','retail-orders'].includes(p.stream)||!Number.isSafeInteger(e.statistical_total)||
+        e.statistical_total!==e.source_rows||e.source_rows<=0||e.window_time_field!=='source_created_at'||
+        !q||q[timeField]!== (p.stream==='retail-sales'?'1':'0')||
+        !Array.isArray(q.branchIdList)||q.branchIdList.length!==1||String(q.branchIdList[0])!=='69028303'||
+        q.branchCodes!=='1001'||String(q.branchId1)!=='69028303'||
+        q.saleTimeFrom!==day+' 00:00:00'||q.saleTimeTo!==day+' 23:59:59'||
+        !Array.isArray(q.saleTimeRange)||q.saleTimeRange[0]!==q.saleTimeFrom||q.saleTimeRange[1]!==q.saleTimeTo)
+        throw new Error('INVALID_STATISTICAL_EVIDENCE');
+    }
     if(['export_total_and_capture','reused_export_total_and_capture'].includes(e.verification_method)&&(e.export_total!==e.source_rows||!e.export_task_id))throw new Error('INVALID_EXPORT_EVIDENCE');
     if(e.verification_method==='reused_export_total_and_capture'&&(e.export_reuse_reason!=='server_24h_dedup'||!e.source_task_no))throw new Error('INVALID_EXPORT_REUSE_EVIDENCE');
     const batches=await allBatches(tx,captureWhere);
@@ -334,6 +345,7 @@ export default async function kemaiSyncGateway(p, context) {
     if(p.mode==='final'){
       const where={tenant_id:{$eq:TENANT},[dayField]:{$gte:p.window_key+' 00:00:00',$lte:p.window_key+' 23:59:59'}};
       if(kind)where.document_kind={$eq:kind};
+      if(e.verification_method==='statistical_total_and_capture')where.source_branch_id={$eq:'69028303'};
       const count=await m(tx,table).aggregate({where,aggregate:[{column:'id',type:'COUNT',alias:'n'}]});
       if(Number(count.tableData?.[0]?.n)!==e.source_rows)throw new Error('DATABASE_WINDOW_COUNT_MISMATCH');
     }

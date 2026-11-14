@@ -3,6 +3,22 @@ import {assertNoRateLimit} from './utils.js';
 import {withSourceLease} from './source-gate.js';
 import {SECTIONS,MASTERS} from './product-endpoints.js';
 const route='https://yunfan.kemai.com.cn/archives/ItemList';
+
+export function listRequest(args={}) {
+  const from=args.from==null?null:String(args.from);
+  const sort=args.sort==null?'gmtCreate':String(args.sort);
+  if(!['gmtCreate','approveTime'].includes(sort))throw new CliError('INVALID_ARGUMENT','sort must be gmtCreate or approveTime');
+  let start=null;
+  if(from){
+    if(!/^\d{4}-\d{2}-\d{2}(?: \d{2}:\d{2}(?::\d{2})?)?$/.test(from))throw new CliError('INVALID_ARGUMENT','from must be YYYY-MM-DD or YYYY-MM-DD HH:mm:ss');
+    start=from.length===10?from+' 00:00:00':from.length===16?from+':00':from;
+  }
+  const params=start?{[sort==='gmtCreate'?'startGmtCreate':'startApproveTime']:start}:{};
+  const orders=from||args.sort?[{fieldName:sort,order:'desc',frontendSort:false}]:[];
+  const query_scope=(Object.keys(params).length||orders.length)?{params,orders}:{};
+  return {params,orders,query_scope,page:Number(args.page??1),rows:Number(args.rows??100)};
+}
+
 export async function productRead(page,kind,args){
   const id=String(args.id||'');
   if(['detail','section'].includes(kind)&&!/^\d{1,32}$/.test(id))throw new CliError('INVALID_ARGUMENT','Invalid item ID');
@@ -17,13 +33,14 @@ export async function productRead(page,kind,args){
     const request={kind,id,page:number,rows:size,section:args.section,
       endpoint:kind==='master'?MASTERS[args.kind]:kind==='section'?SECTIONS[args.section][0]:null,
       extra:kind==='section'?SECTIONS[args.section][1]:null};
+    if(kind==='list')Object.assign(request,listRequest(args));
     const result=await page.evaluate(`(async()=>{
       const x=${JSON.stringify(request)};
       let response;
       if(x.kind==='list'){
         const v=[...document.querySelectorAll('#singlePageDiv *')].find(e=>e.__vue__?.$options?.name==='ListPage')?.__vue__;
         if(!v)throw Error('AUTH_REQUIRED: item list unavailable');
-        response=await v.getDataApi({page:x.page,rows:x.rows,params:{},filters:[],orders:[]},v.Action,true);
+        response=await v.getDataApi({page:x.page,rows:x.rows,params:x.params,filters:[],orders:x.orders},v.Action,true);
       }else if(x.kind==='detail'){
         const v=document.querySelector('#itemInfo')?.__vue__?.$refs?.infopage;
         if(!v)throw Error('AUTH_REQUIRED: item detail unavailable');
@@ -45,6 +62,6 @@ export async function productRead(page,kind,args){
     if(kind==='detail'&&String(result.data.entity?.id)!==id)throw new CliError('API_ERROR','Item identity mismatch');
     return [{schema_version:1,kind,object_key:id||null,section:args.section||null,
       page:number,page_size:kind==='section'&&args.section==='history_price'?10:size,
-      observed_at:new Date().toISOString(),query_scope:kind==='list'?{}:null,data:result.data}];
+      observed_at:new Date().toISOString(),query_scope:kind==='list'?request.query_scope:null,data:result.data}];
   });
 }

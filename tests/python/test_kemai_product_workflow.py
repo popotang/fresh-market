@@ -6,6 +6,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 from kemai_pipeline.product_workflow import ProductWorkflow, product_row, child_rows, section_rows
+from kemai_pipeline.contracts import digest
 from kemai_pipeline.source import SourceError, SourceCooling
 from kemai_pipeline.lovrabet_adapter import LovrabetAdapter, ContractError
 
@@ -42,7 +43,11 @@ class MemoryDB(LovrabetAdapter):
             for row in params if verb=='batchCreate' else [params]:
                 row=dict(row);row.setdefault(self._pk(table),len(data)+1);data.append(row)
         elif verb=='update':
-            key=self._pk(table);row=next(r for r in data if r[key]==params[key]);row.update(params)
+            # Grouped list updates address several rows sharing one patch.
+            key=self._pk(table);targets=params[key] if isinstance(params[key],list) else [params[key]]
+            for target in targets:
+                row=next(r for r in data if r[key]==target)
+                row.update({k:v for k,v in params.items() if k!=key})
         else:raise AssertionError(verb)
         return {}
 
@@ -133,6 +138,36 @@ class ProductTests(unittest.TestCase):
     def test_inventory_duplicate_ids_rejected(self):
         self.source.list_pages={1:{'results':[ENTITY,ENTITY],'totalRecord':2}}
         with self.assertRaises(SourceError):self.worker.inventory()
+    def test_list_only_writes_master_without_detail_or_tabs(self):
+        self.source.list_pages={1:{'results':[ENTITY],'totalRecord':1}}
+        inventory=self.worker.inventory()['capture_id']
+        cid=self.worker.plan(inventory=inventory,sections=[],list_only=True)['capture_id']
+        calls_before=len(self.source.calls)
+        result=self.worker.run(cid)
+        self.assertEqual(result['phase'],'complete')
+        self.assertEqual(len(self.db.tables['products']),1)
+        self.assertEqual(self.db.tables['product_profile'],[])
+        self.assertEqual(self.db.tables['product_child_records'],[])
+        self.assertTrue(self.db.tables['products'][0]['list_hash'])
+        self.assertEqual(self.db.tables['products'][0]['first_seen_at'],self.db.tables['products'][0]['last_seen_at'])
+        self.assertEqual(len(self.source.calls),calls_before)
+        state=self.worker.load(cid)
+        self.assertTrue(state['list_only'])
+        self.assertEqual(state['list_evidence']['12']['row']['name'],'test')
+
+    def test_list_only_batch_writes_products_and_audits_once(self):
+        entities=[ENTITY,{**ENTITY,'id':13,'code':'0013'},{**ENTITY,'id':14,'code':'0014'}]
+        self.source.list_pages={1:{'results':entities,'totalRecord':len(entities)}}
+        inventory=self.worker.inventory()['capture_id']
+        cid=self.worker.plan(inventory=inventory,sections=[],list_only=True)['capture_id']
+        result=self.worker.run(cid)
+        self.assertEqual(result['phase'],'complete')
+        self.assertEqual(len(self.db.tables['products']),3)
+        self.assertEqual(self.db.writes.count(('products','batchCreate')),1)
+        self.assertEqual(self.db.writes.count(('products','create')),0)
+        self.assertEqual(len(self.db.tables['sync_stream_events']),1)
+        self.assertEqual(len(self.db.tables['sync_stream_status']),1)
+
     def test_inventory_incremental_skips_unchanged_after_verified_profile(self):
         self.source.list_pages={1:{'results':[ENTITY],'totalRecord':1}}
         inventory=self.worker.inventory()['capture_id']
@@ -173,5 +208,175 @@ class ProductTests(unittest.TestCase):
         self.db.fail_table=None;self.worker.run(cid)
         self.assertEqual(self.source.calls.count('product-detail'),1)
         self.assertEqual(len(self.db.tables['sync_stream_events']),2)
+
+    # ---- P0 list-only correctness (list-first on-demand plan, 2026-11-10) ----
+    def _two_item_catalog(self):
+        entities=[ENTITY,{**ENTITY,'id':13,'code':'0013'}]
+        self.source.list_pages={1:{'results':entities,'totalRecord':2}}
+        return entities,self.worker.inventory()['capture_id']
+    def test_list_only_run_limit_bounds_first_batch(self):
+        # Baseline repro 1: a limit=1 run used to write the whole plan at once.
+        _,inventory=self._two_item_catalog()
+        cid=self.worker.plan(inventory=inventory,sections=[],list_only=True)['capture_id']
+        result=self.worker.run(cid,1)
+        self.assertEqual(result['phase'],'running')
+        self.assertEqual(result['verified_objects'],1);self.assertEqual(result['remaining_objects'],1)
+        self.assertEqual(len(self.db.tables['products']),1)
+        result=self.worker.run(cid,1)
+        self.assertEqual(result['phase'],'complete');self.assertEqual(result['verified_objects'],2)
+        self.assertEqual(len(self.db.tables['products']),2)
+    def test_list_only_complete_replay_makes_zero_requests(self):
+        # Baseline repro 2: replaying a complete capture used to issue DB requests
+        # and refresh last_success_at; it must return the original result untouched.
+        _,inventory=self._two_item_catalog()
+        cid=self.worker.plan(inventory=inventory,sections=[],list_only=True)['capture_id']
+        self.worker.run(cid)
+        requests=self.db.requests;writes=len(self.db.writes)
+        status_rows=copy.deepcopy(self.db.tables['sync_stream_status'])
+        events_rows=copy.deepcopy(self.db.tables['sync_stream_events'])
+        result=self.worker.run(cid)
+        self.assertEqual(result['phase'],'complete')
+        self.assertEqual(self.db.requests,requests);self.assertEqual(len(self.db.writes),writes)
+        self.assertEqual(self.db.tables['sync_stream_status'],status_rows)
+        self.assertEqual(self.db.tables['sync_stream_events'],events_rows)
+    def test_list_only_replan_selects_none_but_tracks_detail_debt(self):
+        # Baseline repro 3: a missing detail_hash used to push unchanged masters
+        # back into the list queue; selection must be 0 with detail debt separate.
+        _,inventory=self._two_item_catalog()
+        cid=self.worker.plan(inventory=inventory,sections=[],list_only=True)['capture_id']
+        self.worker.run(cid)
+        plan=self.worker.plan(inventory=inventory,sections=[],list_only=True)
+        self.assertEqual(plan['selected'],0)
+        self.assertEqual(plan['detail_needed'],2)
+    def test_list_only_update_preserves_detail_fields_and_reports_observation(self):
+        # A list refresh of an existing profile only advances the seen time; detail
+        # fields survive and the summary reports observation separately from content.
+        self.source.list_pages={1:{'results':[ENTITY],'totalRecord':1}}
+        inventory=self.worker.inventory()['capture_id']
+        prior={**product_row(ENTITY,'2026-11-08 08:00:00'),'id':1,'tenant_id':'205149',
+               'list_hash':digest(ENTITY),'sub_name':'kept','barcode':'560'}
+        self.db.tables['products']=[prior]
+        cid=self.worker.plan(inventory=inventory,sections=[],list_only=True,changed_only=False)['capture_id']
+        result=self.worker.run(cid)
+        saved=self.db.tables['products'][0]
+        self.assertEqual(saved['sub_name'],'kept');self.assertEqual(saved['barcode'],'560')
+        self.assertTrue(saved.get('detail_hash'))
+        self.assertEqual(saved['last_seen_at'],'2026-11-09 18:00:00')
+        self.assertEqual(result['last_run_observation_updates'],1)
+        self.assertEqual(result['last_run_content_changes'],0)
+    def test_list_only_resume_confirms_applied_rows_without_replay(self):
+        # A lost write response (rows landed, manifest recorded nothing) is resolved
+        # by unique-key readback; batchCreate must not be replayed blindly.
+        entities,inventory=self._two_item_catalog()
+        cid=self.worker.plan(inventory=inventory,sections=[],list_only=True)['capture_id']
+        for entity in entities:
+            self.db.tables['products'].append({'id':len(self.db.tables['products'])+1,'tenant_id':'205149',
+                **product_row(entity,STAMP,kind='list'),'first_seen_at':STAMP})
+        result=self.worker.run(cid)
+        self.assertEqual(result['phase'],'complete');self.assertEqual(result['verified_objects'],2)
+        self.assertEqual(self.db.writes.count(('products','batchCreate')),0)
+        self.assertEqual(self.db.writes.count(('products','update')),0)
+        self.assertEqual(result['last_run_unchanged'],2)
+    def test_list_only_failure_keeps_verified_batch_for_resume(self):
+        # A failure after one bounded batch keeps that batch's verified set durable;
+        # resume continues the same object list without rewriting verified rows.
+        _,inventory=self._two_item_catalog()
+        cid=self.worker.plan(inventory=inventory,sections=[],list_only=True)['capture_id']
+        self.worker.run(cid,1)
+        self.db.fail_table='products'
+        with self.assertRaises(ContractError):self.worker.run(cid,1)
+        state=self.worker.load(cid)
+        self.assertEqual(state['phase'],'failed')
+        self.assertEqual(state['objects']['12']['list']['status'],'verified')
+        self.db.fail_table=None
+        result=self.worker.run(cid,1)
+        self.assertEqual(result['phase'],'complete');self.assertEqual(len(self.db.tables['products']),2)
+        first=[r for r in self.db.tables['products'] if r['source_item_id']=='12'][0]
+        self.assertEqual(first['id'],1)
+    def test_detail_debt_survives_list_version_overwrite(self):
+        # Codex comment-2 repro: a list refresh rewrites the master source_version, so
+        # the detail-debt baseline must be the committed profile version, never the
+        # master row. The debt persists across inventories until detail is re-verified.
+        self.source.list_pages={1:{'results':[ENTITY],'totalRecord':1}}
+        first=self.worker.inventory()['capture_id']
+        self.worker.run(self.worker.plan(inventory=first,sections=[])['capture_id'])  # detail v1 verified
+        self.source.list_pages={1:{'results':[{**ENTITY,'version':2}],'totalRecord':1}}
+        second=self.worker.inventory()['capture_id']
+        plan=self.worker.plan(inventory=second,sections=[],list_only=True)
+        self.assertEqual(plan['selected'],1);self.assertEqual(plan['detail_needed'],1)
+        self.worker.run(plan['capture_id'])  # list-only sync: master source_version becomes 2
+        replan=self.worker.plan(inventory=second,sections=[],list_only=True)
+        self.assertEqual(replan['selected'],0)
+        self.assertEqual(replan['detail_needed'],1)  # profile still v1: debt must not vanish
+    def test_plan_db_budget_fails_closed_before_any_read(self):
+        # The estimate and its cap are checked before the selection pass issues
+        # a single data-center request; over budget means split or raise, never read.
+        _,inventory=self._two_item_catalog()
+        before=self.db.requests
+        with self.assertRaisesRegex(ValueError,'Plan DB budget exceeded'):
+            self.worker.plan(inventory=inventory,sections=[],list_only=True,max_db_requests=1)
+        self.assertEqual(self.db.requests,before)
+    def test_plan_carries_mode_contract_and_db_estimate(self):
+        _,inventory=self._two_item_catalog()
+        result=self.worker.plan(inventory=inventory,sections=[],list_only=True,
+                                sync_mode={'sync_mode':'list','mode_basis':'explicit',
+                                           'detail_demand':'none'})
+        self.assertEqual(result['sync_mode'],'list')
+        self.assertEqual(result['mode_basis'],'explicit')
+        self.assertEqual(result['estimated_db_requests'],2)   # 1 products page + <=1 profile page
+        self.assertEqual(result['db_request_budget'],400)
+    def test_plan_rejects_list_only_with_bounded_demand(self):
+        _,inventory=self._two_item_catalog()
+        with self.assertRaisesRegex(ValueError,'bounded detail demand'):
+            self.worker.plan(inventory=inventory,sections=[],list_only=True,
+                             sync_mode={'sync_mode':'list','mode_basis':'explicit',
+                                        'detail_demand':'bounded'})
+    def test_list_only_without_inventory_refused_at_plan_time(self):
+        # A list-only capture without list evidence can never run; refuse the
+        # plan itself instead of delivering a capture that fails on run.
+        with self.assertRaisesRegex(ValueError,'sealed inventory'):
+            self.worker.plan(['12'],sections=[],list_only=True)
+    def test_inventory_tab_demand_refused_before_any_capture_persisted(self):
+        # comment-11: tab demand on an inventory can neither be proven complete
+        # nor bypassed by running a rejected capture; refuse before save().
+        _,inventory=self._two_item_catalog()
+        with self.assertRaisesRegex(ValueError,'planning-only'):
+            self.worker.plan(inventory=inventory,sections=['stock'],tab_demands=['stock'])
+        manifests=[p.parent.name for p in Path(self.worker.root).glob('*/manifest.json')]
+        self.assertEqual(manifests,[inventory])  # only the sealed inventory exists
+    def test_explicit_id_tab_demand_is_schedulable(self):
+        result=self.worker.plan(['12'],sections=['stock'],tab_demands=['stock'])
+        self.assertEqual(result['sections'],['stock'])
+        self.assertEqual(result['selected'],1)
+    def _seed_verified_detail(self,row,observed='2026-11-08 08:00:00'):
+        self.db.tables['products']=[{**product_row(row,observed),'id':1,'tenant_id':'205149',
+                                     'list_hash':digest(row)}]
+        self.db.tables['product_profile']=[{'id':1,'tenant_id':'205149','product_id':1,
+            'payload':json.dumps(ENTITY),'payload_hash':digest(ENTITY)}]
+    def test_detail_unknown_when_versionless_list_unchanged(self):
+        # Real inventories (Codex comment-4) often carry no version: freshness of an
+        # existing profile cannot be judged, must surface as unknown — not complete,
+        # and without issuing useless product_profile reads.
+        row_nv={k:v for k,v in ENTITY.items() if k!='version'}
+        self.source.list_pages={1:{'results':[row_nv],'totalRecord':1}}
+        inventory=self.worker.inventory()['capture_id']
+        self._seed_verified_detail(row_nv)
+        before=self.db.requests
+        plan=self.worker.plan(inventory=inventory,sections=[],list_only=True)
+        self.assertEqual(plan['selected'],0)
+        self.assertEqual(plan['detail_needed'],0)
+        self.assertEqual(plan['detail_unknown'],1)
+        self.assertEqual(self.db.requests-before,1)  # products read only; no profile query
+    def test_detail_unknown_when_versionless_list_changed(self):
+        # A changed version-less list row enqueues for the list queue, and detail
+        # freshness stays unknown so on-demand detail selectors can still see it.
+        row_nv={k:v for k,v in ENTITY.items() if k!='version'}
+        self.source.list_pages={1:{'results':[row_nv],'totalRecord':1}}
+        inventory=self.worker.inventory()['capture_id']
+        self._seed_verified_detail(ENTITY)  # prior list hash differs from the new row
+        plan=self.worker.plan(inventory=inventory,sections=[],list_only=True)
+        self.assertEqual(plan['selected'],1)
+        self.assertEqual(plan['detail_needed'],0)
+        self.assertEqual(plan['detail_unknown'],1)
 
 if __name__=='__main__':unittest.main()

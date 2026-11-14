@@ -29,6 +29,7 @@ const expectedCommands = [
   'retail-order-detail',
   'retail-orders',
   'retail-orders-export-start',
+  'retail-promote-sharing',
   'retail-sales',
   'retail-sales-export-start',
 ];
@@ -73,7 +74,7 @@ test('manifest declares the final safe command and side-effect contract', async 
   assert.ok(manifest.runtime_requirements.opencli_version);
   assert.ok(manifest.limitations.length > 0);
   assert.deepEqual(manifest.commands.map(command => command.name).sort(), expectedCommands);
-  assert.equal(new Set(manifest.commands.map(command => command.name)).size, 22);
+  assert.equal(new Set(manifest.commands.map(command => command.name)).size, 23);
   for (const command of manifest.commands) {
     assert.equal(command.access, 'read');
     assert.equal(command.output_contract.type, 'row_array');
@@ -94,7 +95,7 @@ test('manifest declares the final safe command and side-effect contract', async 
     }
   }
   assert.equal(manifest.source_transports['purchase-orders'].export_start_command,null);
-  assert.equal(manifest.source_transports['purchase-receive-history'].export_start_command,'purchase-receive-history-export-start');
+  assert.equal(manifest.source_transports['purchase-receive-history'].export_start_command,null);
 });
 
 test('static capabilities succeed with a throwing page and zero source access', async () => fixture(async ({adapter, manifest, registrations}) => {
@@ -110,7 +111,7 @@ test('static capabilities succeed with a throwing page and zero source access', 
   assert.equal(rows[0].source_requests, 0);
   assert.equal(rows[0].authentication, null);
   assert.equal(rows[0].source_acceptance, 'not_checked');
-  assert.equal(rows[0].commands.length, 22);
+  assert.equal(rows[0].commands.length, 23);
   assert.deepEqual(rows[0].commands.map(command => command.name).sort(), expectedCommands);
   assert.equal(rows[0].adapter_version, manifest.adapter_version);
 }));
@@ -122,9 +123,9 @@ test('real module registrations match the manifest once Task 3 projection is com
   for (const command of manifest.commands) {
     await import(pathToFileURL(join(adapter, command.file)));
   }
-  assert.equal(registrations.length, 22);
+  assert.equal(registrations.length, 23);
   assert.deepEqual(registrations.map(command => command.name).sort(), expectedCommands);
-  assert.equal(new Set(registrations.map(command => command.name)).size, 22);
+  assert.equal(new Set(registrations.map(command => command.name)).size, 23);
   const byName = new Map(registrations.map(command => [command.name, command]));
   for (const command of manifest.commands) {
     const registration = byName.get(command.name);
@@ -132,5 +133,16 @@ test('real module registrations match the manifest once Task 3 projection is com
     assert.equal(registration.access, 'read', command.name);
     assert.deepEqual(registration.columns, command.output_contract.columns, command.name);
     assert.ok(!registration.columns.includes('sourceUrl'), command.name);
+  }
+}));
+
+test('export-start commands stop before the browser or source gate', async () => fixture(async ({adapter, manifest, registrations}) => {
+  for (const command of manifest.commands.filter(row => row.creates_export_task)) {
+    await import(pathToFileURL(join(adapter, command.file)));
+  }
+  const page = new Proxy({}, {get() { throw new Error('browser must not be accessed'); }});
+  assert.equal(registrations.length, 4);
+  for (const command of registrations) {
+    await assert.rejects(command.func(page, {}), /SOURCE_WRITE_FORBIDDEN/);
   }
 }));

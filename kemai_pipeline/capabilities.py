@@ -36,6 +36,10 @@ CAPABILITIES["purchase-receive-history"] = Capability(
     "purchase-receive-history", "purchase_receipt_history_lines", "approved_at",
     ("sheetNo", "normalized_sequence", "itemCode_or_itemId"),
     "history-decimal-sequence-v2", "2025-01-01", export_role="data_with_validated_mapping")
+CAPABILITIES["retail-promote-sharing"] = Capability(
+    "retail-promote-sharing", "retail_promote_shares", "source_created_at",
+    ("source_row_hash", "occurrence_no"), "promote-sharing-row-hash-occurrence-v1",
+    "2026-10-01", paused=True)
 CAPABILITIES["item_list"] = Capability("item_list", "products", None,
     ("id",), "source-id-v1", None, granularity="catalog", export_role="base_fields_candidate")
 CAPABILITIES["item_detail"] = Capability("item_detail", "product_profile", None,

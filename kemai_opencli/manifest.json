@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "adapter": "kemai",
-  "adapter_version": "1.0.0",
+  "adapter_version": "1.0.1",
   "runtime_requirements": {
     "node_minimum_major": 20,
     "opencli_version": "2.0.3",
@@ -13,7 +13,7 @@
   "limitations": [
     "The capabilities command is static metadata: it does not check authentication, browser state, source reachability, or real source acceptance.",
     "Source commands require an existing authenticated Kemai session and the shared source gate; access=read does not bypass either requirement.",
-    "Export-start commands create or reuse a source-side export task even though their OpenCLI access level is read.",
+    "Export-start commands create or reuse a source-side export task. The shared source gate rejects these commands before any source request.",
     "export-download writes only the explicitly requested local XLSX artifact and its integrity metadata; it does not write a data center.",
     "Signed source download URLs are private runtime inputs and are not part of public columns or capabilities output.",
     "Source transports advertise commands only; field coverage, cross-source identity, data-center acceptance and route selection belong to the runner."
@@ -409,6 +409,26 @@
       }
     },
     {
+      "name": "retail-promote-sharing",
+      "file": "retail-promote-sharing.js",
+      "access": "read",
+      "static": false,
+      "creates_export_task": false,
+      "local_download": false,
+      "output_contract": {
+        "type": "row_array",
+        "columns": [
+          "id",
+          "sheetId",
+          "sheetNo",
+          "type",
+          "promotionCode",
+          "amt",
+          "gmtSale"
+        ]
+      }
+    },
+    {
       "name": "retail-sales-export-start",
       "file": "retail-sales-export-start.js",
       "access": "read",
@@ -453,7 +473,7 @@
     "retail-sales": {
       "list_command": "capture-page",
       "list_kind": "retail-sales",
-      "export_start_command": "retail-sales-export-start",
+      "export_start_command": null,
       "export_task_command": "export-task-list",
       "export_download_command": "export-download",
       "detail_batch_command": null
@@ -461,7 +481,7 @@
     "retail-orders": {
       "list_command": "capture-page",
       "list_kind": "retail-orders",
-      "export_start_command": "retail-orders-export-start",
+      "export_start_command": null,
       "export_task_command": "export-task-list",
       "export_download_command": "export-download",
       "detail_batch_command": null
@@ -493,7 +513,7 @@
     "purchase-receive-history": {
       "list_command": "capture-page",
       "list_kind": "purchase-receive-history",
-      "export_start_command": "purchase-receive-history-export-start",
+      "export_start_command": null,
       "export_task_command": "export-task-list",
       "export_download_command": "export-download",
       "detail_batch_command": null

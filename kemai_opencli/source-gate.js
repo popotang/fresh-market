@@ -54,6 +54,9 @@ function openLease(label, failOnCooldown = false) {
 }
 
 export async function withSourceLease(label, operation, timings = null) {
+  if (/-export-start$/.test(label)) {
+    throw new Error('SOURCE_WRITE_FORBIDDEN: 科迈侧导出任务创建已禁用');
+  }
   const started = performance.now();
   const release = await openLease(label, timings !== null);
   if (timings) timings.gate_wait_seconds = (performance.now()-started)/1000;

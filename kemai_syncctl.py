@@ -20,6 +20,66 @@ from kemai_pipeline.lovrabet_adapter import ContractError, LovrabetAdapter
 from kemai_pipeline.runner import UnknownWrite
 from kemai_pipeline.state import stream_state
 from kemai_pipeline.routing import route_task
+from kemai_pipeline.field_catalog import (
+    PAUSED, resolve as resolve_fields, classify, routing_fields)
+from kemai_pipeline.sync_mode import resolve_mode, detail_demand
+
+
+def _resolve_mode_fields(args, streams, *, explicit_range, detail_scope=None):
+    """Resolve the mode contract and requested fields across a command's streams.
+
+    A field that resolves for no requested stream is refused; canonical paths
+    that only fit some streams apply there. Paused capabilities block the plan
+    in every mode. The legacy --include-details scope keeps its original
+    purchase-gap semantics without the strict full-mode budget checks.
+    """
+    mode = resolve_mode(sync_mode=args.sync_mode,
+                        include_details=getattr(args, 'include_details', False),
+                        required_fields=args.required_fields)
+    if getattr(args, 'detail_budget', None) is not None and args.detail_budget < 1:
+        raise ValueError('detail budget must be a positive integer')
+    groups = {'satisfied_by_list': set(), 'needs_detail': set(), 'paused': set()}
+    flats = set()
+    ambiguous = {}
+    unresolvable = set()
+    for stream in streams:
+        resolution = resolve_fields(args.required_fields, stream)
+        ambiguous.update(resolution['ambiguous'])
+        for name in resolution['unknown']:
+            if not any(resolve_fields([name], other)['resolved'] for other in streams):
+                unresolvable.add(name)
+        for spec in resolution['resolved']:
+            if spec.detail_status == PAUSED:
+                groups['paused'].add(spec.path)
+            elif spec.satisfied_by_list:
+                groups['satisfied_by_list'].add(spec.path)
+            else:
+                groups['needs_detail'].add(spec.path)
+        flats.update(routing_fields(resolution['resolved'], stream))
+    if ambiguous or unresolvable:
+        raise ValueError('Field resolution refused (ambiguous/unknown): ' + json.dumps(
+            {'ambiguous': {k: ambiguous[k] for k in sorted(ambiguous)},
+             'unknown': sorted(unresolvable)}, ensure_ascii=False))
+    merged = {k: sorted(v) for k, v in groups.items()}
+    if mode['mode_basis'] == 'legacy_include_details':
+        demand = {'detail_demand': 'bounded',
+                  'detail_scope': 'legacy purchase document-detail gaps',
+                  'note': 'legacy --include-details scope'}
+    else:
+        demand = detail_demand(mode, merged, explicit_objects=False,
+                               detail_scope=detail_scope,
+                               detail_budget=getattr(args, 'detail_budget', None),
+                               explicit_range=explicit_range)
+    if merged['paused']:
+        demand = {'detail_demand': 'blocked', 'reason': 'paused_by_user',
+                  'paused_fields': merged['paused']}
+    return mode, merged, demand, sorted(flats)
+
+
+def _blocked_by_paused_demand(result, streams, demand):
+    result.setdefault('blocked', []).append(
+        {'streams': list(streams), 'reason': 'paused_by_user',
+         'fields': demand.get('paused_fields', [])})
 
 
 def main(argv=None, *, adapter=None):
@@ -31,6 +91,10 @@ def main(argv=None, *, adapter=None):
         action.add_argument('--estimated-rows',type=int,help='Estimated rows to scan per window, not proven coverage')
         action.add_argument('--missing-rows',type=int,help='Known/estimated missing rows; does not imply a selective source query')
         action.add_argument('--required-field',action='append',default=[],dest='required_fields')
+        action.add_argument('--sync-mode',choices=('list','on_demand','full'),
+                            help='Synchronization scope contract; default list, legacy flags map onto it')
+        action.add_argument('--detail-budget',type=int,
+                            help='Explicit per-run detail budget required by --sync-mode full')
     route=sub.add_parser('route',help='Explain source selection using local contracts; zero source and DB calls')
     route.add_argument('--stream',choices=tuple(CAPABILITIES),required=True)
     route.add_argument('--mode',choices=('final','provisional'),default='final')
@@ -152,13 +216,31 @@ def main(argv=None, *, adapter=None):
                         "first_seen_at", "last_seen_at"])
             result = {"rows": rows, "count": len(rows)}
         elif args.command == "incremental":
+            mode, groups, demand, flats = _resolve_mode_fields(args, args.stream, explicit_range=False)
             result = plan_incremental(client, args.stream, max_days=args.max_catchup_days,
-                include_details=args.include_details,strategy=args.strategy,estimated_rows=args.estimated_rows,
-                missing_rows=args.missing_rows,required_fields=args.required_fields)
+                include_details=(mode['sync_mode'] == 'full' and demand['detail_demand'] == 'bounded'),
+                strategy=args.strategy,estimated_rows=args.estimated_rows,
+                missing_rows=args.missing_rows,required_fields=flats,
+                sync_mode={'mode': mode, 'demand': demand, 'groups': groups})
+            if demand['detail_demand'] == 'blocked':
+                _blocked_by_paused_demand(result, args.stream, demand)
+                code = 2
             if args.action == "run":
                 plan=result
-                result = execute_tasks(client, plan["tasks"],source=OpenCLISource(max_operations=args.max_source_operations)) if plan["tasks"] else {
+                # Paused detail demand and planning-only full mode never reach the
+                # executor; the blocked plan is returned read-only instead.
+                execution_refused = (demand['detail_demand'] == 'blocked' or
+                                     (mode['sync_mode'] == 'full'
+                                      and mode['mode_basis'] != 'legacy_include_details'))
+                result = execute_tasks(client, plan["tasks"],source=OpenCLISource(max_operations=args.max_source_operations)) if plan["tasks"] and not execution_refused else {
                     "complete":False,"results":[],"source_requests":0,"state":plan["status"]}
+                if execution_refused:
+                    result['execution_refused'] = True
+                    result['note'] = ('no tasks executed: paused detail demand refused; '
+                                      're-issue a list-only request for base lists' if demand['detail_demand'] == 'blocked' else
+                                      'no tasks executed: full detail execution is planning-only until unit 3')
+                if demand['detail_demand'] == 'blocked':
+                    result['complete'] = False
                 result['planning_blocked']=plan.get('blocked',[])
                 result['planning_pending']=plan.get('planning_pending',[])
                 result['deferred_tasks']=plan.get('deferred_tasks',[])
@@ -233,12 +315,36 @@ def main(argv=None, *, adapter=None):
             result = verify_legacy(client,args.stream)
             if result["issues"]: code = 2
         elif args.action in ("plan", "fill"):
+            days = [args.start.isoformat(), args.end.isoformat()]
+            mode, groups, demand, flats = _resolve_mode_fields(
+                args, [args.stream], explicit_range=True, detail_scope={'days': days})
             result = history_plan(args.stream, args.start, args.end,strategy=args.strategy,
-                estimated_rows=args.estimated_rows,missing_rows=args.missing_rows,required_fields=args.required_fields)
+                estimated_rows=args.estimated_rows,missing_rows=args.missing_rows,required_fields=flats,
+                sync_mode={'mode': mode, 'demand': demand, 'groups': groups})
+            if demand['detail_demand'] == 'blocked':
+                _blocked_by_paused_demand(result, [args.stream], demand)
+                code = 2
             if args.action == "fill":
-                result = execute_tasks(client, result["tasks"],source=OpenCLISource(max_operations=args.max_source_operations))
-                output.update(source_requests=result["source_requests"], db_writes=None)
-                if not result["complete"]: code = 2
+                # A refused demand must not reach the executor: paused detail
+                # capabilities and planning-only full mode fail closed with a
+                # read-only plan instead of producing write side effects.
+                full_planning_only = (mode['sync_mode'] == 'full'
+                                      and mode['mode_basis'] != 'legacy_include_details')
+                if demand['detail_demand'] == 'blocked' or full_planning_only:
+                    if full_planning_only:
+                        result['blocked'].append(
+                            {'stream': args.stream,
+                             'reason': 'full_detail_execution_pending_unit3',
+                             'note': 'full is planning-only until bounded detail tasks land; '
+                                     're-issue without --sync-mode full or use the legacy scope'})
+                    result = {**result, 'complete': False, 'results': [],
+                              'note': 'no tasks executed: refused or planning-only demand'}
+                    output.update(source_requests=0, db_writes=None)
+                    code = 2
+                else:
+                    result = execute_tasks(client, result["tasks"],source=OpenCLISource(max_operations=args.max_source_operations))
+                    output.update(source_requests=result["source_requests"], db_writes=None)
+                    if not result["complete"]: code = 2
         else:
             result = check_history(client, args.stream, args.start, args.end)
             if result["holes"]:

@@ -1,4 +1,4 @@
-"""OpenCLI-only source port. No DB imports, direct HTTP, or browser scripting."""
+"""Kemai read-only source port; OpenCLI pages plus gated direct statistics."""
 import json
 import subprocess
 import time
@@ -80,6 +80,8 @@ class OpenCLISource:
         self.executor=executor;self.max_pages=max_pages;self.operations=0;self.max_operations=max_operations
 
     def call(self, command, *args):
+        if command.endswith('-export-start'):
+            raise SourceError('SOURCE_WRITE_FORBIDDEN: source export task creation is disabled')
         if cooldown_until(gate_dir())>time.time(): raise SourceCooling('Shared cooldown active')
         if self.operations>=self.max_operations:raise SourceError('Source operation budget exhausted; no further source calls issued')
         self.operations+=1
@@ -118,8 +120,19 @@ class OpenCLISource:
         if not 1<=page_size<=1000: raise ValueError('Invalid page size')
         total=None
         for page in range(1,self.max_pages+1):
-            result=self.call('capture-page','--kind',stream,'--from',day,'--to',day,
-                             '--page',str(page),'--rows',str(page_size),*(['--until',until] if until else []))
+            # A page read is stateless and idempotent; retry once on a transient CLI
+            # failure (observed: intermittent 'page component not ready' right after
+            # component detection). Cooling, auth and rejection always abort.
+            for attempt in range(2):
+                try:
+                    result=self.call('capture-page','--kind',stream,'--from',day,'--to',day,
+                                     '--page',str(page),'--rows',str(page_size),*(['--until',until] if until else []))
+                    break
+                except (SourceCooling,SourceAuthenticationRequired,SourceRejected):
+                    raise
+                except SourceError:
+                    if attempt: raise
+                    time.sleep(3)
             if len(result)!=1:raise SourceError('Missing capture envelope')
             e=result[0]
             expected={'schema_version':1,'stream':stream,'from':day,'to':day,'page':page,'page_size':page_size}
@@ -137,23 +150,40 @@ class OpenCLISource:
             if total is not None and page*page_size>=total:return
         raise SourceError('Page budget exhausted; capture incomplete')
 
+    def statistical_total(self, stream, day, *, query_scope):
+        """Independent read-only count for a closed retail day with a proven scope."""
+        if stream not in ('retail-orders', 'retail-sales'):
+            raise SourceError('No accepted direct statistical count for this stream')
+        if not isinstance(query_scope, dict):
+            raise SourceError('Missing captured query scope for statistical verification')
+        validate_retail_scope(stream, query_scope)
+        from .direct_read import DirectReadClient, DirectReadError, report_params, session_auth
+        expected = report_params(stream, day, day)
+        for key in ('branchIdList', 'branchCodes', 'branchId1', 'saleTimeFrom',
+                    'saleTimeTo', 'saleTimeRange',
+                    'timeType' if stream == 'retail-sales' else 'dateType'):
+            if query_scope.get(key) != expected[key]:
+                raise SourceError('Direct statistics scope differs from captured list scope')
+        remaining = self.max_operations - self.operations
+        if remaining < 1:
+            raise SourceError('Source operation budget exhausted')
+        try:
+            client = DirectReadClient(session_auth(), max_operations=remaining)
+            try:
+                return client.statistical_total(stream, day, day)
+            finally:
+                self.operations += client.operations
+        except DirectReadError as error:
+            if 'RATE_LIMIT' in str(error):
+                raise SourceCooling('Shared source cooldown active') from None
+            raise SourceError(str(error)) from None
+        except RuntimeError as error:
+            if 'RATE_LIMIT' in str(error):
+                raise SourceCooling('Shared source cooldown active') from None
+            raise SourceError('Direct statistical read failed; inspect source gate') from None
+
     def export_start(self, stream, day, capture_id, *, query_scope=None):
-        if stream not in ('retail-orders','retail-sales','purchase-receive-history'):
-            raise SourceError('No verified export command')
-        extra=[]
-        if stream.startswith('retail-'):
-            extra=['--time-type','1']
-            if query_scope is not None:extra+=['--scope-json',json.dumps(query_scope,ensure_ascii=False)]
-        rows=self.call(stream+'-export-start','--from',day,'--to',day,'--capture-id',capture_id,*extra)
-        if len(rows)!=1 or not rows[0].get('id'):raise SourceError('Export submission result unknown; do not resubmit blindly')
-        row=rows[0];reused=row.get('reuse_reason')=='server_24h_dedup'
-        if reused:
-            if not str(row.get('requested_file_name','')).endswith('_'+capture_id) or str(row.get('taskNo'))!=row.get('reused_task_no'):
-                raise SourceError('Source export reuse evidence mismatch')
-        elif not str(row.get('fileName','')).endswith('_'+capture_id):raise SourceError('Export capture identity mismatch')
-        return {'task_id':str(row['id']),'stream':stream,'day':day,'file_name':row['fileName'],
-                'reused':reused,'reuse_reason':row.get('reuse_reason'),'source_task_no':row.get('taskNo'),
-                'export_created_at':row.get('createTime')}
+        raise SourceError('SOURCE_WRITE_FORBIDDEN: source export task creation is disabled')
 
     def export_status(self, task):
         # Caller persists task ID and schedules bounded polls. Never store signed URLs.

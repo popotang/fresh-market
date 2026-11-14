@@ -32,7 +32,8 @@
     "purchase_document_approvals": "22b5495ac27c40f6b4c56b8ca064f1e0",
     "products": "9f2033555f88447082c5f66bb73a0c24",
     "product_profile": "279154665eff407b9b03010c7a3a6bb5",
-    "product_child_records": "a7d3466b1baf492b8919e0f1725b9585"
+    "product_child_records": "a7d3466b1baf492b8919e0f1725b9585",
+    "retail_promote_shares": "fde264b695ce39d2bca6d0065449f31e"
   },
   "primary_keys": {
     "product_profile": "product_id"

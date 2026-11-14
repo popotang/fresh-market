@@ -10,7 +10,7 @@ from .mapping_verification import load_verification
 from .normalize import normalize, normalize_history_export_row
 from .runner import ingest_capture
 from .preparation import prepare_ingestion
-from .source import SourceError, SourceCooling, SourceRejected, PURCHASE_STREAMS
+from .source import SourceError, SourceCooling, SourceRejected, PURCHASE_STREAMS, OpenCLISource
 from .xlsx_import import XlsxImportError, parse_history_xlsx
 
 
@@ -53,6 +53,8 @@ class WindowWorkflow:
 
     def begin(self, stream, day, *, mode='final', method=None):
         method=resolve_capture_method(stream,mode,method,root=self.store.root)
+        if method=='export_for_data' and isinstance(self.source,OpenCLISource):
+            raise SourceError('SOURCE_WRITE_FORBIDDEN: new source export tasks are disabled')
         day=date.fromisoformat(day)
         today=datetime.now(ZoneInfo('Asia/Shanghai')).date()
         cap=CAPABILITIES[stream]
@@ -136,27 +138,36 @@ class WindowWorkflow:
                     if state['mode']=='final' and state['unique_rows']==0:
                         evidence['verification_method']='empty_page_and_db'
                     if state['mode']=='final' and state['unique_rows']>0 and CAPABILITIES[stream].export_role=='count_only':
-                        if state.get('export_submission')=='unknown':
+                        if isinstance(self.source,OpenCLISource):
+                            total=self.source.statistical_total(stream,day,query_scope=state.get('query_scope'))
+                            if total!=state['unique_rows']:
+                                self.center.fail_capture(state,'independent_statistical_count_mismatch')
+                                state.update(phase='interrupted',reason='independent_statistical_count_mismatch');self.store.save(state)
+                                raise SourceError('Independent statistical total differs; new capture required')
+                            evidence.update(verification_method='statistical_total_and_capture',
+                                            statistical_total=total)
+                        elif state.get('export_submission')=='unknown':
                             task=self.source.recover_export(stream,day,state['capture_id'])
                             state.update(export_task=task,export_submission='known');self.store.save(state)
-                        if not state.get('export_task'):
+                        if not isinstance(self.source,OpenCLISource) and not state.get('export_task'):
                             state['export_submission']='unknown';self.store.save(state)
                             try:task=self.source.export_start(stream,day,state['capture_id'],query_scope=state.get('query_scope'))
                             except SourceRejected:
                                 state['export_submission']='rejected';self.store.save(state);raise
                             state.update(export_task=task,export_submission='known');self.store.save(state)
-                        result=self.source.export_status(state['export_task'])
-                        if result['state']=='pending':
-                            self.center.note_capture(state,'awaiting_export','Exact export task pending; capture retained')
-                            return {'capture_id':state['capture_id'],'state':'awaiting_export','next_action':'resume_same_capture'}
-                        if result['source_rows']!=state['unique_rows']:
-                            self.center.fail_capture(state,'independent_export_count_mismatch')
-                            state.update(phase='interrupted',reason='independent_export_count_mismatch');self.store.save(state)
-                            raise SourceError('Independent export total differs; new capture required')
-                        evidence.update(verification_method='export_total_and_capture',export_total=result['source_rows'],export_task_id=result['task_id'])
-                        if state['export_task'].get('reused'):
-                            evidence.update(verification_method='reused_export_total_and_capture',export_reuse_reason=state['export_task']['reuse_reason'],
-                                export_created_at=state['export_task'].get('export_created_at'),source_task_no=state['export_task'].get('source_task_no'))
+                        if not isinstance(self.source,OpenCLISource):
+                            result=self.source.export_status(state['export_task'])
+                            if result['state']=='pending':
+                                self.center.note_capture(state,'awaiting_export','Exact export task pending; capture retained')
+                                return {'capture_id':state['capture_id'],'state':'awaiting_export','next_action':'resume_same_capture'}
+                            if result['source_rows']!=state['unique_rows']:
+                                self.center.fail_capture(state,'independent_export_count_mismatch')
+                                state.update(phase='interrupted',reason='independent_export_count_mismatch');self.store.save(state)
+                                raise SourceError('Independent export total differs; new capture required')
+                            evidence.update(verification_method='export_total_and_capture',export_total=result['source_rows'],export_task_id=result['task_id'])
+                            if state['export_task'].get('reused'):
+                                evidence.update(verification_method='reused_export_total_and_capture',export_reuse_reason=state['export_task']['reuse_reason'],
+                                    export_created_at=state['export_task'].get('export_created_at'),source_task_no=state['export_task'].get('source_task_no'))
                     self.store.seal(state,evidence)
             if callable(getattr(self.center,'page',None)):
                 prepare_ingestion(self.store,state,self.center)

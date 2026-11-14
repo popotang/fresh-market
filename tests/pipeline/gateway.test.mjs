@@ -35,11 +35,20 @@ function purchaseFixture(options){
 function scope(capture_id=randomUUID().replaceAll('-','')){return {tenant:'205149',stream:'retail-sales',capture_id,window_key:'2026-11-07',mode:'final',source_key_version:'source-id-v1'};}
 function makeBatch(s,value=1,sequence=0){
   const raw=JSON.stringify({id:'123',gmtSale:'2026-11-07 12:00:00',value});
-  const records=[{source_key:'123',data:{source_flow_id:'123',sold_at:'2026-11-07 12:00:00',source_created_at:'2026-11-07 12:00:00',payload:raw,payload_hash:hash(raw)}}];
+  const records=[{source_key:'123',data:{source_flow_id:'123',source_branch_id:'69028303',sold_at:'2026-11-07 12:00:00',source_created_at:'2026-11-07 12:00:00',payload:raw,payload_hash:hash(raw)}}];
   const records_json=JSON.stringify(records);
   return {...s,op:'batch.upsert',sequence,batch_id:hash(['205149',s.stream,s.capture_id,sequence]),records_json,payload_hash:hash(records_json)};
 }
 function commit(s,b){return {...s,op:'window.commit',batch_ids:[b.batch_id],evidence:{source_rows:1,export_total:1,export_task_id:'task',verification_method:'export_total_and_capture'}};}
+function statisticalCommit(s,b){
+  const day=s.window_key;
+  return {...s,op:'window.commit',batch_ids:[b.batch_id],evidence:{source_rows:1,
+    statistical_total:1,verification_method:'statistical_total_and_capture',
+    window_time_field:'source_created_at',query_scope:{branchIdList:['69028303'],
+      branchId1:'69028303',branchCodes:'1001',timeType:'1',
+      saleTimeFrom:day+' 00:00:00',saleTimeTo:day+' 23:59:59',
+      saleTimeRange:[day+' 00:00:00',day+' 23:59:59']}}};
+}
 
 test('serial operations lock the stream controller before the first transactional read',async()=>{
   const f=fixture(),s=scope(),b=makeBatch(s);
@@ -63,6 +72,15 @@ test('business/raw/receipt and final event/window commit together; same batch is
   assert.equal(f.tables().sync_pipeline_windows.length,1);
   assert.equal(f.tables().sync_stream_events.filter(e=>e.status==='success').length,1);
   await f.call(commit(s,b));assert.equal(f.tables().sync_stream_events.length,2);
+});
+test('retail statistical total needs matching source count and explicit captured scope',async()=>{
+  const f=fixture(),s=scope(),b=makeBatch(s);
+  await f.call({...s,op:'capture.begin'});await f.call(b);
+  const valid=statisticalCommit(s,b);
+  await assert.rejects(f.call({...valid,evidence:{...valid.evidence,statistical_total:2}}),/INVALID_STATISTICAL_EVIDENCE/);
+  await assert.rejects(f.call({...valid,evidence:{...valid.evidence,query_scope:{...valid.evidence.query_scope,timeType:'0'}}}),/INVALID_STATISTICAL_EVIDENCE/);
+  assert.equal((await f.call(valid)).state,'committed');
+  assert.equal(f.tables().sync_pipeline_windows[0].evidence.includes('statistical_total_and_capture'),true);
 });
 test('conflicting batch and incomplete manifest cannot advance window',async()=>{
   const f=fixture(),s=scope(),b=makeBatch(s);await f.call({...s,op:'capture.begin'});await f.call(b);

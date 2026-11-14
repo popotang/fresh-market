@@ -6,7 +6,7 @@ from .capabilities import CAPABILITIES
 from .lovrabet_adapter import ContractError
 
 TZ = ZoneInfo("Asia/Shanghai")
-METHODS = {"reused_export_total_and_capture","export_total_and_capture", "single_scan_and_capture", "single_scan_unique_keys", "single_scan_count", "legacy_log_and_db", "empty_page_and_db"}
+METHODS = {"reused_export_total_and_capture","export_total_and_capture", "statistical_total_and_capture", "single_scan_and_capture", "single_scan_unique_keys", "single_scan_count", "legacy_log_and_db", "empty_page_and_db"}
 
 DETAIL_STREAM_KIND = {"purchase-orders": "order", "purchase-receipts": "receipt",
                       "purchase-returns": "return"}

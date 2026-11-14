@@ -19,6 +19,7 @@ export const TYPES = {
   'purchase-returns': { route: '/purchase/PurchaseOutList', component: 'ListPage', action: '/web/api/stock/purchaseOut/', group: 'purchase' },
   'retail-orders': { route: '/retail/smallTicketList', component: 'smallTicketList', action: '/web/api/order/retail/', group: 'retail' },
   'retail-sales': { route: '/retail/salesDetails', component: 'SalesDetails', action: '/web/api/order/orderItemFlow/', group: 'retail' },
+  'retail-promote-sharing': { route: '/retail/PromoteSharingList', component: 'smallTicketList', action: '/web/api/order/item/discount/', group: 'retail' },
   'purchase-receive-history': { route: '/purchase/ReceiveAndReturnDetailReport', component: 'pi_zsReport', action: '/web/api/stock/purchaseCommon/', group: 'history' },
 };
 

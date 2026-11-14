@@ -4,13 +4,13 @@
   "streams": {
     "retail-sales": {
       "accepted_at": "2026-11-08",
-      "evidence": "docs/kemai-standard-api-verification-2026-11-08.json",
+      "evidence": "docs/archive/2026-11-14/evidence/kemai-standard-api-verification-2026-11-08.json",
       "coverage": "list_only",
       "verified": ["real-window-closed-loop", "same-capture-replay", "forced-rollback", "empty-day"]
     },
     "retail-orders": {
       "accepted_at": "2026-11-08",
-      "evidence": "docs/kemai-standard-api-verification-2026-11-08.json",
+      "evidence": "docs/archive/2026-11-14/evidence/kemai-standard-api-verification-2026-11-08.json",
       "coverage": "list_only",
       "verified": ["real-window-closed-loop", "reuse-export-evidence", "metadata-only-unchanged"]
     },
