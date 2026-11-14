@@ -4,7 +4,7 @@
 
 - 页面名称：全局经营指标
 - pageId：`1570`
-- 状态：`DRAFT`，尚未发布
+- 状态：`FORMAL`，已发布；正式版本 `2`
 - 菜单：`经营报告 / 全局经营指标`（menuId `79860`）
 - 页面尺寸：桌面优先，兼容 760px 以下单列布局
 
@@ -12,7 +12,7 @@
 
 - 最新保存预览：`https://app.lovrabet.com/app/app-21522951/pages/e4333ec2deaa47dba436c87bd08ff2f9`
 - 页面编辑器：`https://app.lovrabet.com/app/app-21522951/ide/1570`
-- 发布后运行态：`https://app-21522951.app.lovrabet.com/e4333ec2deaa47dba436c87bd08ff2f9`（当前未发布）
+- 运行态：`https://app-21522951.app.lovrabet.com/e4333ec2deaa47dba436c87bd08ff2f9`
 
 ## 本地源码
 
@@ -73,13 +73,12 @@ client.bff.execute({
 
 - `rabetbase page create --page-dir ... --dry-run` 通过。
 - 页面创建成功，平台 `codeContent` 与本地 8 个文件逐一比对一致。
-- 页面状态为 DRAFT，`formalVersion=0`，未发布。
-- 浏览器工具当前无 Lovrabet 登录态，无法自动截图；需要在已登录浏览器中打开预览链接做最终视觉验收。
+- 已发布为 `FORMAL`，正式版本 `2`；发布接口返回了通用 `YT_FAILURE`，但回读确认发布成功，未重复提交。
+- 浏览器工具当前无 Lovrabet 登录态，无法自动截图；运行态页面已发布，可在已登录浏览器中打开验收。
 - 数据查询依赖已发布 `businessMetricGateway`，页面不自行计算公式。
 - 未对科迈执行任何写操作。
 
 ## 后续
 
 1. 在已登录浏览器预览桌面与移动布局。
-2. 根据实际观感调整密度、图表和词条。
-3. 确认后执行 `page custom-publish` 发布为 `FORMAL`。
+2. 根据实际观感调整密度、图表和词条，更新后重新发布。
