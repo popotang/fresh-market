@@ -34,6 +34,49 @@ async function loadMetricDefinitions(context) {
   return result.tableData.map(toMetricDefinition);
 }
 
+async function readMetricCache(context, query) {
+  const cacheKey = metricCacheKey(query);
+  try {
+    const model = context.client.models.byTable('metric_values', {dblinkId: 10510});
+    const rows = [];
+    let latestGeneration = null;
+    for (let page = 1; page <= 100; page += 1) {
+      const result = await model.filter({
+        where: {cache_key: {$eq: cacheKey}},
+        orderBy: [{generation: 'desc'}, {id: 'asc'}],
+        currentPage: page,
+        pageSize: 200,
+      });
+      if (!result || !Array.isArray(result.tableData)) return {hit: false, error: 'INVALID_CACHE_RESULT'};
+      if (result.tableData.length === 0) break;
+      if (latestGeneration === null) latestGeneration = Number(result.tableData[0].generation) || 0;
+      const currentGenerationRows = result.tableData.filter(row => (Number(row.generation) || 0) === latestGeneration);
+      rows.push(...currentGenerationRows);
+      if (currentGenerationRows.length !== result.tableData.length || result.tableData.length < 200) break;
+      if (rows.length > 20000) return {hit: false, error: 'CACHE_RESULT_TOO_LARGE'};
+    }
+    const response = restoreMetricCache(query, rows);
+    return response ? {hit: true, response} : {hit: false};
+  } catch (error) {
+    return {hit: false, error: error?.message || 'CACHE_READ_FAILED'};
+  }
+}
+
+async function writeMetricCache(context, query, response) {
+  const cacheKey = metricCacheKey(query);
+  const rows = flattenMetricCache(query, response, cacheKey);
+  if (rows.length > 20000) return {skipped: 'RESULT_TOO_LARGE'};
+  const model = context.client.models.byTable('metric_values', {dblinkId: 10510});
+  for (let offset = 0; offset < rows.length; offset += 200) {
+    await model.batchCreate(rows.slice(offset, offset + 200));
+  }
+  return {
+    calculatedAt: rows[0]?.calculated_at || null,
+    expiresAt: rows[0]?.expires_at || null,
+    storedRows: rows.length,
+  };
+}
+
 export default async function businessMetricGateway(p, context) {
   const input = p && typeof p === 'object' ? p : {};
   const action = String(input.action || '');
@@ -64,6 +107,12 @@ export default async function businessMetricGateway(p, context) {
       {...input, tenantId: input.tenantId || '205149'},
       preCoverage[0] || {},
     ), metricDefinitions);
+    let cacheReadError = null;
+    if (!query.forceRefresh) {
+      const cached = await readMetricCache(context, query);
+      if (cached.hit) return cached.response;
+      cacheReadError = cached.error || null;
+    }
     const jobs = [
       run(SQL_BY_GROUP[query.groupCode], sqlParams(query)),
       run('metricDataCoverage', coverageParams(query)),
@@ -72,7 +121,20 @@ export default async function businessMetricGateway(p, context) {
       jobs.push(run('metricPurchasePerformance', {...sqlParams(query), dimension: 'supplier'}));
     }
     const [rows, coverageRows, supplierRows = []] = await Promise.all(jobs);
-    return buildQueryResult(query, {rows, coverage: coverageRows, supplierRows});
+    const result = buildQueryResult(query, {rows, coverage: coverageRows, supplierRows});
+    result.cache = {hit: false, forced: query.forceRefresh};
+    if (cacheReadError) {
+      result.cache.readError = cacheReadError;
+      result.warnings = [...(result.warnings || []), 'CACHE_READ_FAILED'];
+    }
+    try {
+      const written = await writeMetricCache(context, query, result);
+      result.cache = {...result.cache, ...written};
+    } catch (error) {
+      result.cache.writeError = error?.message || 'CACHE_WRITE_FAILED';
+      result.warnings = [...(result.warnings || []), 'CACHE_WRITE_FAILED'];
+    }
+    return result;
   }
 
   throw new Error('UNSUPPORTED_ACTION');

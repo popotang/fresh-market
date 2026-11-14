@@ -175,6 +175,7 @@ function validateQuery(input = {}, definitions = METRIC_DEFINITIONS) {
     branchId,
     metricCodes: [...new Set(requested)],
     windowDays: days,
+    forceRefresh: input.forceRefresh === true,
   };
 }
 
@@ -445,6 +446,156 @@ function buildQueryResult(query, datasets = {}) {
   };
 }
 
+function cacheHash(text) {
+  let first = 0xdeadbeef;
+  let second = 0x41c6ce57;
+  for (let index = 0; index < text.length; index += 1) {
+    const code = text.charCodeAt(index);
+    first = Math.imul(first ^ code, 2654435761);
+    second = Math.imul(second ^ code, 1597334677);
+  }
+  first = Math.imul(first ^ (first >>> 16), 2246822507);
+  second = Math.imul(second ^ (second >>> 13), 3266489909);
+  const parts = [first, second, first ^ second, (first + second) | 0];
+  return parts.map(value => (value >>> 0).toString(16).padStart(8, '0')).join('').padEnd(64, '0');
+}
+
+function metricCacheKey(query) {
+  return cacheHash(JSON.stringify({
+    definitionVersion: DEFINITION_VERSION,
+    tenantId: query.tenantId,
+    groupCode: query.groupCode,
+    dimension: query.dimension,
+    branchId: query.branchId || '__ALL__',
+    startDate: query.startDate,
+    endDate: query.endDate,
+    metricCodes: [...query.metricCodes].sort(),
+  }));
+}
+
+const decodeJson = (value, fallback) => {
+  if (value == null) return fallback;
+  if (typeof value === 'object') return value;
+  try { return JSON.parse(value); } catch { return fallback; }
+};
+
+const timeValue = value => {
+  if (value instanceof Date) return value.getTime();
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  const text = String(value || '');
+  if (!text) return 0;
+  if (/^\d+(?:\.\d+)?$/.test(text)) return Number(text);
+  const parsed = Date.parse(text.includes('T') ? text : `${text.replace(' ', 'T')}Z`);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const cacheValue = row => {
+  if (row.value_decimal !== null && row.value_decimal !== undefined) return Number(row.value_decimal);
+  return row.value_text ?? null;
+};
+
+function flattenMetricCache(query, response, cacheKey, now = new Date()) {
+  const nowMs = now instanceof Date ? now.getTime() : Number(now);
+  const calculatedAt = nowMs;
+  const expiresAt = nowMs + 10 * 60 * 1000;
+  const meta = {
+    coverage: response.coverage || {},
+    dataAsOf: response.dataAsOf || {},
+    warnings: response.warnings || [],
+    dimensions: response.dimensions || {},
+  };
+  const branchKey = query.branchId || '__ALL__';
+  const makeRow = (metricCode, dimensionKey, dimensionLabel, value, attributes, rowIndex, includeMeta = false) => ({
+    cache_key: cacheKey,
+    generation: calculatedAt,
+    definition_version: DEFINITION_VERSION,
+    group_code: query.groupCode,
+    metric_code: metricCode,
+    dimension: query.dimension,
+    dimension_key: String(dimensionKey),
+    dimension_label: String(dimensionLabel || dimensionKey),
+    branch_key: branchKey,
+    start_date: query.startDate,
+    end_date: query.endDate,
+    value_decimal: typeof value === 'number' && Number.isFinite(value) ? value : null,
+    value_text: typeof value === 'string' ? value : null,
+    attributes_json: attributes,
+    meta_json: includeMeta ? meta : null,
+    row_index: rowIndex,
+    calculated_at: calculatedAt,
+    expires_at: expiresAt,
+  });
+
+  const rows = [];
+  for (const metricCode of query.metricCodes) {
+    rows.push(makeRow(metricCode, '__TOTAL__', '汇总', response.metrics?.[metricCode], {}, 0, true));
+  }
+  const usedKeys = new Set();
+  (response.rows || []).forEach((row, index) => {
+    const rawKey = row.dim_key ?? row.biz_date ?? row.branch_id ?? `__ROW_${index + 1}`;
+    let dimensionKey = String(rawKey);
+    if (usedKeys.has(dimensionKey)) dimensionKey = `${dimensionKey}:${index + 1}`;
+    usedKeys.add(dimensionKey);
+    const dimensionLabel = row.dim_label ?? row.biz_date ?? row.branch_name ?? dimensionKey;
+    const attributes = Object.fromEntries(
+      Object.entries(row).filter(([key]) => !query.metricCodes.includes(key)),
+    );
+    for (const metricCode of query.metricCodes) {
+      rows.push(makeRow(metricCode, dimensionKey, dimensionLabel, row[metricCode], attributes, index + 1));
+    }
+  });
+  return rows;
+}
+
+function restoreMetricCache(query, rows, now = Date.now()) {
+  if (!Array.isArray(rows) || rows.length === 0) return null;
+  const latestGeneration = Math.max(...rows.map(row => Number(row.generation) || 0));
+  const latestRows = rows.filter(row => (Number(row.generation) || 0) === latestGeneration);
+  if (latestRows.some(row => timeValue(row.expires_at) <= now)) return null;
+  const summaries = latestRows.filter(row => row.dimension_key === '__TOTAL__');
+  const expected = new Set(query.metricCodes);
+  if (summaries.length !== expected.size) return null;
+  if (summaries.some(row => !expected.has(row.metric_code))) return null;
+
+  const metrics = {};
+  for (const row of summaries) metrics[row.metric_code] = cacheValue(row);
+  const meta = decodeJson(summaries[0]?.meta_json, {});
+  const dimensions = new Map();
+  for (const row of latestRows) {
+    if (row.dimension_key === '__TOTAL__') continue;
+    const key = `${row.dimension_key}|${row.row_index}`;
+    if (!dimensions.has(key)) {
+      dimensions.set(key, {
+        ...decodeJson(row.attributes_json, {}),
+        dim_key: row.dimension_key,
+        dim_label: row.dimension_label,
+        row_index: Number(row.row_index) || 0,
+      });
+    }
+    dimensions.get(key)[row.metric_code] = cacheValue(row);
+  }
+  const resultRows = [...dimensions.values()]
+    .sort((a, b) => a.row_index - b.row_index)
+    .map(({ row_index, ...row }) => row);
+  return {
+    definitionVersion: DEFINITION_VERSION,
+    groupCode: query.groupCode,
+    dimension: query.dimension,
+    window: { startDate: query.startDate, endDate: query.endDate },
+    dimensions: meta.dimensions || {},
+    rows: resultRows,
+    metrics,
+    coverage: meta.coverage || {},
+    dataAsOf: meta.dataAsOf || {},
+    warnings: meta.warnings || [],
+    cache: {
+      hit: true,
+      calculatedAt: summaries[0]?.calculated_at || null,
+      expiresAt: summaries[0]?.expires_at || null,
+    },
+  };
+}
+
 async function loadMetricDefinitions(context) {
   if (!context.client || !context.client.models) throw new Error('MISSING_MODEL_CONTEXT');
   const result = await context.client.models.byTable('metric_definitions', {dblinkId: 10510}).filter({
@@ -459,6 +610,49 @@ async function loadMetricDefinitions(context) {
   if (total !== result.tableData.length) throw new Error('INCOMPLETE_METRIC_CATALOG');
   if (result.tableData.length === 0) throw new Error('METRIC_DEFINITIONS_EMPTY');
   return result.tableData.map(toMetricDefinition);
+}
+
+async function readMetricCache(context, query) {
+  const cacheKey = metricCacheKey(query);
+  try {
+    const model = context.client.models.byTable('metric_values', {dblinkId: 10510});
+    const rows = [];
+    let latestGeneration = null;
+    for (let page = 1; page <= 100; page += 1) {
+      const result = await model.filter({
+        where: {cache_key: {$eq: cacheKey}},
+        orderBy: [{generation: 'desc'}, {id: 'asc'}],
+        currentPage: page,
+        pageSize: 200,
+      });
+      if (!result || !Array.isArray(result.tableData)) return {hit: false, error: 'INVALID_CACHE_RESULT'};
+      if (result.tableData.length === 0) break;
+      if (latestGeneration === null) latestGeneration = Number(result.tableData[0].generation) || 0;
+      const currentGenerationRows = result.tableData.filter(row => (Number(row.generation) || 0) === latestGeneration);
+      rows.push(...currentGenerationRows);
+      if (currentGenerationRows.length !== result.tableData.length || result.tableData.length < 200) break;
+      if (rows.length > 20000) return {hit: false, error: 'CACHE_RESULT_TOO_LARGE'};
+    }
+    const response = restoreMetricCache(query, rows);
+    return response ? {hit: true, response} : {hit: false};
+  } catch (error) {
+    return {hit: false, error: error?.message || 'CACHE_READ_FAILED'};
+  }
+}
+
+async function writeMetricCache(context, query, response) {
+  const cacheKey = metricCacheKey(query);
+  const rows = flattenMetricCache(query, response, cacheKey);
+  if (rows.length > 20000) return {skipped: 'RESULT_TOO_LARGE'};
+  const model = context.client.models.byTable('metric_values', {dblinkId: 10510});
+  for (let offset = 0; offset < rows.length; offset += 200) {
+    await model.batchCreate(rows.slice(offset, offset + 200));
+  }
+  return {
+    calculatedAt: rows[0]?.calculated_at || null,
+    expiresAt: rows[0]?.expires_at || null,
+    storedRows: rows.length,
+  };
 }
 
 export default async function businessMetricGateway(p, context) {
@@ -491,6 +685,12 @@ export default async function businessMetricGateway(p, context) {
       {...input, tenantId: input.tenantId || '205149'},
       preCoverage[0] || {},
     ), metricDefinitions);
+    let cacheReadError = null;
+    if (!query.forceRefresh) {
+      const cached = await readMetricCache(context, query);
+      if (cached.hit) return cached.response;
+      cacheReadError = cached.error || null;
+    }
     const jobs = [
       run(SQL_BY_GROUP[query.groupCode], sqlParams(query)),
       run('metricDataCoverage', coverageParams(query)),
@@ -499,7 +699,20 @@ export default async function businessMetricGateway(p, context) {
       jobs.push(run('metricPurchasePerformance', {...sqlParams(query), dimension: 'supplier'}));
     }
     const [rows, coverageRows, supplierRows = []] = await Promise.all(jobs);
-    return buildQueryResult(query, {rows, coverage: coverageRows, supplierRows});
+    const result = buildQueryResult(query, {rows, coverage: coverageRows, supplierRows});
+    result.cache = {hit: false, forced: query.forceRefresh};
+    if (cacheReadError) {
+      result.cache.readError = cacheReadError;
+      result.warnings = [...(result.warnings || []), 'CACHE_READ_FAILED'];
+    }
+    try {
+      const written = await writeMetricCache(context, query, result);
+      result.cache = {...result.cache, ...written};
+    } catch (error) {
+      result.cache.writeError = error?.message || 'CACHE_WRITE_FAILED';
+      result.warnings = [...(result.warnings || []), 'CACHE_WRITE_FAILED'];
+    }
+    return result;
   }
 
   throw new Error('UNSUPPORTED_ACTION');

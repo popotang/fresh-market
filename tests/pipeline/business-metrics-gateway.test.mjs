@@ -20,21 +20,66 @@ const defaultMetricRows = METRIC_DEFINITIONS.map((metric, index) => ({
   sort_order: index + 1,
 }));
 
-const makeClient = (handler, metricRows = defaultMetricRows) => ({
-  models: {
-    byTable(name) {
-      if (name !== 'metric_definitions') throw new Error(`Unexpected model ${name}`);
-      return {
-        filter: async () => ({ tableData: metricRows, paging: { totalCount: metricRows.length } }),
-      };
+const makeClient = (handler, metricRows = defaultMetricRows) => {
+  const cacheRows = [];
+  const client = {
+    models: {
+      byTable(name) {
+        if (name === 'metric_definitions') {
+          return {
+            filter: async () => ({ tableData: metricRows, paging: { totalCount: metricRows.length } }),
+          };
+        }
+        if (name === 'metric_values') {
+          return {
+            filter: async ({ where = {}, currentPage = 1, pageSize = 200 }) => {
+              const key = where.cache_key?.$eq;
+              const matched = key ? cacheRows.filter(row => row.cache_key === key) : cacheRows;
+              matched.sort((a, b) => ((Number(b.generation) || 0) - (Number(a.generation) || 0)) || (a.id - b.id));
+              const effectiveSize = Math.min(pageSize, 200);
+              const start = (currentPage - 1) * effectiveSize;
+              const tableData = matched.slice(start, start + effectiveSize);
+              return { tableData, paging: { totalCount: matched.length, currentPage, pageSize: effectiveSize } };
+            },
+            delete: async ({ id }) => {
+              const index = cacheRows.findIndex(row => row.id === id);
+              if (index >= 0) cacheRows.splice(index, 1);
+              return id;
+            },
+            batchCreate: async (rows) => {
+              for (const row of rows) {
+                cacheRows.push({ ...row, id: cacheRows.length + 1 });
+              }
+              return rows.map(row => row.cache_key);
+            },
+          };
+        }
+        throw new Error(`Unexpected model ${name}`);
+      },
     },
-  },
-  sql: {
-    byName(name) {
-      return { execute: async ({ params }) => handler(name, params) };
+    sql: {
+      byName(name) {
+        return {
+          execute: async ({ params }) => {
+            if (name === 'metricCacheDelete') {
+              const key = params.cacheKey;
+              for (let index = cacheRows.length - 1; index >= 0; index -= 1) {
+                if (cacheRows[index].cache_key === key) cacheRows.splice(index, 1);
+              }
+              return [];
+            }
+            return handler(name, params);
+          },
+        };
+      },
     },
-  },
-});
+    db: {
+      transaction: async action => action(client),
+    },
+    __cacheRows: cacheRows,
+  };
+  return client;
+};
 
 test('catalog reads metric definitions from the table and maps database fields', async () => {
   const client = makeClient(() => {
@@ -161,4 +206,129 @@ test('health returns coverage without querying a group SQL', async () => {
   assert.equal(result.definitionVersion, 'retail-metrics-v1.0.0');
   assert.equal(result.coverage.promotion_link_rate, 0.8);
   assert.ok(result.warnings.includes('PAYMENT_FACTS_INSUFFICIENT'));
+});
+
+const cachedRetailHandler = (calls) => (name) => {
+  calls.push(name);
+  if (name === 'metricRetailPerformance') {
+    return [{
+      dim_key: '69028303',
+      gross_sales_amount: 100,
+      refund_amount: 10,
+      net_sales_amount: 90,
+      gross_quantity: 10,
+      net_quantity: 9,
+      order_count: 4,
+      sales_order_count: 3,
+      original_sales_amount: 120,
+      member_net_sales_amount: 45,
+      member_gross_sales_amount: 50,
+      member_sales_order_count: 2,
+      sales_with_cost: 60,
+      estimated_gross_profit: 12,
+    }];
+  }
+  return [{ latest_biz_date: '2026-11-07', net_sales_amount: 90, sales_with_cost: 60 }];
+};
+
+test('query cache is written then hit without re-running group SQL', async () => {
+  const calls = [];
+  const client = makeClient(cachedRetailHandler(calls));
+  const params = {
+    action: 'query', groupCode: 'retail_performance',
+    startDate: '2026-11-01', endDate: '2026-11-07',
+    dimension: 'branch', metricCodes: ['net_sales_amount', 'avg_order_value'],
+  };
+  const first = await gateway(params, { client });
+  assert.equal(first.cache.hit, false);
+  assert.ok(client.__cacheRows.length > 0);
+  assert.equal(typeof client.__cacheRows[0].calculated_at, 'number');
+  assert.equal(typeof client.__cacheRows[0].expires_at, 'number');
+  const groupCalls = calls.filter(name => name === 'metricRetailPerformance').length;
+  const second = await gateway(params, { client });
+  assert.equal(second.cache.hit, true);
+  assert.equal(calls.filter(name => name === 'metricRetailPerformance').length, groupCalls);
+  assert.equal(second.metrics.net_sales_amount, 90);
+});
+
+test('expired cache recomputes and refreshes stored values', async () => {
+  const calls = [];
+  const client = makeClient(cachedRetailHandler(calls));
+  const params = {
+    action: 'query', groupCode: 'retail_performance',
+    startDate: '2026-11-01', endDate: '2026-11-07', dimension: 'branch',
+  };
+  await gateway(params, { client });
+  const before = client.__cacheRows.length;
+  for (const row of client.__cacheRows) row.expires_at = '2000-01-01 00:00:00';
+  const second = await gateway(params, { client });
+  assert.equal(second.cache.hit, false);
+  assert.equal(calls.filter(name => name === 'metricRetailPerformance').length, 2);
+  assert.ok(client.__cacheRows.length > before, 'recompute must append a new generation without deleting the old one');
+});
+
+test('cache keys isolate branches and metric selections', async () => {
+  const calls = [];
+  const client = makeClient(cachedRetailHandler(calls));
+  const base = {
+    action: 'query', groupCode: 'retail_performance',
+    startDate: '2026-11-01', endDate: '2026-11-07', dimension: 'branch',
+  };
+  await gateway({ ...base, branchId: '69028303' }, { client });
+  const firstKeys = new Set(client.__cacheRows.map(row => row.cache_key));
+  await gateway({ ...base, branchId: 'another-branch' }, { client });
+  const secondKeys = new Set(client.__cacheRows.map(row => row.cache_key));
+  assert.equal(firstKeys.size, 1);
+  assert.equal(secondKeys.size, 2);
+  assert.notDeepEqual(firstKeys, secondKeys);
+  await gateway({ ...base, metricCodes: ['net_sales_amount'] }, { client });
+  assert.equal(new Set(client.__cacheRows.map(row => row.cache_key)).size, 3);
+});
+
+test('epoch-millisecond expiry from MySQL is treated as fresh cache', async () => {
+  const calls = [];
+  const client = makeClient(cachedRetailHandler(calls));
+  const params = {
+    action: 'query', groupCode: 'retail_performance',
+    startDate: '2026-11-01', endDate: '2026-11-07', dimension: 'branch',
+  };
+  await gateway(params, { client });
+  for (const row of client.__cacheRows) row.expires_at = String(Date.now() + 600000);
+  const second = await gateway(params, { client });
+  assert.equal(second.cache.hit, true);
+});
+
+test('cache hit works when the cached result spans multiple pages', async () => {
+  const calls = [];
+  const client = makeClient((name) => {
+    calls.push(name);
+    if (name === 'metricRetailPerformance') {
+      return Array.from({ length: 150 }, (_, index) => ({
+        dim_key: `item-${index}`,
+        gross_sales_amount: 100,
+        refund_amount: 0,
+        net_sales_amount: 100,
+        gross_quantity: 1,
+        net_quantity: 1,
+        order_count: 1,
+        sales_order_count: 1,
+        original_sales_amount: 100,
+        member_net_sales_amount: 0,
+        member_gross_sales_amount: 0,
+        member_sales_order_count: 0,
+        sales_with_cost: 0,
+        estimated_gross_profit: 0,
+      }));
+    }
+    return [{ latest_biz_date: '2026-11-07' }];
+  });
+  const params = {
+    action: 'query', groupCode: 'retail_performance',
+    startDate: '2026-11-01', endDate: '2026-11-07', dimension: 'item',
+  };
+  await gateway(params, { client });
+  assert.ok(client.__cacheRows.length > 200);
+  const second = await gateway(params, { client });
+  assert.equal(second.cache.hit, true);
+  assert.equal(calls.filter(name => name === 'metricRetailPerformance').length, 1);
 });

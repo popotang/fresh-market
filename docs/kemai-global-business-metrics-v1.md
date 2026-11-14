@@ -254,6 +254,15 @@ SQL 只返回基础度量和分母；比率由 BFF 统一派生。销售和覆�
 }
 ```
 
+### 9.4 指标值缓存
+
+- 表：`metric_values`，数据集：`指标值缓存`，datasetCode `3d4393d0ed434bd49666df8211e4f8b7`。
+- 缓存 10 分钟；`cache_key` 同时隔离口径版本、租户、指标域、维度、门店、日期和指标集合。
+- 每次重算写入新 `generation`，读取只取最新完整世代；`forceRefresh=true` 强制重算。
+- 同时保存汇总指标与查询行，避免图表仍重复查询 SQL；NULL 表示不可计算，不等同缓存缺失。
+- 响应包含 `cache.hit / calculatedAt / expiresAt / storedRows`，写入失败不会伪装为完整缓存。
+- 该表是可重算缓存，不是历史审计快照。实现与验证记录见 `docs/kemai-metric-values-cache-2026-11-14.md`。
+
 ## 10. 2026-11-14 验收结果
 
 以 2026-11-01 至 2026-11-07 全门店窗口验收：
