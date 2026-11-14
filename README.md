@@ -22,7 +22,6 @@ Fresh Market 将科迈云帆的只读数据同步到 Lovrabet 自有数据中心
 | `fresh-market-web/` | Lovrabet React 微前端 |
 | `sync-status-page/` | 同步状态页的独立前端 |
 | `db/` | DDL 和一次性迁移；业务行不通过 SQL 写入 |
-| `legacy/` | 旧实现和迁移核对脚本，默认禁用 |
 | `tests/` | Python 离线测试和 Node 网关测试 |
 | `docs/` | 当前文档、参考资料和历史归档 |
 | `.runtime/` | 本机状态、日志、锁和 PID（私有） |
@@ -50,4 +49,4 @@ python3 scripts/build_business_metric_gateway.py
 python3 scripts/verify_business_metrics.py
 ```
 
-需要访问源站或写入自有数据中心时，必须按 [`docs/OPERATIONS.md`](docs/OPERATIONS.md) 先做范围、预算、锁和回读检查。不要启动旧 `legacy/` supervisor，也不要把历史日期文档当成当前状态。
+需要访问源站或写入自有数据中心时，必须按 [`docs/OPERATIONS.md`](docs/OPERATIONS.md) 先做范围、预算、锁和回读检查。不要把历史日期文档当成当前状态；旧 MySQL 写入器与采集脚本已删除，需要对照时从 git 历史读取。

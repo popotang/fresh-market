@@ -33,7 +33,7 @@ flowchart LR
 | 控制面 | `acceptance.json`、`capabilities.py`、`state.py` | 流能力、放行白名单、状态和缺口 | 不因适配器存在就宣称验收完成 |
 | 业务指标 | `.rabetbase/sql/...`、`businessMetricGateway.js`、`docs/kemai-global-business-metrics-v1.md` | 统一指标、覆盖伴随信息、只读查询 | 不自行改公式或把估算毛利当财务毛利 |
 | 展示 | `fresh-market-web/`、`sync-status-page/` | 只读看板、同步状态和业务分析 | 不向科迈发请求或写业务数据 |
-| 旧实现 | `legacy/`、`docs/legacy/` | 历史迁移、受控核对 | 默认禁用；不得与新写入体系并发 |
+| 历史证据 | `docs/legacy/`、`.local-audits/` | 历史迁移、受控核对 | 旧 `legacy/` 代码已删除，仅从 git 历史对照；不得与新写入体系并发 |
 
 ## 3. 数据流与一致性
 
