@@ -52,6 +52,8 @@ async function readMetricCache(context, query) {
       if (latestGeneration === null) latestGeneration = Number(result.tableData[0].generation) || 0;
       const currentGenerationRows = result.tableData.filter(row => (Number(row.generation) || 0) === latestGeneration);
       rows.push(...currentGenerationRows);
+      const candidate = restoreMetricCache(query, rows);
+      if (candidate) return {hit: true, response: candidate};
       if (currentGenerationRows.length !== result.tableData.length || result.tableData.length < 200) break;
       if (rows.length > 20000) return {hit: false, error: 'CACHE_RESULT_TOO_LARGE'};
     }
@@ -93,8 +95,31 @@ export default async function businessMetricGateway(p, context) {
   };
 
   if (action === 'health') {
+    const query = {
+      tenantId: String(input.tenantId || '205149'),
+      groupCode: 'data_coverage',
+      dimension: 'health',
+      branchId: input.branchId || null,
+      startDate: input.startDate || '1970-01-01',
+      endDate: input.endDate || '2999-12-31',
+      metricCodes: ['__health__'],
+      forceRefresh: input.forceRefresh === true,
+    };
+    if (!query.forceRefresh) {
+      const cached = await readMetricCache(context, query);
+      if (cached.hit) return cached.response;
+    }
     const coverage = await run('metricDataCoverage', coverageParams(input));
-    return buildHealthResult(coverage);
+    const result = buildHealthResult(coverage);
+    result.cache = {hit: false, forced: query.forceRefresh};
+    try {
+      const written = await writeMetricCache(context, query, result);
+      result.cache = {...result.cache, ...written};
+    } catch (error) {
+      result.cache.writeError = error?.message || 'CACHE_WRITE_FAILED';
+      result.warnings = [...(result.warnings || []), 'CACHE_WRITE_FAILED'];
+    }
+    return result;
   }
 
   if (action === 'query') {

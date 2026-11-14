@@ -519,7 +519,9 @@ export function flattenMetricCache(query, response, cacheKey, now = new Date()) 
     expires_at: expiresAt,
   });
 
-  const rows = [];
+  const rows = [
+    makeRow('__PAYLOAD__', '__TOTAL__', '完整响应', null, response, 0, true),
+  ];
   for (const metricCode of query.metricCodes) {
     rows.push(makeRow(metricCode, '__TOTAL__', '汇总', response.metrics?.[metricCode], {}, 0, true));
   }
@@ -545,7 +547,21 @@ export function restoreMetricCache(query, rows, now = Date.now()) {
   const latestGeneration = Math.max(...rows.map(row => Number(row.generation) || 0));
   const latestRows = rows.filter(row => (Number(row.generation) || 0) === latestGeneration);
   if (latestRows.some(row => timeValue(row.expires_at) <= now)) return null;
-  const summaries = latestRows.filter(row => row.dimension_key === '__TOTAL__');
+  const payloadRow = latestRows.find(row => row.metric_code === '__PAYLOAD__');
+  if (payloadRow) {
+    const payload = decodeJson(payloadRow.attributes_json, null);
+    if (payload && typeof payload === 'object') {
+      return {
+        ...payload,
+        cache: {
+          hit: true,
+          calculatedAt: payloadRow.calculated_at || null,
+          expiresAt: payloadRow.expires_at || null,
+        },
+      };
+    }
+  }
+  const summaries = latestRows.filter(row => row.dimension_key === '__TOTAL__' && row.metric_code !== '__PAYLOAD__');
   const expected = new Set(query.metricCodes);
   if (summaries.length !== expected.size) return null;
   if (summaries.some(row => !expected.has(row.metric_code))) return null;

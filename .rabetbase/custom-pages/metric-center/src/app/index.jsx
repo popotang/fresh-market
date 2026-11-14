@@ -23,6 +23,7 @@ import MetricDrawer from "../components/MetricDrawer";
 import MetricTable from "../components/MetricTable";
 import { locales } from "../locales";
 import { formatCurrency, formatNumber, formatPercent } from "../lib/format";
+import { createSessionCache } from "../lib/sessionCache";
 import "./index.css";
 
 const { RangePicker } = DatePicker;
@@ -139,6 +140,15 @@ const AppContent = () => {
 
   const cacheRef = useRef({});
   const inflightRef = useRef({});
+  const sessionCache = useMemo(
+    () =>
+      createSessionCache({
+        storage: typeof window === "undefined" ? null : window.sessionStorage,
+        prefix: "metric-center",
+        ttlMs: 10 * 60 * 1000,
+      }),
+    [],
+  );
 
   const callGateway = useCallback(
     (params) =>
@@ -152,23 +162,43 @@ const AppContent = () => {
   useEffect(() => {
     let alive = true;
     const initialize = async () => {
-      const results = await Promise.allSettled([
-        callGateway({ action: "catalog" }),
-        callGateway({ action: "health" }),
-      ]);
-      if (!alive) return;
-      const [catalogResult, healthResult] = results;
-      if (catalogResult.status === "fulfilled") setCatalog(catalogResult.value);
-      else setInitError(true);
-      let end = dayjs();
-      if (healthResult.status === "fulfilled") {
-        const health = healthResult.value;
-        setCoverage(health.coverage || null);
-        setWarnings(health.warnings || []);
-        if (health.coverage?.latest_biz_date) end = dayjs(health.coverage.latest_biz_date);
-      } else {
-        setInitError(true);
+      const cachedCatalog = sessionCache.read("catalog");
+      const cachedHealth = sessionCache.read("health");
+      if (cachedCatalog) setCatalog(cachedCatalog);
+      if (cachedHealth) {
+        setCoverage(cachedHealth.coverage || null);
+        setWarnings(cachedHealth.warnings || []);
       }
+      for (const key of sessionCache.keys()) {
+        if (!key.startsWith("query:")) continue;
+        const cached = sessionCache.read(key);
+        if (cached) cacheRef.current[key.slice("query:".length)] = cached;
+      }
+
+      const jobs = [];
+      if (!cachedCatalog) jobs.push(["catalog", callGateway({ action: "catalog" })]);
+      if (!cachedHealth) jobs.push(["health", callGateway({ action: "health" })]);
+      const results = await Promise.allSettled(jobs.map(([, task]) => task));
+      if (!alive) return;
+      let effectiveHealth = cachedHealth;
+      results.forEach((result, index) => {
+        const [name] = jobs[index];
+        if (result.status === "fulfilled") {
+          if (name === "catalog") {
+            setCatalog(result.value);
+            sessionCache.write("catalog", result.value);
+          } else {
+            effectiveHealth = result.value;
+            setCoverage(result.value.coverage || null);
+            setWarnings(result.value.warnings || []);
+            sessionCache.write("health", result.value);
+          }
+        } else {
+          setInitError(true);
+        }
+      });
+
+      const end = dayjs(effectiveHealth?.coverage?.latest_biz_date || undefined);
       setLatestDate(end.format("YYYY-MM-DD"));
       setDates([end.subtract(6, "day"), end]);
     };
@@ -176,7 +206,7 @@ const AppContent = () => {
     return () => {
       alive = false;
     };
-  }, [callGateway, initToken]);
+  }, [callGateway, initToken, sessionCache]);
 
   const startDate = dates?.[0]?.format("YYYY-MM-DD") || "";
   const endDate = dates?.[1]?.format("YYYY-MM-DD") || "";
@@ -208,6 +238,7 @@ const AppContent = () => {
       })
         .then((result) => {
           cacheRef.current[key] = result;
+          sessionCache.write(`query:${key}`, result);
           setCoverage(result.coverage || null);
           setWarnings(result.warnings || []);
           if (group === "retail_performance" && dimension === "branch") {
@@ -236,7 +267,7 @@ const AppContent = () => {
       inflightRef.current[key] = task;
       return task;
     },
-    [branchId, callGateway, endDate, scopeKey, startDate],
+    [branchId, callGateway, endDate, scopeKey, sessionCache, startDate],
   );
 
   const getResult = useCallback(
@@ -284,6 +315,7 @@ const AppContent = () => {
   };
 
   const handleRefresh = () => {
+    sessionCache.clear();
     cacheRef.current = {};
     inflightRef.current = {};
     setErrors({});
@@ -923,6 +955,7 @@ const AppContent = () => {
         <ErrorBlock
           $t={$t}
           onRetry={() => {
+            sessionCache.clear();
             setInitError(false);
             setInitToken((value) => value + 1);
           }}

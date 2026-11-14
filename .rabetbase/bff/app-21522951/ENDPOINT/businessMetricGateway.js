@@ -526,7 +526,9 @@ function flattenMetricCache(query, response, cacheKey, now = new Date()) {
     expires_at: expiresAt,
   });
 
-  const rows = [];
+  const rows = [
+    makeRow('__PAYLOAD__', '__TOTAL__', '完整响应', null, response, 0, true),
+  ];
   for (const metricCode of query.metricCodes) {
     rows.push(makeRow(metricCode, '__TOTAL__', '汇总', response.metrics?.[metricCode], {}, 0, true));
   }
@@ -552,7 +554,21 @@ function restoreMetricCache(query, rows, now = Date.now()) {
   const latestGeneration = Math.max(...rows.map(row => Number(row.generation) || 0));
   const latestRows = rows.filter(row => (Number(row.generation) || 0) === latestGeneration);
   if (latestRows.some(row => timeValue(row.expires_at) <= now)) return null;
-  const summaries = latestRows.filter(row => row.dimension_key === '__TOTAL__');
+  const payloadRow = latestRows.find(row => row.metric_code === '__PAYLOAD__');
+  if (payloadRow) {
+    const payload = decodeJson(payloadRow.attributes_json, null);
+    if (payload && typeof payload === 'object') {
+      return {
+        ...payload,
+        cache: {
+          hit: true,
+          calculatedAt: payloadRow.calculated_at || null,
+          expiresAt: payloadRow.expires_at || null,
+        },
+      };
+    }
+  }
+  const summaries = latestRows.filter(row => row.dimension_key === '__TOTAL__' && row.metric_code !== '__PAYLOAD__');
   const expected = new Set(query.metricCodes);
   if (summaries.length !== expected.size) return null;
   if (summaries.some(row => !expected.has(row.metric_code))) return null;
@@ -630,6 +646,8 @@ async function readMetricCache(context, query) {
       if (latestGeneration === null) latestGeneration = Number(result.tableData[0].generation) || 0;
       const currentGenerationRows = result.tableData.filter(row => (Number(row.generation) || 0) === latestGeneration);
       rows.push(...currentGenerationRows);
+      const candidate = restoreMetricCache(query, rows);
+      if (candidate) return {hit: true, response: candidate};
       if (currentGenerationRows.length !== result.tableData.length || result.tableData.length < 200) break;
       if (rows.length > 20000) return {hit: false, error: 'CACHE_RESULT_TOO_LARGE'};
     }
@@ -671,8 +689,31 @@ export default async function businessMetricGateway(p, context) {
   };
 
   if (action === 'health') {
+    const query = {
+      tenantId: String(input.tenantId || '205149'),
+      groupCode: 'data_coverage',
+      dimension: 'health',
+      branchId: input.branchId || null,
+      startDate: input.startDate || '1970-01-01',
+      endDate: input.endDate || '2999-12-31',
+      metricCodes: ['__health__'],
+      forceRefresh: input.forceRefresh === true,
+    };
+    if (!query.forceRefresh) {
+      const cached = await readMetricCache(context, query);
+      if (cached.hit) return cached.response;
+    }
     const coverage = await run('metricDataCoverage', coverageParams(input));
-    return buildHealthResult(coverage);
+    const result = buildHealthResult(coverage);
+    result.cache = {hit: false, forced: query.forceRefresh};
+    try {
+      const written = await writeMetricCache(context, query, result);
+      result.cache = {...result.cache, ...written};
+    } catch (error) {
+      result.cache.writeError = error?.message || 'CACHE_WRITE_FAILED';
+      result.warnings = [...(result.warnings || []), 'CACHE_WRITE_FAILED'];
+    }
+    return result;
   }
 
   if (action === 'query') {

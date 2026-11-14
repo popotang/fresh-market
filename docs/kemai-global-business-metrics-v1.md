@@ -261,7 +261,10 @@ SQL 只返回基础度量和分母；比率由 BFF 统一派生。销售和覆�
 - 每次重算写入新 `generation`，读取只取最新完整世代；`forceRefresh=true` 强制重算。
 - 同时保存汇总指标与查询行，避免图表仍重复查询 SQL；NULL 表示不可计算，不等同缓存缺失。
 - 响应包含 `cache.hit / calculatedAt / expiresAt / storedRows`，写入失败不会伪装为完整缓存。
-- 该表是可重算缓存，不是历史审计快照。实现与验证记录见 `docs/kemai-metric-values-cache-2026-11-14.md`。
+- `health` 也使用同一 10 分钟缓存，避免首屏覆盖查询成为固定等待。
+- 每个计算世代额外保存 `__PAYLOAD__` 完整响应行，命中时优先返回，避免逐页重组大结果集。
+- 页面另用 `sessionStorage` 做 10 分钟会话缓存，重复进入直接渲染；手动刷新清空并强制重算。
+- 该表是可重算缓存，不是历史审计快照。实现与验证记录见 `docs/kemai-metric-values-cache-2026-11-14.md` 与 `docs/kemai-metric-center-performance-2026-11-14.md`。
 
 ## 10. 2026-11-14 验收结果
 

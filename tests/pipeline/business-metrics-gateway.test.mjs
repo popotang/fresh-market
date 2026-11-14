@@ -22,6 +22,7 @@ const defaultMetricRows = METRIC_DEFINITIONS.map((metric, index) => ({
 
 const makeClient = (handler, metricRows = defaultMetricRows) => {
   const cacheRows = [];
+  const filterCalls = [];
   const client = {
     models: {
       byTable(name) {
@@ -33,6 +34,7 @@ const makeClient = (handler, metricRows = defaultMetricRows) => {
         if (name === 'metric_values') {
           return {
             filter: async ({ where = {}, currentPage = 1, pageSize = 200 }) => {
+              filterCalls.push({ name, currentPage, pageSize });
               const key = where.cache_key?.$eq;
               const matched = key ? cacheRows.filter(row => row.cache_key === key) : cacheRows;
               matched.sort((a, b) => ((Number(b.generation) || 0) - (Number(a.generation) || 0)) || (a.id - b.id));
@@ -77,6 +79,7 @@ const makeClient = (handler, metricRows = defaultMetricRows) => {
       transaction: async action => action(client),
     },
     __cacheRows: cacheRows,
+    __filterCalls: filterCalls,
   };
   return client;
 };
@@ -328,7 +331,22 @@ test('cache hit works when the cached result spans multiple pages', async () => 
   };
   await gateway(params, { client });
   assert.ok(client.__cacheRows.length > 200);
+  client.__filterCalls.length = 0;
   const second = await gateway(params, { client });
   assert.equal(second.cache.hit, true);
   assert.equal(calls.filter(name => name === 'metricRetailPerformance').length, 1);
+  assert.equal(client.__filterCalls.filter(call => call.name === 'metric_values').length, 1);
+});
+
+test('health reuses cached coverage within the TTL', async () => {
+  const calls = [];
+  const client = makeClient((name) => {
+    calls.push(name);
+    return [{ latest_biz_date: '2026-11-09', payment_fact_count: 2 }];
+  });
+  const first = await gateway({ action: 'health' }, { client });
+  assert.equal(first.cache.hit, false);
+  const second = await gateway({ action: 'health' }, { client });
+  assert.equal(second.cache.hit, true);
+  assert.equal(calls.filter(name => name === 'metricDataCoverage').length, 1);
 });
