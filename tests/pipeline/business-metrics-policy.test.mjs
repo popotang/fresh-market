@@ -8,6 +8,7 @@ import {
   deriveInventoryRows,
   derivePurchaseRows,
   deriveMarketingRows,
+  buildQueryResult,
 } from '../../kemai_pipeline/js/business_metrics.mjs';
 
 test('definition version and metric codes are stable and unique', () => {
@@ -133,4 +134,28 @@ test('marketing keeps marketing discount separate from net sales', () => {
   assert.equal(row.marketing_discount_rate, 0.1);
   assert.equal(row.marketing_sales_share, 0.45);
   assert.equal(row.promotion_link_rate, 0.75);
+});
+
+test('inventory group totals use the catalog metric codes for risk counts', () => {
+  const result = buildQueryResult({
+    groupCode: 'inventory_health',
+    dimension: 'branch',
+    startDate: '2026-11-01',
+    endDate: '2026-11-07',
+    metricCodes: [
+      'stock_qty', 'stock_value', 'days_cover_7d', 'stockout_sku_count',
+      'low_stock_sku_count', 'overstock_sku_count', 'slow_sku_count',
+      'snapshot_sku_count', 'sold_sku_snapshot_coverage',
+      'snapshot_sales_coverage', 'snapshot_age_hours',
+    ],
+  }, {
+    rows: [
+      { stock_qty: 4, sold_qty_7d: 14, stock_value: 20 },
+      { stock_qty: 100, sold_qty_7d: 7, stock_value: 200 },
+    ],
+    coverage: [{ snapshot_sku_count: 2, sold_sku_count: 2, covered_sold_sku_count: 2, sold_sales_amount: 100, covered_sales_amount: 80 }],
+  });
+  assert.equal(result.metrics.low_stock_sku_count, 1);
+  assert.equal(result.metrics.overstock_sku_count, 1);
+  assert.equal(result.metrics.stockout_sku_count, 0);
 });

@@ -305,8 +305,14 @@ const aggregateInventory = (rows, coverage) => {
   total.snapshot_sales_coverage = coverage.snapshot_sales_coverage ?? null;
   total.snapshot_age_hours = coverage.snapshot_age_hours ?? null;
   total.days_cover_7d = total.sold_qty_7d > 0 ? total.stock_qty / (total.sold_qty_7d / 7) : null;
-  for (const risk of ['stockout', 'low', 'overstock', 'slow']) {
-    total[`${risk}_sku_count`] = rows.filter(row => row.risk_level === risk).length;
+  const riskMetric = {
+    stockout: 'stockout_sku_count',
+    low: 'low_stock_sku_count',
+    overstock: 'overstock_sku_count',
+    slow: 'slow_sku_count',
+  };
+  for (const [risk, metricCode] of Object.entries(riskMetric)) {
+    total[metricCode] = rows.filter(row => row.risk_level === risk).length;
   }
   return total;
 };
