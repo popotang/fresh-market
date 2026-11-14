@@ -378,6 +378,46 @@ const createProductOption = (rows, $t, token) => {
   };
 };
 
+const StoreOpsSkeleton = ({ label }) => (
+  <div className="ops-skeleton" aria-busy="true" aria-label={label}>
+    <section className="ops-actions">
+      <Skeleton active title={{ width: 180 }} paragraph={{ rows: 1, width: ["72%"] }} />
+    </section>
+    <section className="ops-kpis">
+      {[0, 1, 2, 3, 4, 5].map((item) => (
+        <Card className="ops-kpi" key={item}>
+          <Skeleton
+            active
+            title={{ width: "52%" }}
+            paragraph={{ rows: 2, width: ["84%", "46%"] }}
+          />
+        </Card>
+      ))}
+    </section>
+    <section className="ops-grid">
+      <Card className="ops-card ops-span-2">
+        <div className="ops-skeleton__chart">
+          <Skeleton active title={{ width: "32%" }} paragraph={{ rows: 6 }} />
+        </div>
+      </Card>
+      {[0, 1].map((item) => (
+        <Card className="ops-card" key={item}>
+          <div className="ops-skeleton__chart ops-skeleton__chart--normal">
+            <Skeleton active title={{ width: "48%" }} paragraph={{ rows: 5 }} />
+          </div>
+        </Card>
+      ))}
+      {[0, 1].map((item) => (
+        <Card className="ops-card ops-span-2" key={`wide-${item}`}>
+          <div className="ops-skeleton__chart ops-skeleton__chart--normal">
+            <Skeleton active title={{ width: "40%" }} paragraph={{ rows: 5 }} />
+          </div>
+        </Card>
+      ))}
+    </section>
+  </div>
+);
+
 const StoreOps = () => {
   const client = useSdkClient();
   const $i18n = useI18n();
@@ -482,7 +522,12 @@ const StoreOps = () => {
         const prevStart =
           mode === "week" ? prevEnd.subtract(span, "day") : prevEnd;
 
-        const [prevRes, currentRes] = await Promise.all([
+        const dayParams = { startDate, endDate };
+        const stockParams = {
+          startDate: end.subtract(STOCK_WINDOW_DAYS - 1, "day").format("YYYY-MM-DD"),
+          endDate,
+        };
+        const dailyPromise = Promise.all([
           client.sql.execute({
             sqlCode: SQL_DAILY,
             params: {
@@ -492,6 +537,28 @@ const StoreOps = () => {
           }),
           client.sql.execute({ sqlCode: SQL_DAILY, params: { startDate, endDate } }),
         ]);
+        const extrasPromise = Promise.all([
+          client.sql.execute({
+            sqlCode: SQL_BREAKDOWN,
+            params: { ...dayParams, dimension: "hour" },
+          }),
+          client.sql.execute({
+            sqlCode: SQL_BREAKDOWN,
+            params: { ...dayParams, dimension: "cashier" },
+          }),
+          client.sql.execute({
+            sqlCode: SQL_BREAKDOWN,
+            params: { ...dayParams, dimension: "category" },
+          }),
+          client.sql.execute({
+            sqlCode: SQL_BREAKDOWN,
+            params: { ...dayParams, dimension: "item" },
+          }),
+          client.sql.execute({ sqlCode: SQL_STOCK, params: stockParams }),
+        ]);
+        extrasPromise.catch(() => {});
+
+        const [prevRes, currentRes] = await dailyPromise;
         const base = {
           daily: [
             ...readRows(prevRes, "daily-prev"),
@@ -503,31 +570,8 @@ const StoreOps = () => {
         setLoading(false);
         setExtraLoading(true);
 
-        const dayParams = { startDate, endDate };
-        const stockParams = {
-          startDate: end.subtract(STOCK_WINDOW_DAYS - 1, "day").format("YYYY-MM-DD"),
-          endDate,
-        };
         const [hourRes, cashierRes, categoryRes, itemRes, stockRes] =
-          await Promise.all([
-            client.sql.execute({
-              sqlCode: SQL_BREAKDOWN,
-              params: { ...dayParams, dimension: "hour" },
-            }),
-            client.sql.execute({
-              sqlCode: SQL_BREAKDOWN,
-              params: { ...dayParams, dimension: "cashier" },
-            }),
-            client.sql.execute({
-              sqlCode: SQL_BREAKDOWN,
-              params: { ...dayParams, dimension: "category" },
-            }),
-            client.sql.execute({
-              sqlCode: SQL_BREAKDOWN,
-              params: { ...dayParams, dimension: "item" },
-            }),
-            client.sql.execute({ sqlCode: SQL_STOCK, params: stockParams }),
-          ]);
+          await extrasPromise;
         const full = {
           ...base,
           hourly: readRows(hourRes, "hour"),
@@ -862,9 +906,7 @@ const StoreOps = () => {
 
       {!view ? (
         loading ? (
-          <div className="ops-loading">
-            <Skeleton active paragraph={{ rows: 10 }} />
-          </div>
+          <StoreOpsSkeleton label={$t("ops.actions.loading")} />
         ) : error ? null : (
           <Empty description={$t("ops.empty")} />
         )

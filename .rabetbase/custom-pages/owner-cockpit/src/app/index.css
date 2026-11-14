@@ -48,6 +48,23 @@
   background: var(--ant-color-bg-container);
 }
 
+.cockpit-skeleton__insights {
+  min-height: 28px;
+}
+
+.cockpit-skeleton__pill {
+  width: 180px;
+}
+
+.cockpit-skeleton__chart {
+  min-height: 344px;
+  padding: 4px 0;
+}
+
+.cockpit-skeleton__chart--normal {
+  min-height: 292px;
+}
+
 .cockpit-insights {
   display: flex;
   flex-wrap: wrap;

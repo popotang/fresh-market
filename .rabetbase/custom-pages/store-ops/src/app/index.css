@@ -48,6 +48,23 @@
   background: var(--ant-color-bg-container);
 }
 
+.ops-skeleton {
+  min-height: 520px;
+}
+
+.ops-skeleton .ops-actions .ant-skeleton {
+  max-width: 760px;
+}
+
+.ops-skeleton__chart {
+  min-height: 344px;
+  padding: 4px 0;
+}
+
+.ops-skeleton__chart--normal {
+  min-height: 292px;
+}
+
 .ops-actions {
   margin-bottom: 12px;
   padding: 14px 16px;

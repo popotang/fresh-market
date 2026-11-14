@@ -451,6 +451,47 @@ const createSupplierOption = (rows, $t, token) => {
   };
 };
 
+const OwnerSkeleton = ({ label }) => (
+  <div className="cockpit-skeleton" aria-busy="true" aria-label={label}>
+    <section className="cockpit-insights cockpit-skeleton__insights">
+      {[0, 1, 2].map((item) => (
+        <Skeleton.Button
+          key={item}
+          active
+          size="small"
+          shape="round"
+          className="cockpit-skeleton__pill"
+        />
+      ))}
+    </section>
+    <section className="cockpit-kpis">
+      {[0, 1, 2, 3, 4, 5].map((item) => (
+        <Card className="cockpit-kpi" key={item}>
+          <Skeleton
+            active
+            title={{ width: "54%" }}
+            paragraph={{ rows: 2, width: ["82%", "48%"] }}
+          />
+        </Card>
+      ))}
+    </section>
+    <section className="cockpit-grid">
+      <Card className="cockpit-card cockpit-span-2">
+        <div className="cockpit-skeleton__chart">
+          <Skeleton active title={{ width: "34%" }} paragraph={{ rows: 6 }} />
+        </div>
+      </Card>
+      {[0, 1, 2, 3].map((item) => (
+        <Card className="cockpit-card" key={item}>
+          <div className="cockpit-skeleton__chart cockpit-skeleton__chart--normal">
+            <Skeleton active title={{ width: "48%" }} paragraph={{ rows: 5 }} />
+          </div>
+        </Card>
+      ))}
+    </section>
+  </div>
+);
+
 const OwnerCockpit = () => {
   const client = useSdkClient();
   const $i18n = useI18n();
@@ -534,13 +575,28 @@ const OwnerCockpit = () => {
       setError(false);
       try {
         const params = { startDate, endDate };
-        const dailyRes = await client.sql.execute({
+        const stockParams = {
+          startDate: dayjs(endDate).subtract(6, "day").format("YYYY-MM-DD"),
+          endDate,
+        };
+        const dailyPromise = client.sql.execute({
           sqlCode: SQL_DAILY,
           params: {
             startDate: dayjs(startDate).subtract(7, "day").format("YYYY-MM-DD"),
             endDate,
           },
         });
+        const extrasPromise = Promise.all([
+          client.sql.execute({
+            sqlCode: SQL_BREAKDOWN,
+            params: { ...params, dimension: "department" },
+          }),
+          client.sql.execute({ sqlCode: SQL_PURCHASE, params }),
+          client.sql.execute({ sqlCode: SQL_STOCK, params: stockParams }),
+        ]);
+        extrasPromise.catch(() => {});
+
+        const dailyRes = await dailyPromise;
         const base = {
           daily: readRows(dailyRes, "daily"),
         };
@@ -549,18 +605,7 @@ const OwnerCockpit = () => {
         setLoading(false);
         setExtraLoading(true);
 
-        const stockParams = {
-          startDate: dayjs(endDate).subtract(6, "day").format("YYYY-MM-DD"),
-          endDate,
-        };
-        const [deptRes, supplierRes, stockRes] = await Promise.all([
-          client.sql.execute({
-            sqlCode: SQL_BREAKDOWN,
-            params: { ...params, dimension: "department" },
-          }),
-          client.sql.execute({ sqlCode: SQL_PURCHASE, params }),
-          client.sql.execute({ sqlCode: SQL_STOCK, params: stockParams }),
-        ]);
+        const [deptRes, supplierRes, stockRes] = await extrasPromise;
         const full = {
           ...base,
           departments: readRows(deptRes, "department"),
@@ -878,9 +923,7 @@ const OwnerCockpit = () => {
 
       {!view ? (
         loading ? (
-          <div className="cockpit-loading">
-            <Skeleton active paragraph={{ rows: 10 }} />
-          </div>
+          <OwnerSkeleton label={$t("owner.common.loading")} />
         ) : error ? null : (
           <Empty description={$t("owner.empty")} />
         )
