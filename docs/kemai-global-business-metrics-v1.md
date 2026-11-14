@@ -165,7 +165,36 @@ v1.0 不提供采购及时率和订单满足率：当前没有稳定承诺交期
 
 SQL 只返回基础度量和分母；比率由 BFF 统一派生。销售和覆盖 SQL 对 `retail_sale_flows` 显式使用 `(tenant_id,sold_at)` 索引，避免优化器误选租户索引导致全表扫描。
 
-### 9.2 BFF
+### 9.2 指标定义存储
+
+指标定义存储在自有 MySQL 表 `metric_definitions` 中，不再由页面或 BFF 内嵌常量直接提供。
+
+- DB_TABLE 数据集：`指标定义`
+- datasetCode：`94efeaffd86e41cf86eddc4b58dcbbb6`
+- 当前定义：46 条，`definition_version = retail-metrics-v1.0.0`，`enabled = 1`
+- 唯一键：`(definition_version, metric_code)`
+- 排序：`sort_order`，与 `business_metrics.mjs` 中原始目录一致
+
+字段映射：
+
+| 表字段 | 页面/BFF 字段 |
+|---|---|
+| `metric_code` | `code` |
+| `name` | `name` |
+| `group_code` | `group` |
+| `unit` | `unit` |
+| `formula` | `formula` |
+| `source_name` | `source` |
+| `nullable` | `nullable` |
+
+初始化与同步：
+
+- DDL：`db/migrations/schema_metric_definitions.sql`
+- 同步脚本：`scripts/seed_metric_definitions.py`
+- 脚本以 `kemai_pipeline/js/business_metrics.mjs` 为发布源，幂等 UPSERT，不删除表中其他版本或额外定义。
+- `catalog` 从表读取当前版本、启用状态的指标；`query` 的指标白名单也使用同一份表内定义。
+
+### 9.3 BFF
 
 - 函数名：`businessMetricGateway`
 - 类型：`ENDPOINT`

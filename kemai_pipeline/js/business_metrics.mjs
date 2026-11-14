@@ -133,7 +133,7 @@ export function normalizeQueryWindow(input, coverage = {}, now = new Date()) {
   return { ...input, startDate, endDate };
 }
 
-export function validateQuery(input = {}) {
+export function validateQuery(input = {}, definitions = METRIC_DEFINITIONS) {
   const groupCode = String(input.groupCode || '');
   const meta = GROUP_META[groupCode];
   if (!meta) throw new Error('UNKNOWN_GROUP');
@@ -146,7 +146,7 @@ export function validateQuery(input = {}) {
   const dimension = input.dimension || meta.defaultDimension;
   if (!meta.dimensions.includes(dimension)) throw new Error('UNKNOWN_DIMENSION');
 
-  const allowed = METRIC_DEFINITIONS.filter(metric => metric.group === groupCode);
+  const allowed = definitions.filter(metric => metric.group === groupCode);
   const groupMetrics = allowed.map(metric => metric.code);
   const requested = input.metricCodes == null ? groupMetrics : input.metricCodes;
   if (!Array.isArray(requested) || requested.length === 0) throw new Error('INVALID_METRIC_CODES');
@@ -357,7 +357,19 @@ const warningsFor = (groupCode, coverage) => {
 
 const pick = (row, codes) => Object.fromEntries(codes.map(code => [code, row[code] ?? null]));
 
-export function buildCatalog() {
+export function toMetricDefinition(row) {
+  return {
+    code: row.metric_code,
+    name: row.name,
+    group: row.group_code,
+    unit: row.unit,
+    formula: row.formula,
+    source: row.source_name,
+    nullable: row.nullable === 1 || row.nullable === '1' || row.nullable === true,
+  };
+}
+
+export function buildCatalog(metrics = METRIC_DEFINITIONS) {
   return {
     definitionVersion: DEFINITION_VERSION,
     groups: Object.entries(GROUP_META).map(([code, meta]) => ({
@@ -365,7 +377,7 @@ export function buildCatalog() {
       ...meta,
       sqlName: SQL_BY_GROUP[code],
     })),
-    metrics: METRIC_DEFINITIONS,
+    metrics,
     limits: { maxWindowDays: 92, defaultWindowDays: 7, tenantDefault: '205149' },
   };
 }

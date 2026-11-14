@@ -140,7 +140,7 @@ function normalizeQueryWindow(input, coverage = {}, now = new Date()) {
   return { ...input, startDate, endDate };
 }
 
-function validateQuery(input = {}) {
+function validateQuery(input = {}, definitions = METRIC_DEFINITIONS) {
   const groupCode = String(input.groupCode || '');
   const meta = GROUP_META[groupCode];
   if (!meta) throw new Error('UNKNOWN_GROUP');
@@ -153,7 +153,7 @@ function validateQuery(input = {}) {
   const dimension = input.dimension || meta.defaultDimension;
   if (!meta.dimensions.includes(dimension)) throw new Error('UNKNOWN_DIMENSION');
 
-  const allowed = METRIC_DEFINITIONS.filter(metric => metric.group === groupCode);
+  const allowed = definitions.filter(metric => metric.group === groupCode);
   const groupMetrics = allowed.map(metric => metric.code);
   const requested = input.metricCodes == null ? groupMetrics : input.metricCodes;
   if (!Array.isArray(requested) || requested.length === 0) throw new Error('INVALID_METRIC_CODES');
@@ -364,7 +364,19 @@ const warningsFor = (groupCode, coverage) => {
 
 const pick = (row, codes) => Object.fromEntries(codes.map(code => [code, row[code] ?? null]));
 
-function buildCatalog() {
+function toMetricDefinition(row) {
+  return {
+    code: row.metric_code,
+    name: row.name,
+    group: row.group_code,
+    unit: row.unit,
+    formula: row.formula,
+    source: row.source_name,
+    nullable: row.nullable === 1 || row.nullable === '1' || row.nullable === true,
+  };
+}
+
+function buildCatalog(metrics = METRIC_DEFINITIONS) {
   return {
     definitionVersion: DEFINITION_VERSION,
     groups: Object.entries(GROUP_META).map(([code, meta]) => ({
@@ -372,7 +384,7 @@ function buildCatalog() {
       ...meta,
       sqlName: SQL_BY_GROUP[code],
     })),
-    metrics: METRIC_DEFINITIONS,
+    metrics,
     limits: { maxWindowDays: 92, defaultWindowDays: 7, tenantDefault: '205149' },
   };
 }
@@ -433,11 +445,30 @@ function buildQueryResult(query, datasets = {}) {
   };
 }
 
+async function loadMetricDefinitions(context) {
+  if (!context.client || !context.client.models) throw new Error('MISSING_MODEL_CONTEXT');
+  const result = await context.client.models.byTable('metric_definitions', {dblinkId: 10510}).filter({
+    where: {definition_version: {$eq: DEFINITION_VERSION}, enabled: {$eq: 1}},
+    select: ['id', 'metric_code', 'name', 'group_code', 'unit', 'formula', 'source_name', 'nullable', 'sort_order'],
+    orderBy: [{sort_order: 'asc'}, {id: 'asc'}],
+    currentPage: 1,
+    pageSize: 200,
+  });
+  if (!result || !Array.isArray(result.tableData)) throw new Error('INVALID_METRIC_CATALOG');
+  const total = Number(result.paging?.totalCount);
+  if (total !== result.tableData.length) throw new Error('INCOMPLETE_METRIC_CATALOG');
+  if (result.tableData.length === 0) throw new Error('METRIC_DEFINITIONS_EMPTY');
+  return result.tableData.map(toMetricDefinition);
+}
+
 export default async function businessMetricGateway(p, context) {
   const input = p && typeof p === 'object' ? p : {};
   const action = String(input.action || '');
-  if (action === 'catalog') return buildCatalog();
   if (!context || !context.client || !context.client.sql) throw new Error('MISSING_RUNTIME_CONTEXT');
+  if (action === 'catalog') {
+    const metrics = await loadMetricDefinitions(context);
+    return buildCatalog(metrics);
+  }
 
   const run = async (name, params) => {
     const rows = await context.client.sql.byName(name).execute({params});
@@ -455,10 +486,11 @@ export default async function businessMetricGateway(p, context) {
     if (!input.startDate || !input.endDate) {
       preCoverage = await run('metricDataCoverage', coverageParams(input));
     }
+    const metricDefinitions = await loadMetricDefinitions(context);
     const query = validateQuery(normalizeQueryWindow(
       {...input, tenantId: input.tenantId || '205149'},
       preCoverage[0] || {},
-    ));
+    ), metricDefinitions);
     const jobs = [
       run(SQL_BY_GROUP[query.groupCode], sqlParams(query)),
       run('metricDataCoverage', coverageParams(query)),

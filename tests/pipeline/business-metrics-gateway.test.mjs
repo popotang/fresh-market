@@ -1,16 +1,68 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { METRIC_DEFINITIONS } from '../../kemai_pipeline/js/business_metrics.mjs';
 
 const source = readFileSync('.rabetbase/bff/app-21522951/ENDPOINT/businessMetricGateway.js', 'utf8');
 const gateway = (await import('data:text/javascript;base64,' + Buffer.from(source).toString('base64'))).default;
 
-const makeClient = handler => ({
+const defaultMetricRows = METRIC_DEFINITIONS.map((metric, index) => ({
+  id: index + 1,
+  definition_version: 'retail-metrics-v1.0.0',
+  metric_code: metric.code,
+  name: metric.name,
+  group_code: metric.group,
+  unit: metric.unit,
+  formula: metric.formula,
+  source_name: metric.source,
+  nullable: metric.nullable ? 1 : 0,
+  enabled: 1,
+  sort_order: index + 1,
+}));
+
+const makeClient = (handler, metricRows = defaultMetricRows) => ({
+  models: {
+    byTable(name) {
+      if (name !== 'metric_definitions') throw new Error(`Unexpected model ${name}`);
+      return {
+        filter: async () => ({ tableData: metricRows, paging: { totalCount: metricRows.length } }),
+      };
+    },
+  },
   sql: {
     byName(name) {
       return { execute: async ({ params }) => handler(name, params) };
     },
   },
+});
+
+test('catalog reads metric definitions from the table and maps database fields', async () => {
+  const client = makeClient(() => {
+    throw new Error('catalog must not execute SQL');
+  }, [{
+    id: 9,
+    definition_version: 'retail-metrics-v1.0.0',
+    metric_code: 'db_backed_metric',
+    name: '表内指标',
+    group_code: 'retail_performance',
+    unit: 'CNY',
+    formula: 'db_formula',
+    source_name: 'metric_definitions',
+    nullable: 0,
+    enabled: 1,
+    sort_order: 1,
+  }]);
+  const result = await gateway({ action: 'catalog' }, { client });
+  assert.equal(result.metrics.length, 1);
+  assert.deepEqual(result.metrics[0], {
+    code: 'db_backed_metric',
+    name: '表内指标',
+    group: 'retail_performance',
+    unit: 'CNY',
+    formula: 'db_formula',
+    source: 'metric_definitions',
+    nullable: false,
+  });
 });
 
 test('catalog exposes version and does not call SQL', async () => {
