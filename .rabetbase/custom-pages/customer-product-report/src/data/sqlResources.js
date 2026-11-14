@@ -1,0 +1,1 @@
+export const FOUR_WEEK_DAILY_SQL_CODE = "21522951-0115f7d6";

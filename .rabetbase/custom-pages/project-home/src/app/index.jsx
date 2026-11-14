@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Button,
   ConfigProvider,
@@ -7,17 +7,11 @@ import {
   theme as antdTheme,
 } from "antd";
 import {
-  ApiOutlined,
   ArrowRightOutlined,
   BarChartOutlined,
-  BulbOutlined,
-  CloudServerOutlined,
   CompassOutlined,
   DatabaseOutlined,
   SafetyCertificateOutlined,
-  ShopOutlined,
-  TeamOutlined,
-  ThunderboltOutlined,
 } from "@ant-design/icons";
 import {
   useAppTheme,
@@ -26,6 +20,7 @@ import {
   useSdkClient,
 } from "@/context/app-context";
 import { locales } from "../locales";
+import { BUSINESS_FLOW_IMAGE } from "../assets/business-flow";
 import { formatNumber, formatPercent } from "../lib/format";
 import "./index.css";
 
@@ -41,13 +36,6 @@ const getThemeConfig = (appTheme) => ({
   algorithm: appTheme?.mode === "dark" ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
   ...(appTheme?.skinColor ? { token: { colorPrimary: appTheme.skinColor } } : {}),
 });
-
-const outcomeMeta = [
-  { key: "1", icon: ThunderboltOutlined, stage: "stage--primary", page: "metric" },
-  { key: "2", icon: BarChartOutlined, stage: "stage--success", page: "owner" },
-  { key: "3", icon: TeamOutlined, stage: "stage--warning", page: "metric" },
-  { key: "4", icon: BulbOutlined, stage: "stage--info", page: null },
-];
 
 const boundaryMeta = [
   { key: "readonly", icon: SafetyCertificateOutlined },
@@ -111,16 +99,6 @@ const AppContent = () => {
   const warningCount = health?.warnings?.length || 0;
   const statusLabel = failed ? $t("home.status.degraded") : $t("home.status.running");
 
-  const flowSteps = useMemo(
-    () => [
-      { key: "cashier", stage: "stage--primary", icon: ShopOutlined },
-      { key: "saas", stage: "stage--success", icon: CloudServerOutlined },
-      { key: "data", stage: "stage--warning", icon: DatabaseOutlined },
-      { key: "ai", stage: "stage--info", icon: ApiOutlined },
-    ],
-    [],
-  );
-
   return (
     <div className="home-page">
       <header className="home-hero">
@@ -183,60 +161,12 @@ const AppContent = () => {
       </header>
 
       <main>
-        <section className="home-section home-flow" aria-labelledby="flow-title">
-          <div className="home-section__head">
-            <h2 id="flow-title">{$t("home.flow.title")}</h2>
-            <p>{$t("home.flow.desc")}</p>
-          </div>
-
-          <div className="home-flow__track">
-            {flowSteps.map((step, index) => {
-              const Icon = step.icon;
-              return (
-                <article className={`flow-step ${step.stage}`} key={step.key}>
-                  <div className="flow-step__top">
-                    <span className="flow-step__index">{String(index + 1).padStart(2, "0")}</span>
-                    <span className="flow-step__icon">
-                      <Icon />
-                    </span>
-                  </div>
-                  <h3>{$t(`flow.${step.key}.title`)}</h3>
-                  <strong>{$t(`flow.${step.key}.sub`)}</strong>
-                  <p>{$t(`flow.${step.key}.desc`)}</p>
-                </article>
-              );
-            })}
-          </div>
-
-          <div className="home-outcomes">
-            <div className="home-section__head home-section__head--tight">
-              <h2>{$t("home.outcome.title")}</h2>
-              <p>{$t("home.outcome.desc")}</p>
-            </div>
-            <div className="outcome-grid">
-              {outcomeMeta.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <article className={`outcome-card ${item.stage}`} key={item.key}>
-                    <div className="outcome-card__head">
-                      <span className="outcome-card__number">{item.key}</span>
-                      <Icon className="outcome-card__icon" />
-                    </div>
-                    <h3>{$t(`outcome.${item.key}.title`)}</h3>
-                    <strong>{$t(`outcome.${item.key}.sub`)}</strong>
-                    <p>{$t(`outcome.${item.key}.desc`)}</p>
-                    {item.page ? (
-                      <button type="button" className="outcome-card__action" onClick={() => go(item.page)}>
-                        {$t(`outcome.${item.key}.action`)} <ArrowRightOutlined />
-                      </button>
-                    ) : (
-                      <span className="outcome-card__settled">{$t(`outcome.${item.key}.action`)}</span>
-                    )}
-                  </article>
-                );
-              })}
-            </div>
-          </div>
+        <section className="home-diagram" aria-label={$t("home.diagram.alt")}>
+          <img
+            className="home-diagram__image"
+            src={BUSINESS_FLOW_IMAGE}
+            alt={$t("home.diagram.alt")}
+          />
         </section>
 
         <section className="home-section home-architecture" aria-labelledby="architecture-title">
