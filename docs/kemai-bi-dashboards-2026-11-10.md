@@ -1,5 +1,9 @@
 # 老板驾驶舱 / 店长作战台（BI 自定义页面）
 
+> 本文件记录 2026-11-10 的页面实现与旧 SQL 口径。全局指标口径已由
+> `docs/kemai-global-business-metrics-v1.md`（定义版本 `retail-metrics-v1.0.0`）接管；
+> 新页面和 Agent 必须使用 `businessMetricGateway`，本文件中的旧 SQL 仅作兼容记录。
+
 - 日期：2026-11-10
 - 范围：仅只读查询自有数据中心（`app-21522951`），不向科迈云帆发起任何写请求。
 - 页面类型：`CUSTOM`（React JSX + ECharts 5）
