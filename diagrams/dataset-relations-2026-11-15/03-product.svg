@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 520" width="100%" role="img" aria-label="③ 商品域数据集关系">
+<defs>
+<marker id="arw-fk" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/></marker>
+<marker id="arw-soft" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#0d9488"/></marker>
+<marker id="arw-ctl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#7c3aed"/></marker>
+</defs>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="40" y="42" font-size="19" font-weight="700" fill="#0f172a" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif">③ 商品域数据集关系</text>
+<text x="40" y="64" font-size="11.5" fill="#64748b" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif">products 是商品主档中心，6 张派生 / 明细表通过 product_id 外键挂载；商品档案（旧）仅保留历史数据</text>
+<path d="M 575.0 168 C 575.0 210.3, 145.0 219.7, 145.0 262" fill="none" stroke="#2563eb" stroke-width="1.6" stroke-dasharray="" marker-end="url(#arw-fk)" opacity="0.85"/>
+<path d="M 575.0 168 C 575.0 210.3, 405.0 219.7, 405.0 262" fill="none" stroke="#2563eb" stroke-width="1.6" stroke-dasharray="" marker-end="url(#arw-fk)" opacity="0.85"/>
+<path d="M 575.0 168 C 575.0 210.3, 668.5 219.7, 668.5 262" fill="none" stroke="#2563eb" stroke-width="1.6" stroke-dasharray="" marker-end="url(#arw-fk)" opacity="0.85"/>
+<path d="M 575.0 168 C 575.0 210.3, 925.0 219.7, 925.0 262" fill="none" stroke="#2563eb" stroke-width="1.6" stroke-dasharray="" marker-end="url(#arw-fk)" opacity="0.85"/>
+<path d="M 575.0 168 L 575.0 192.0 Q 575.0 202 565.0 202.0 L 282.0 202.0 Q 272 202 272.0 212.0 L 272.0 338.0 Q 272 348 262.0 348.0 L 155.0 348.0 Q 145.0 348 145.0 358.0 L 145.0 398" fill="none" stroke="#2563eb" stroke-width="1.6" stroke-dasharray="" marker-end="url(#arw-fk)" opacity="0.85"/>
+<path d="M 575.0 168 L 575.0 192.0 Q 575.0 202 565.0 202.0 L 298.0 202.0 Q 288 202 288.0 212.0 L 288.0 338.0 Q 288 348 298.0 348.0 L 395.0 348.0 Q 405.0 348 405.0 358.0 L 405.0 398" fill="none" stroke="#2563eb" stroke-width="1.6" stroke-dasharray="" marker-end="url(#arw-fk)" opacity="0.85"/>
+<path d="M 575.0 168 L 575.0 192.0 Q 575.0 202 585.0 202.0 L 785.0 202.0 Q 795 202 795.0 212.0 L 795.0 338.0 Q 795 348 785.0 348.0 L 675.0 348.0 Q 665.0 348 665.0 358.0 L 665.0 398" fill="none" stroke="#0d9488" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#arw-soft)" opacity="0.85"/>
+<rect x="470" y="104" width="210" height="64" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.4"/>
+<text x="483" y="128" font-size="13" font-weight="600" fill="#111827">商品同步</text>
+<text x="483" y="146" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#6b7280">products</text>
+<text x="483" y="161" font-size="9.5" fill="#16a34a">商品主档 + 主数据引用</text>
+<rect x="40" y="262" width="210" height="64" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.4"/>
+<text x="53" y="286" font-size="13" font-weight="600" fill="#111827">商品档案</text>
+<text x="53" y="304" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#6b7280">product_profile</text>
+<rect x="300" y="262" width="210" height="64" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.4"/>
+<text x="313" y="286" font-size="13" font-weight="600" fill="#111827">产品子记录</text>
+<text x="313" y="304" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#6b7280">product_child_records</text>
+<rect x="560" y="262" width="217" height="64" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.4"/>
+<text x="573" y="286" font-size="13" font-weight="600" fill="#111827">商品供应资质</text>
+<text x="573" y="304" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#6b7280">product_supply_qualifications</text>
+<rect x="820" y="262" width="210" height="64" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.4"/>
+<text x="833" y="286" font-size="13" font-weight="600" fill="#111827">产品分支范围</text>
+<text x="833" y="304" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#6b7280">product_branch_scopes</text>
+<rect x="40" y="398" width="210" height="64" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.4"/>
+<text x="53" y="422" font-size="13" font-weight="600" fill="#111827">门店商品价格</text>
+<text x="53" y="440" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#6b7280">product_branch_prices</text>
+<rect x="300" y="398" width="210" height="64" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.4"/>
+<text x="313" y="422" font-size="13" font-weight="600" fill="#111827">产品分支库存</text>
+<text x="313" y="440" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#6b7280">product_branch_stocks</text>
+<rect x="560" y="398" width="210" height="64" rx="10" fill="#fefce8" stroke="#ca8a04" stroke-width="1.4"/>
+<text x="573" y="422" font-size="13" font-weight="600" fill="#111827">商品档案（旧）</text>
+<text x="573" y="440" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#6b7280">product_items</text>
+<text x="573" y="455" font-size="9.5" fill="#ca8a04">历史表，无外键</text>
+<rect x="322.5" y="193.0" width="75" height="16" rx="4" fill="#ffffff" opacity="0.95"/>
+<text x="360.0" y="205.0" font-size="9.5" fill="#2563eb" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">product_id</text>
+<rect x="452.5" y="193.0" width="75" height="16" rx="4" fill="#ffffff" opacity="0.95"/>
+<text x="490.0" y="205.0" font-size="9.5" fill="#2563eb" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">product_id</text>
+<rect x="584.25" y="193.0" width="75" height="16" rx="4" fill="#ffffff" opacity="0.95"/>
+<text x="621.75" y="205.0" font-size="9.5" fill="#2563eb" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">product_id</text>
+<rect x="712.5" y="193.0" width="75" height="16" rx="4" fill="#ffffff" opacity="0.95"/>
+<text x="750.0" y="205.0" font-size="9.5" fill="#2563eb" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">product_id</text>
+<rect x="107.5" y="376" width="75" height="16" rx="4" fill="#ffffff" opacity="0.95"/>
+<text x="145.0" y="388" font-size="9.5" fill="#2563eb" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">product_id</text>
+<rect x="367.5" y="376" width="75" height="16" rx="4" fill="#ffffff" opacity="0.95"/>
+<text x="405.0" y="388" font-size="9.5" fill="#2563eb" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">product_id</text>
+<rect x="646.5" y="376" width="37" height="16" rx="4" fill="#ffffff" opacity="0.95"/>
+<text x="665.0" y="388" font-size="9.5" fill="#0d9488" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">同源商品</text>
+<line x1="40" y1="494" x2="74" y2="494" stroke="#2563eb" stroke-width="1.8" stroke-dasharray=""/>
+<text x="82" y="498" font-size="10.5" fill="#475569" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif">外键约束（DB FOREIGN KEY）</text>
+<line x1="310" y1="494" x2="344" y2="494" stroke="#0d9488" stroke-width="1.8" stroke-dasharray="6 4"/>
+<text x="352" y="498" font-size="10.5" fill="#475569" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif">源键关联（库内无外键）</text>
+<line x1="580" y1="494" x2="614" y2="494" stroke="#7c3aed" stroke-width="1.8" stroke-dasharray="2 4"/>
+<text x="622" y="498" font-size="10.5" fill="#475569" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif">控制面引用（capture / stream）</text>
+<text x="1120" y="498" font-size="10" fill="#94a3b8" text-anchor="end" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif">app-21522951 · 42 datasets · 2026-11-15</text>
+</svg>

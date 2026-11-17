@@ -1,0 +1,28 @@
+erDiagram
+  purchase_documents ||--o{ purchase_document_lines : document_id
+  purchase_documents ||--o{ purchase_document_branches : document_id
+  purchase_documents ||--o{ purchase_document_approvals : document_id
+  purchase_documents ||--o| purchase_document_detail_state : document_id
+  purchase_documents }o..o{ purchase_receipt_history_lines : source_document_id
+  purchase_documents }o..o{ suppliers : source_supplier_id
+  purchase_documents }o..o{ branches : source_branch_id
+
+  retail_orders ||--o{ retail_order_lines : order_id
+  retail_orders ||--o{ retail_payments : order_id
+  retail_orders ||--o| retail_order_detail_state : order_id
+  retail_orders }o..o{ retail_sale_flows : source_order_id
+  retail_orders }o..o{ retail_promote_shares : source_order_id
+  retail_orders }o..o{ branches : source_branch_id
+
+  products ||--o| product_profile : product_id
+  products ||--o{ product_child_records : product_id
+  products ||--o{ product_supply_qualifications : product_id
+  products ||--o{ product_branch_scopes : product_id
+  products ||--o{ product_branch_prices : product_id
+  products ||--o{ product_branch_stocks : product_id
+
+  sync_pipeline_streams ||--o{ sync_pipeline_captures : active_capture_id
+  sync_pipeline_captures ||--o{ sync_pipeline_batches : capture_id
+  sync_pipeline_captures ||--o{ sync_pipeline_windows : capture_id
+  sync_stream_events }o--|| sync_runs : run_id
+  sync_stream_events ||--o| sync_stream_status : last_event_id

@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 580" width="100%" role="img" aria-label="④ 同步治理与采集链路">
+<defs>
+<marker id="arw-fk" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/></marker>
+<marker id="arw-soft" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#0d9488"/></marker>
+<marker id="arw-ctl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#7c3aed"/></marker>
+</defs>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="40" y="42" font-size="19" font-weight="700" fill="#0f172a" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif">④ 同步治理与采集链路</text>
+<text x="40" y="64" font-size="11.5" fill="#64748b" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif">一次 capture 拆多个 batch 落库，最后按窗口封存；证据链与状态表通过 capture / stream 标识关联</text>
+<path d="M 145.0 168 C 145.0 193.2, 145.0 198.8, 145.0 224" fill="none" stroke="#7c3aed" stroke-width="1.6" stroke-dasharray="2 4" marker-end="url(#arw-ctl)" opacity="0.85"/>
+<path d="M 145.0 288 C 145.0 313.2, 145.0 318.8, 145.0 344" fill="none" stroke="#2563eb" stroke-width="1.6" stroke-dasharray="" marker-end="url(#arw-fk)" opacity="0.85"/>
+<path d="M 145.0 288 C 145.0 367.2, 145.0 384.8, 145.0 464" fill="none" stroke="#2563eb" stroke-width="1.6" stroke-dasharray="" marker-end="url(#arw-fk)" opacity="0.85"/>
+<path d="M 145.0 224 C 145.0 198.8, 705.0 193.2, 705.0 168" fill="none" stroke="#7c3aed" stroke-width="1.6" stroke-dasharray="2 4" marker-end="url(#arw-ctl)" opacity="0.85"/>
+<path d="M 705.0 104 C 705.0 132.8, 985.0 139.2, 985.0 168" fill="none" stroke="#2563eb" stroke-width="1.6" stroke-dasharray="" marker-end="url(#arw-fk)" opacity="0.85"/>
+<path d="M 705.0 168 C 705.0 193.2, 705.0 198.8, 705.0 224" fill="none" stroke="#2563eb" stroke-width="1.6" stroke-dasharray="" marker-end="url(#arw-fk)" opacity="0.85"/>
+<path d="M 145.0 344 C 145.0 264.8, 425.0 247.2, 425.0 168" fill="none" stroke="#7c3aed" stroke-width="1.6" stroke-dasharray="2 4" marker-end="url(#arw-ctl)" opacity="0.85"/>
+<path d="M 425.0 288 C 425.0 313.2, 425.0 318.8, 425.0 344" fill="none" stroke="#7c3aed" stroke-width="1.6" stroke-dasharray="2 4" marker-end="url(#arw-ctl)" opacity="0.85"/>
+<path d="M 705.0 408 C 705.0 433.2, 705.0 438.8, 705.0 464" fill="none" stroke="#7c3aed" stroke-width="1.6" stroke-dasharray="2 4" marker-end="url(#arw-ctl)" opacity="0.85"/>
+<path d="M 985.0 288 C 985.0 313.2, 985.0 318.8, 985.0 344" fill="none" stroke="#7c3aed" stroke-width="1.6" stroke-dasharray="2 4" marker-end="url(#arw-ctl)" opacity="0.85"/>
+<path d="M 985.0 408 C 985.0 433.2, 985.0 438.8, 985.0 464" fill="none" stroke="#7c3aed" stroke-width="1.6" stroke-dasharray="2 4" marker-end="url(#arw-ctl)" opacity="0.85"/>
+<rect x="40" y="104" width="210" height="64" rx="10" fill="#faf5ff" stroke="#7c3aed" stroke-width="1.4"/>
+<text x="53" y="128" font-size="13" font-weight="600" fill="#111827">同步流</text>
+<text x="53" y="146" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#6b7280">sync_pipeline_streams</text>
+<rect x="40" y="224" width="210" height="64" rx="10" fill="#faf5ff" stroke="#7c3aed" stroke-width="1.4"/>
+<text x="53" y="248" font-size="13" font-weight="600" fill="#111827">同步捕获</text>
+<text x="53" y="266" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#6b7280">sync_pipeline_captures</text>
+<rect x="40" y="344" width="210" height="64" rx="10" fill="#faf5ff" stroke="#7c3aed" stroke-width="1.4"/>
+<text x="53" y="368" font-size="13" font-weight="600" fill="#111827">同步批次</text>
+<text x="53" y="386" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#6b7280">sync_pipeline_batches</text>
+<rect x="40" y="464" width="210" height="64" rx="10" fill="#faf5ff" stroke="#7c3aed" stroke-width="1.4"/>
+<text x="53" y="488" font-size="13" font-weight="600" fill="#111827">同步窗口</text>
+<text x="53" y="506" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#6b7280">sync_pipeline_windows</text>
+<text x="53" y="521" font-size="9.5" fill="#7c3aed">窗口封存凭据</text>
+<rect x="320" y="104" width="210" height="64" rx="10" fill="#faf5ff" stroke="#7c3aed" stroke-width="1.4"/>
+<text x="333" y="128" font-size="13" font-weight="600" fill="#111827">源数据捕获</text>
+<text x="333" y="146" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#6b7280">source_capture</text>
+<text x="333" y="161" font-size="9.5" fill="#7c3aed">原始 payload 证据</text>
+<rect x="320" y="224" width="210" height="64" rx="10" fill="#faf5ff" stroke="#7c3aed" stroke-width="1.4"/>
+<text x="333" y="248" font-size="13" font-weight="600" fill="#111827">同步对象</text>
+<text x="333" y="266" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#6b7280">sync_objects</text>
+<rect x="320" y="344" width="210" height="64" rx="10" fill="#faf5ff" stroke="#7c3aed" stroke-width="1.4"/>
+<text x="333" y="368" font-size="13" font-weight="600" fill="#111827">同步检查点</text>
+<text x="333" y="386" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#6b7280">sync_checkpoints</text>
+<rect x="320" y="464" width="210" height="64" rx="10" fill="#faf5ff" stroke="#7c3aed" stroke-width="1.4"/>
+<text x="333" y="488" font-size="13" font-weight="600" fill="#111827">实时采集游标</text>
+<text x="333" y="506" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#6b7280">sync_live_cursors</text>
+<rect x="600" y="104" width="210" height="64" rx="10" fill="#faf5ff" stroke="#7c3aed" stroke-width="1.4"/>
+<text x="613" y="128" font-size="13" font-weight="600" fill="#111827">同步日志</text>
+<text x="613" y="146" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#6b7280">sync_stream_events</text>
+<rect x="600" y="224" width="210" height="64" rx="10" fill="#faf5ff" stroke="#7c3aed" stroke-width="1.4"/>
+<text x="613" y="248" font-size="13" font-weight="600" fill="#111827">数据更新状态</text>
+<text x="613" y="266" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#6b7280">sync_stream_status</text>
+<rect x="600" y="344" width="210" height="64" rx="10" fill="#faf5ff" stroke="#7c3aed" stroke-width="1.4"/>
+<text x="613" y="368" font-size="13" font-weight="600" fill="#111827">同步覆盖缺口</text>
+<text x="613" y="386" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#6b7280">sync_coverage_gaps</text>
+<rect x="600" y="464" width="210" height="64" rx="10" fill="#faf5ff" stroke="#7c3aed" stroke-width="1.4"/>
+<text x="613" y="488" font-size="13" font-weight="600" fill="#111827">同步对账缺失</text>
+<text x="613" y="506" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#6b7280">sync_reconcile_missing</text>
+<rect x="880" y="104" width="210" height="64" rx="10" fill="#faf5ff" stroke="#7c3aed" stroke-width="1.4"/>
+<text x="893" y="128" font-size="13" font-weight="600" fill="#111827">同步运行记录</text>
+<text x="893" y="146" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#6b7280">sync_runs</text>
+<rect x="880" y="224" width="210" height="64" rx="10" fill="#faf5ff" stroke="#7c3aed" stroke-width="1.4"/>
+<text x="893" y="248" font-size="13" font-weight="600" fill="#111827">探针批次</text>
+<text x="893" y="266" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#6b7280">kemai_pipeline_probe_batches</text>
+<rect x="880" y="344" width="210" height="64" rx="10" fill="#faf5ff" stroke="#7c3aed" stroke-width="1.4"/>
+<text x="893" y="368" font-size="13" font-weight="600" fill="#111827">探针窗口</text>
+<text x="893" y="386" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#6b7280">kemai_pipeline_probe_windows</text>
+<rect x="880" y="464" width="210" height="64" rx="10" fill="#faf5ff" stroke="#7c3aed" stroke-width="1.4"/>
+<text x="893" y="488" font-size="13" font-weight="600" fill="#111827">探针记录</text>
+<text x="893" y="506" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#6b7280">kemai_pipeline_probe_records</text>
+<rect x="85.5" y="174.0" width="119" height="16" rx="4" fill="#ffffff" opacity="0.95"/>
+<text x="145.0" y="186.0" font-size="9.5" fill="#7c3aed" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">active_capture_id</text>
+<rect x="107.5" y="294.0" width="75" height="16" rx="4" fill="#ffffff" opacity="0.95"/>
+<text x="145.0" y="306.0" font-size="9.5" fill="#2563eb" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">capture_id</text>
+<rect x="107.5" y="442" width="75" height="16" rx="4" fill="#ffffff" opacity="0.95"/>
+<text x="145.0" y="454" font-size="9.5" fill="#2563eb" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">capture_id</text>
+<rect x="387.5" y="174.0" width="75" height="16" rx="4" fill="#ffffff" opacity="0.95"/>
+<text x="425.0" y="186.0" font-size="9.5" fill="#7c3aed" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">capture_id</text>
+<rect x="820.5" y="114.0" width="49" height="16" rx="4" fill="#ffffff" opacity="0.95"/>
+<text x="845.0" y="126.0" font-size="9.5" fill="#2563eb" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">run_id</text>
+<rect x="658.5" y="174.0" width="93" height="16" rx="4" fill="#ffffff" opacity="0.95"/>
+<text x="705.0" y="186.0" font-size="9.5" fill="#2563eb" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">last_event_id</text>
+<rect x="384.5" y="176" width="81" height="16" rx="4" fill="#ffffff" opacity="0.95"/>
+<text x="425.0" y="188" font-size="9.5" fill="#7c3aed" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">source_keys</text>
+<rect x="400.5" y="294.0" width="49" height="16" rx="4" fill="#ffffff" opacity="0.95"/>
+<text x="425.0" y="306.0" font-size="9.5" fill="#7c3aed" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">stream</text>
+<rect x="655.0" y="414.0" width="100" height="16" rx="4" fill="#ffffff" opacity="0.95"/>
+<text x="705.0" y="426.0" font-size="9.5" fill="#7c3aed" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">stream + scope</text>
+<rect x="947.5" y="294.0" width="75" height="16" rx="4" fill="#ffffff" opacity="0.95"/>
+<text x="985.0" y="306.0" font-size="9.5" fill="#7c3aed" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">capture_id</text>
+<rect x="954.0" y="414.0" width="62" height="16" rx="4" fill="#ffffff" opacity="0.95"/>
+<text x="985.0" y="426.0" font-size="9.5" fill="#7c3aed" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">batch_id</text>
+<line x1="40" y1="554" x2="74" y2="554" stroke="#2563eb" stroke-width="1.8" stroke-dasharray=""/>
+<text x="82" y="558" font-size="10.5" fill="#475569" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif">外键约束（DB FOREIGN KEY）</text>
+<line x1="310" y1="554" x2="344" y2="554" stroke="#0d9488" stroke-width="1.8" stroke-dasharray="6 4"/>
+<text x="352" y="558" font-size="10.5" fill="#475569" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif">源键关联（库内无外键）</text>
+<line x1="580" y1="554" x2="614" y2="554" stroke="#7c3aed" stroke-width="1.8" stroke-dasharray="2 4"/>
+<text x="622" y="558" font-size="10.5" fill="#475569" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif">控制面引用（capture / stream）</text>
+<text x="1120" y="558" font-size="10" fill="#94a3b8" text-anchor="end" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif">app-21522951 · 42 datasets · 2026-11-15</text>
+</svg>
